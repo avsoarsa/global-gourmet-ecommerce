@@ -12,7 +12,7 @@ import { useRegion } from '../context/RegionContext';
 const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
   const { currentUser } = useAuth();
-  const { convertPrice, currencySymbol } = useRegion();
+  const { convertPriceSync, currencySymbol } = useRegion();
   const navigate = useNavigate();
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
@@ -120,10 +120,23 @@ const CartPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {item.weightOption ?
-                          `${currencySymbol}${convertPrice(item.weightOption.price).toFixed(2)} (${item.selectedWeight})` :
-                          `${currencySymbol}${convertPrice(item.price).toFixed(2)}`
-                        }
+                        {item.weightOption ? (
+                          <>
+                            {currencySymbol}
+                            {(() => {
+                              const price = convertPriceSync(item.weightOption.price);
+                              return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                            })()} ({item.selectedWeight})
+                          </>
+                        ) : (
+                          <>
+                            {currencySymbol}
+                            {(() => {
+                              const price = convertPriceSync(item.price);
+                              return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                            })()}
+                          </>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -151,10 +164,14 @@ const CartPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {item.weightOption ?
-                          `${currencySymbol}${(convertPrice(item.weightOption.price) * item.quantity).toFixed(2)}` :
-                          `${currencySymbol}${(convertPrice(item.price) * item.quantity).toFixed(2)}`
-                        }
+                        {currencySymbol}
+                        {(() => {
+                          const basePrice = item.weightOption ?
+                            convertPriceSync(item.weightOption.price) :
+                            convertPriceSync(item.price);
+                          const total = typeof basePrice === 'number' ? basePrice * item.quantity : 0;
+                          return total.toFixed(2);
+                        })()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -198,27 +215,53 @@ const CartPage = () => {
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="text-gray-800 font-medium">{currencySymbol}{convertPrice(subtotal).toFixed(2)}</span>
+                <span className="text-gray-800 font-medium">
+                  {currencySymbol}
+                  {(() => {
+                    const price = convertPriceSync(subtotal);
+                    return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                  })()}
+                </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="text-gray-800 font-medium">
-                  {shipping === 0 ? 'Free' : `${currencySymbol}${convertPrice(shipping).toFixed(2)}`}
+                  {shipping === 0 ? 'Free' : (
+                    <>
+                      {currencySymbol}
+                      {(() => {
+                        const price = convertPriceSync(shipping);
+                        return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                      })()}
+                    </>
+                  )}
                 </span>
               </div>
 
               {couponApplied && (
                 <div className="flex justify-between text-green-600">
                   <span>Discount (10%)</span>
-                  <span>-{currencySymbol}{convertPrice(couponDiscount).toFixed(2)}</span>
+                  <span>
+                    -{currencySymbol}
+                    {(() => {
+                      const price = convertPriceSync(couponDiscount);
+                      return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                    })()}
+                  </span>
                 </div>
               )}
 
               <div className="border-t pt-4">
                 <div className="flex justify-between font-semibold">
                   <span>Total</span>
-                  <span>{currencySymbol}{convertPrice(total).toFixed(2)}</span>
+                  <span>
+                    {currencySymbol}
+                    {(() => {
+                      const price = convertPriceSync(total);
+                      return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                    })()}
+                  </span>
                 </div>
                 <p className="text-gray-500 text-sm mt-1">
                   Including VAT

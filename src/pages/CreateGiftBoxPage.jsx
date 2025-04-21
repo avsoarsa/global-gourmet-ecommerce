@@ -13,7 +13,7 @@ const CreateGiftBoxPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { convertPrice, currencySymbol } = useRegion();
+  const { convertPriceSync, currencySymbol } = useRegion();
   const queryParams = new URLSearchParams(location.search);
   const boxId = queryParams.get('boxId');
 
@@ -279,7 +279,13 @@ const CreateGiftBoxPage = () => {
                             </div>
                             <div className="p-4">
                               <h4 className="font-semibold mb-1">{product.name}</h4>
-                              <p className="text-green-600 font-medium mb-3">{currencySymbol}{convertPrice(product.price).toFixed(2)}</p>
+                              <p className="text-green-600 font-medium mb-3">
+                                {currencySymbol}
+                                {(() => {
+                                  const price = convertPriceSync(product.price);
+                                  return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                                })()}
+                              </p>
 
                               {!isSelected ? (
                                 <button
@@ -346,7 +352,13 @@ const CreateGiftBoxPage = () => {
                     <div className="border-t border-gray-200 pt-4 mb-4">
                       <div className="flex justify-between font-semibold text-lg">
                         <span>Estimated Total:</span>
-                        <span className="text-green-600">{currencySymbol}{convertPrice(parseFloat(calculateTotalPrice())).toFixed(2)}</span>
+                        <span className="text-green-600">
+                          {currencySymbol}
+                          {(() => {
+                            const price = convertPriceSync(parseFloat(calculateTotalPrice()));
+                            return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                          })()}
+                        </span>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">Final price will be calculated after box customization</p>
                     </div>
@@ -399,7 +411,13 @@ const CreateGiftBoxPage = () => {
                         </div>
                         <p className="font-medium">Small</p>
                         <p className="text-sm text-gray-500">3-5 items</p>
-                        <p className="text-green-600 font-medium mt-2">{currencySymbol}{convertPrice(5.99).toFixed(2)}</p>
+                        <p className="text-green-600 font-medium mt-2">
+                          {currencySymbol}
+                          {(() => {
+                            const price = convertPriceSync(5.99);
+                            return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                          })()}
+                        </p>
                       </div>
 
                       <div
@@ -411,7 +429,13 @@ const CreateGiftBoxPage = () => {
                         </div>
                         <p className="font-medium">Medium</p>
                         <p className="text-sm text-gray-500">5-8 items</p>
-                        <p className="text-green-600 font-medium mt-2">{currencySymbol}{convertPrice(8.99).toFixed(2)}</p>
+                        <p className="text-green-600 font-medium mt-2">
+                          {currencySymbol}
+                          {(() => {
+                            const price = convertPriceSync(8.99);
+                            return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                          })()}
+                        </p>
                       </div>
 
                       <div
@@ -423,7 +447,13 @@ const CreateGiftBoxPage = () => {
                         </div>
                         <p className="font-medium">Large</p>
                         <p className="text-sm text-gray-500">8-12 items</p>
-                        <p className="text-green-600 font-medium mt-2">{currencySymbol}{convertPrice(12.99).toFixed(2)}</p>
+                        <p className="text-green-600 font-medium mt-2">
+                          {currencySymbol}
+                          {(() => {
+                            const price = convertPriceSync(12.99);
+                            return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                          })()}
+                        </p>
                       </div>
                     </div>
                   </div>
