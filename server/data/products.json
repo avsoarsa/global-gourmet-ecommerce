@@ -5,6 +5,9 @@
       "name": "Premium Medjool Dates",
       "category": "Dry Fruits",
       "price": 12.99,
+      "originalPrice": 15.99,
+      "discount": 19,
+      "hsCode": "0804.10.20",
       "image": "https://images.unsplash.com/photo-1593904308074-e1a3f1f0a673?q=80&w=1000&auto=format&fit=crop",
       "description": "Soft, sweet and delicious Medjool dates sourced from the finest date farms. Rich in fiber and essential nutrients.",
       "origin": "Jordan",
@@ -14,10 +17,10 @@
       "inStock": true,
       "featured": true,
       "weightOptions": [
-        { "weight": "250g", "price": 6.49, "inStock": true },
-        { "weight": "500g", "price": 12.99, "inStock": true },
-        { "weight": "1kg", "price": 24.69, "inStock": true },
-        { "weight": "5kg", "price": 110.42, "inStock": false }
+        { "weight": "250g", "price": 6.49, "originalPrice": 7.99, "inStock": true },
+        { "weight": "500g", "price": 12.99, "originalPrice": 15.99, "inStock": true },
+        { "weight": "1kg", "price": 24.69, "originalPrice": 29.99, "inStock": true },
+        { "weight": "5kg", "price": 110.42, "originalPrice": 134.99, "inStock": false }
       ],
       "defaultWeight": "500g"
     },
@@ -47,6 +50,9 @@
       "name": "Golden Raisins",
       "category": "Dry Fruits",
       "price": 7.99,
+      "originalPrice": 9.99,
+      "discount": 20,
+      "hsCode": "0806.20.10",
       "image": "https://images.unsplash.com/photo-1596273312170-8f17f4cc9980?q=80&w=1000&auto=format&fit=crop",
       "description": "Sweet and juicy golden raisins made from the finest green grapes. Perfect for baking, cooking, or snacking.",
       "origin": "California, USA",
@@ -54,13 +60,23 @@
       "rating": 4.5,
       "reviews": 76,
       "inStock": true,
-      "featured": false
+      "featured": false,
+      "weightOptions": [
+        { "weight": "250g", "price": 3.99, "originalPrice": 4.99, "inStock": true },
+        { "weight": "500g", "price": 7.99, "originalPrice": 9.99, "inStock": true },
+        { "weight": "1kg", "price": 15.49, "originalPrice": 18.99, "inStock": true },
+        { "weight": "5kg", "price": 69.99, "originalPrice": 84.99, "inStock": true }
+      ],
+      "defaultWeight": "500g"
     },
     {
       "id": 4,
       "name": "Georgia Pecan Nuts",
       "category": "Nuts & Seeds",
       "price": 18.99,
+      "originalPrice": 23.99,
+      "discount": 21,
+      "hsCode": "0802.90.10",
       "image": "https://images.unsplash.com/photo-1573851552153-816785fecb1f?q=80&w=1000&auto=format&fit=crop",
       "description": "Premium quality pecan nuts from Georgia. Rich, buttery flavor perfect for snacking or baking.",
       "origin": "Georgia, USA",
@@ -70,10 +86,10 @@
       "inStock": true,
       "featured": true,
       "weightOptions": [
-        { "weight": "250g", "price": 9.49, "inStock": true },
-        { "weight": "500g", "price": 18.99, "inStock": true },
-        { "weight": "1kg", "price": 35.99, "inStock": true },
-        { "weight": "5kg", "price": 159.99, "inStock": true }
+        { "weight": "250g", "price": 9.49, "originalPrice": 11.99, "inStock": true },
+        { "weight": "500g", "price": 18.99, "originalPrice": 23.99, "inStock": true },
+        { "weight": "1kg", "price": 35.99, "originalPrice": 45.99, "inStock": true },
+        { "weight": "5kg", "price": 159.99, "originalPrice": 199.99, "inStock": true }
       ],
       "defaultWeight": "500g"
     },
@@ -82,6 +98,9 @@
       "name": "Raw Cashews",
       "category": "Nuts & Seeds",
       "price": 14.99,
+      "originalPrice": 17.99,
+      "discount": 17,
+      "hsCode": "0801.32.00",
       "image": "https://images.unsplash.com/photo-1563412885-139e4045ebc3?q=80&w=1000&auto=format&fit=crop",
       "description": "Creamy, delicious raw cashews. Versatile for snacking, cooking, or making homemade cashew milk.",
       "origin": "Vietnam",
@@ -89,12 +108,12 @@
       "rating": 4.7,
       "reviews": 95,
       "inStock": true,
-      "featured": false,
+      "featured": true,
       "weightOptions": [
-        { "weight": "250g", "price": 7.49, "inStock": true },
-        { "weight": "500g", "price": 14.99, "inStock": true },
-        { "weight": "1kg", "price": 28.49, "inStock": true },
-        { "weight": "5kg", "price": 127.42, "inStock": true }
+        { "weight": "250g", "price": 7.49, "originalPrice": 8.99, "inStock": true },
+        { "weight": "500g", "price": 14.99, "originalPrice": 17.99, "inStock": true },
+        { "weight": "1kg", "price": 28.49, "originalPrice": 33.99, "inStock": true },
+        { "weight": "5kg", "price": 127.42, "originalPrice": 149.99, "inStock": true }
       ],
       "defaultWeight": "500g"
     },
@@ -103,6 +122,9 @@
       "name": "Organic Chia Seeds",
       "category": "Nuts & Seeds",
       "price": 8.99,
+      "originalPrice": 10.99,
+      "discount": 18,
+      "hsCode": "1207.99.03",
       "image": "https://images.unsplash.com/photo-1541990202460-a0a91a4d1fe1?q=80&w=1000&auto=format&fit=crop",
       "description": "Nutrient-dense chia seeds that are perfect for adding to smoothies, yogurt, or baking.",
       "origin": "Mexico",
@@ -110,13 +132,23 @@
       "rating": 4.6,
       "reviews": 83,
       "inStock": true,
-      "featured": false
+      "featured": false,
+      "weightOptions": [
+        { "weight": "250g", "price": 4.49, "originalPrice": 5.49, "inStock": true },
+        { "weight": "500g", "price": 8.99, "originalPrice": 10.99, "inStock": true },
+        { "weight": "1kg", "price": 16.99, "originalPrice": 20.99, "inStock": true },
+        { "weight": "5kg", "price": 79.99, "originalPrice": 94.99, "inStock": true }
+      ],
+      "defaultWeight": "500g"
     },
     {
       "id": 7,
       "name": "Kashmiri Saffron",
       "category": "Spices",
       "price": 29.99,
+      "originalPrice": 34.99,
+      "discount": 14,
+      "hsCode": "0910.20.00",
       "image": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1000&auto=format&fit=crop",
       "description": "Premium Kashmiri saffron threads known for their distinct aroma, flavor, and vibrant color.",
       "origin": "Kashmir, India",
@@ -124,7 +156,14 @@
       "rating": 4.9,
       "reviews": 67,
       "inStock": true,
-      "featured": true
+      "featured": true,
+      "weightOptions": [
+        { "weight": "1g", "price": 5.99, "originalPrice": 6.99, "inStock": true },
+        { "weight": "5g", "price": 29.99, "originalPrice": 34.99, "inStock": true },
+        { "weight": "10g", "price": 57.99, "originalPrice": 67.99, "inStock": true },
+        { "weight": "25g", "price": 139.99, "originalPrice": 159.99, "inStock": true }
+      ],
+      "defaultWeight": "5g"
     },
     {
       "id": 8,
@@ -278,6 +317,8 @@
       "name": "Dried Mango Slices",
       "category": "Dried Fruits",
       "price": 10.99,
+      "originalPrice": 13.99,
+      "discount": 21,
       "image": "https://images.unsplash.com/photo-1596273312170-8f17f4cc9980?q=80&w=1000&auto=format&fit=crop",
       "description": "Sweet and tangy dried mango slices with no added sugar. A tropical treat.",
       "origin": "Philippines",
@@ -285,12 +326,12 @@
       "rating": 4.8,
       "reviews": 63,
       "inStock": true,
-      "featured": false,
+      "featured": true,
       "weightOptions": [
-        { "weight": "250g", "price": 5.49, "inStock": true },
-        { "weight": "500g", "price": 10.99, "inStock": true },
-        { "weight": "1kg", "price": 20.99, "inStock": true },
-        { "weight": "5kg", "price": 99.99, "inStock": true }
+        { "weight": "250g", "price": 5.49, "originalPrice": 6.99, "inStock": true },
+        { "weight": "500g", "price": 10.99, "originalPrice": 13.99, "inStock": true },
+        { "weight": "1kg", "price": 20.99, "originalPrice": 26.99, "inStock": true },
+        { "weight": "5kg", "price": 99.99, "originalPrice": 119.99, "inStock": true }
       ],
       "defaultWeight": "500g"
     },

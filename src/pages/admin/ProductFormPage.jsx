@@ -37,6 +37,7 @@ const ProductFormPage = () => {
     featured: false,
     organic: false,
     discount: 0,
+    hsCode: '',
     hasVariants: false
   });
 
@@ -83,6 +84,7 @@ const ProductFormPage = () => {
           featured: product.featured || false,
           organic: product.organic || false,
           discount: product.discount || 0,
+          hsCode: product.hsCode || '',
           hasVariants: product.variants?.length > 0 || false
         });
 
@@ -509,6 +511,24 @@ const ProductFormPage = () => {
                       max="100"
                       className="form-input block w-full"
                     />
+                  </div>
+
+                  <div>
+                    <label htmlFor="hsCode" className="block text-sm font-medium text-gray-700 mb-1">
+                      HS Code
+                    </label>
+                    <input
+                      type="text"
+                      id="hsCode"
+                      name="hsCode"
+                      value={formData.hsCode}
+                      onChange={handleChange}
+                      className="form-input block w-full"
+                      placeholder="e.g. 0802.90.10"
+                    />
+                    <p className="mt-1 text-sm text-gray-500">
+                      Harmonized System code for customs and international trade
+                    </p>
                   </div>
 
                   <div className="flex items-center mt-6">
