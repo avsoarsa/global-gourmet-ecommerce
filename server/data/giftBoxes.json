@@ -1,0 +1,85 @@
+{
+  "giftBoxes": [
+    {
+      "id": 1,
+      "name": "Gourmet Delight Box",
+      "price": 49.99,
+      "image": "https://images.unsplash.com/photo-1607897441350-dc0d9c061a6f?q=80&w=1000&auto=format&fit=crop",
+      "description": "A carefully curated selection of our finest dry fruits and spices, perfect for gifting.",
+      "contents": ["Premium Medjool Dates", "Georgia Pecan Nuts", "Kashmiri Saffron", "Ceylon Cinnamon Sticks", "Raw Cashews"],
+      "label": "BESTSELLER"
+    },
+    {
+      "id": 2,
+      "name": "Wellness Package",
+      "price": 59.99,
+      "image": "https://images.unsplash.com/photo-1607897441350-dc0d9c061a6f?q=80&w=1000&auto=format&fit=crop",
+      "description": "Organic superfoods and sprouts for health-conscious individuals.",
+      "contents": ["Organic Spirulina Powder", "Organic Maca Powder", "Organic Chia Seeds", "Organic Mung Bean Sprouts", "Organic Turmeric Powder"],
+      "label": "ORGANIC"
+    },
+    {
+      "id": 3,
+      "name": "Corporate Gift Hamper",
+      "price": 99.99,
+      "image": "https://images.unsplash.com/photo-1607897441350-dc0d9c061a6f?q=80&w=1000&auto=format&fit=crop",
+      "description": "Premium selection for corporate gifting with customizable branding options.",
+      "contents": ["Pure Canadian Maple Syrup", "Georgia Pecan Nuts", "Kashmiri Saffron", "Premium Medjool Dates", "Raw Cashews", "Ceylon Cinnamon Sticks"],
+      "label": "PREMIUM"
+    },
+    {
+      "id": 4,
+      "name": "Festive Celebration Box",
+      "price": 69.99,
+      "image": "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=1000&auto=format&fit=crop",
+      "description": "A luxurious assortment of premium nuts and dried fruits perfect for holiday celebrations and special occasions.",
+      "contents": ["Premium Medjool Dates", "Raw Cashews", "Georgia Pecan Nuts", "Organic Turkish Apricots", "Golden Raisins", "Organic Chia Seeds"],
+      "label": "LIMITED EDITION"
+    },
+    {
+      "id": 5,
+      "name": "Spice Enthusiast Collection",
+      "price": 54.99,
+      "image": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1000&auto=format&fit=crop",
+      "description": "A carefully selected assortment of premium spices from around the world for the culinary adventurer.",
+      "contents": ["Kashmiri Saffron", "Ceylon Cinnamon Sticks", "Organic Turmeric Powder", "Cardamom Pods", "Whole Cloves", "Star Anise"],
+      "label": "CHEF'S CHOICE"
+    },
+    {
+      "id": 6,
+      "name": "Breakfast Essentials Box",
+      "price": 45.99,
+      "image": "https://images.unsplash.com/photo-1589418435338-51a8c38dcc5f?q=80&w=1000&auto=format&fit=crop",
+      "description": "Start your day right with this collection of premium breakfast ingredients and superfoods.",
+      "contents": ["Pure Canadian Maple Syrup", "Organic Quinoa", "Organic Chia Seeds", "Organic Maca Powder", "Golden Raisins"],
+      "label": "MORNING BOOST"
+    },
+    {
+      "id": 7,
+      "name": "Nut Lover's Dream",
+      "price": 64.99,
+      "image": "https://images.unsplash.com/photo-1563412885-139e4045ebc3?q=80&w=1000&auto=format&fit=crop",
+      "description": "A premium selection of the world's finest nuts, perfect for snacking or cooking.",
+      "contents": ["Georgia Pecan Nuts", "Raw Cashews", "Organic Almonds", "Macadamia Nuts", "Pistachios", "Hazelnuts"],
+      "label": "PROTEIN RICH"
+    },
+    {
+      "id": 8,
+      "name": "Superfood Starter Kit",
+      "price": 74.99,
+      "image": "https://images.unsplash.com/photo-1622485482481-5c1c9e748823?q=80&w=1000&auto=format&fit=crop",
+      "description": "Boost your nutrition with this collection of powerful superfoods from around the world.",
+      "contents": ["Organic Spirulina Powder", "Organic Maca Powder", "Organic Chia Seeds", "Organic Turmeric Powder", "Goji Berries", "Hemp Seeds"],
+      "label": "NUTRIENT DENSE"
+    },
+    {
+      "id": 9,
+      "name": "Exotic Tastes Box",
+      "price": 79.99,
+      "image": "https://images.unsplash.com/photo-1608057891470-11447fb5967e?q=80&w=1000&auto=format&fit=crop",
+      "description": "Experience unique flavors from around the world with this carefully curated collection of exotic ingredients.",
+      "contents": ["Kashmiri Saffron", "Dragon Fruit Chips", "Black Garlic", "Dried Persimmons", "Sumac", "Dried Kaffir Lime Leaves"],
+      "label": "GLOBAL FLAVORS"
+    }
+  ]
+}

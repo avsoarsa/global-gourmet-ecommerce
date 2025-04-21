@@ -5,7 +5,9 @@ import ProductCard from '../components/common/ProductCard';
 import CategoryCard from '../components/common/CategoryCard';
 import GiftBoxCard from '../components/common/GiftBoxCard';
 import TestimonialCard from '../components/common/TestimonialCard';
+import SEO from '../components/common/SEO';
 import { products, categories, giftBoxes, testimonials } from '../data/products';
+import { generateOrganizationSchema } from '../utils/structuredData';
 
 const HomePage = () => {
   // Filter featured products
@@ -17,8 +19,18 @@ const HomePage = () => {
   // Filter dried fruits products
   const driedFruitsProducts = products.filter(product => product.category === 'Dried Fruits').slice(0, 3);
 
+  // Generate structured data for the organization
+  const organizationSchema = generateOrganizationSchema();
+
   return (
     <div>
+      <SEO
+        title="Premium Quality Dry Fruits & Spices"
+        description="Discover premium quality dry fruits, spices, nuts, and superfoods at Global Gourmet. Ethically sourced, fresh, and delivered to your doorstep."
+        keywords={['dry fruits', 'spices', 'nuts', 'superfoods', 'organic', 'premium', 'gift boxes']}
+        ogImage="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1000&auto=format&fit=crop"
+        structuredData={organizationSchema}
+      />
       {/* Hero Section */}
       <section className="relative bg-gray-900 text-white">
         <div className="absolute inset-0 bg-black opacity-60"></div>

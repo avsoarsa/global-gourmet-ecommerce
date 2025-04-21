@@ -20,6 +20,8 @@ import SocialShare from '../components/common/SocialShare';
 import RecipeSection from '../components/product/RecipeSection';
 import WeightSelector from '../components/product/WeightSelector';
 import ProductBreadcrumb from '../components/product/ProductBreadcrumb';
+import SEO from '../components/common/SEO';
+import { generateProductSchema, generateBreadcrumbSchema } from '../utils/structuredData';
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
@@ -183,8 +185,33 @@ const ProductDetailPage = () => {
     setReviews(getProductReviews(parseInt(productId)));
   };
 
+  // Generate structured data for the product
+  const productSchema = product ? generateProductSchema(product) : null;
+
+  // Generate breadcrumb structured data
+  const breadcrumbItems = [
+    { name: 'Home', url: 'https://global-gourmet-ecommerce.vercel.app/' },
+    { name: 'Products', url: 'https://global-gourmet-ecommerce.vercel.app/products' },
+    { name: product?.category || '', url: `https://global-gourmet-ecommerce.vercel.app/category/${product?.category?.toLowerCase().replace(/\s+/g, '-')}` },
+    { name: product?.name || '', url: `https://global-gourmet-ecommerce.vercel.app/product/${productId}` }
+  ];
+  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+
+  // Combine structured data
+  const structuredData = productSchema;
+
   return (
     <>
+      {product && (
+        <SEO
+          title={product.name}
+          description={product.description}
+          keywords={[product.name, product.category, 'organic', 'premium', product.origin]}
+          ogType="product"
+          ogImage={product.image}
+          structuredData={structuredData}
+        />
+      )}
       <ProductBreadcrumb productId={productId} />
       <div className="container mx-auto px-4 py-8">
 
