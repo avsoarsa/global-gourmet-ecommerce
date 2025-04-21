@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faCreditCard, 
-  faPlus, 
-  faTrash, 
-  faPencilAlt, 
-  faCcVisa, 
-  faCcMastercard, 
-  faCcAmex, 
-  faCcDiscover,
+import {
+  faCreditCard,
+  faPlus,
+  faTrash,
+  faPencilAlt,
   faShieldAlt,
   faCheckCircle
 } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCcVisa,
+  faCcMastercard,
+  faCcAmex,
+  faCcDiscover
+} from '@fortawesome/free-brands-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 
 /**
@@ -32,12 +34,12 @@ const SavedPaymentMethods = () => {
   });
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
-  
+
   // Get card type based on card number
   const getCardType = (cardNumber) => {
     // Remove spaces and dashes
     const cleanNumber = cardNumber.replace(/[ -]/g, '');
-    
+
     // Visa
     if (/^4/.test(cleanNumber)) {
       return { type: 'visa', icon: faCcVisa };
@@ -57,12 +59,12 @@ const SavedPaymentMethods = () => {
     // Default
     return { type: 'unknown', icon: faCreditCard };
   };
-  
+
   // Format card number with spaces
   const formatCardNumber = (cardNumber) => {
     const cleanNumber = cardNumber.replace(/\D/g, '');
     const cardType = getCardType(cleanNumber).type;
-    
+
     // Format based on card type
     if (cardType === 'amex') {
       // XXXX XXXXXX XXXXX
@@ -72,47 +74,47 @@ const SavedPaymentMethods = () => {
       return cleanNumber.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
     }
   };
-  
+
   // Mask card number for display
   const maskCardNumber = (cardNumber) => {
     const cleanNumber = cardNumber.replace(/\D/g, '');
     const lastFour = cleanNumber.slice(-4);
     const cardType = getCardType(cleanNumber).type;
-    
+
     if (cardType === 'amex') {
       return `•••• •••••• ${lastFour}`;
     } else {
       return `•••• •••• •••• ${lastFour}`;
     }
   };
-  
+
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     // Special handling for card number to format it
     if (name === 'cardNumber') {
       const formattedValue = formatCardNumber(value);
       setFormData(prev => ({ ...prev, [name]: formattedValue }));
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: type === 'checkbox' ? checked : value 
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
       }));
     }
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-  
+
   // Validate form data
   const validateForm = () => {
     const newErrors = {};
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1; // 1-12
-    
+
     // Card number validation
     const cleanCardNumber = formData.cardNumber.replace(/\D/g, '');
     if (!cleanCardNumber) {
@@ -120,47 +122,47 @@ const SavedPaymentMethods = () => {
     } else if (cleanCardNumber.length < 15 || cleanCardNumber.length > 16) {
       newErrors.cardNumber = 'Card number must be 15-16 digits';
     }
-    
+
     // Cardholder name validation
     if (!formData.cardholderName.trim()) {
       newErrors.cardholderName = 'Cardholder name is required';
     }
-    
+
     // Expiry date validation
     if (!formData.expiryMonth) {
       newErrors.expiryMonth = 'Month is required';
     }
-    
+
     if (!formData.expiryYear) {
       newErrors.expiryYear = 'Year is required';
     } else {
       const expiryYear = parseInt(formData.expiryYear);
       const expiryMonth = parseInt(formData.expiryMonth);
-      
+
       if (expiryYear < currentYear || (expiryYear === currentYear && expiryMonth < currentMonth)) {
         newErrors.expiryYear = 'Card has expired';
       }
     }
-    
+
     // CVV validation
     if (!formData.cvv) {
       newErrors.cvv = 'CVV is required';
     } else if (!/^\d{3,4}$/.test(formData.cvv)) {
       newErrors.cvv = 'CVV must be 3-4 digits';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     // Create new payment method object
     const newPaymentMethod = {
       id: isEditing || Date.now().toString(),
@@ -171,19 +173,19 @@ const SavedPaymentMethods = () => {
       cardType: getCardType(formData.cardNumber).type,
       isDefault: formData.isDefault
     };
-    
+
     let updatedPaymentMethods;
-    
+
     if (isEditing) {
       // Update existing payment method
-      updatedPaymentMethods = paymentMethods.map(method => 
+      updatedPaymentMethods = paymentMethods.map(method =>
         method.id === isEditing ? newPaymentMethod : method
       );
     } else {
       // Add new payment method
       updatedPaymentMethods = [...paymentMethods, newPaymentMethod];
     }
-    
+
     // If this is set as default, update other methods
     if (formData.isDefault) {
       updatedPaymentMethods = updatedPaymentMethods.map(method => ({
@@ -191,13 +193,13 @@ const SavedPaymentMethods = () => {
         isDefault: method.id === newPaymentMethod.id
       }));
     }
-    
+
     // Update state
     setPaymentMethods(updatedPaymentMethods);
-    
+
     // Update user profile
     updateUserProfile({ paymentMethods: updatedPaymentMethods });
-    
+
     // Reset form
     setFormData({
       cardNumber: '',
@@ -207,16 +209,16 @@ const SavedPaymentMethods = () => {
       cvv: '',
       isDefault: false
     });
-    
+
     // Show success message
     setSuccessMessage(isEditing ? 'Payment method updated successfully' : 'Payment method added successfully');
     setTimeout(() => setSuccessMessage(''), 3000);
-    
+
     // Close form
     setIsAddingNew(false);
     setIsEditing(null);
   };
-  
+
   // Handle edit button click
   const handleEdit = (method) => {
     setIsEditing(method.id);
@@ -230,39 +232,39 @@ const SavedPaymentMethods = () => {
       isDefault: method.isDefault
     });
   };
-  
+
   // Handle delete button click
   const handleDelete = (id) => {
     const updatedPaymentMethods = paymentMethods.filter(method => method.id !== id);
-    
+
     // If we're deleting the default method, set the first remaining method as default
     if (paymentMethods.find(method => method.id === id)?.isDefault && updatedPaymentMethods.length > 0) {
       updatedPaymentMethods[0].isDefault = true;
     }
-    
+
     setPaymentMethods(updatedPaymentMethods);
     updateUserProfile({ paymentMethods: updatedPaymentMethods });
-    
+
     // Show success message
     setSuccessMessage('Payment method removed successfully');
     setTimeout(() => setSuccessMessage(''), 3000);
   };
-  
+
   // Handle set as default
   const handleSetDefault = (id) => {
     const updatedPaymentMethods = paymentMethods.map(method => ({
       ...method,
       isDefault: method.id === id
     }));
-    
+
     setPaymentMethods(updatedPaymentMethods);
     updateUserProfile({ paymentMethods: updatedPaymentMethods });
-    
+
     // Show success message
     setSuccessMessage('Default payment method updated');
     setTimeout(() => setSuccessMessage(''), 3000);
   };
-  
+
   // Generate years for dropdown
   const generateYears = () => {
     const currentYear = new Date().getFullYear();
@@ -272,7 +274,7 @@ const SavedPaymentMethods = () => {
     }
     return years;
   };
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-6">
@@ -280,7 +282,7 @@ const SavedPaymentMethods = () => {
           <FontAwesomeIcon icon={faCreditCard} className="mr-2 text-green-600" />
           Saved Payment Methods
         </h2>
-        
+
         {!isAddingNew && (
           <button
             onClick={() => {
@@ -302,7 +304,7 @@ const SavedPaymentMethods = () => {
           </button>
         )}
       </div>
-      
+
       {/* Success message */}
       {successMessage && (
         <div className="mb-4 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded">
@@ -312,14 +314,14 @@ const SavedPaymentMethods = () => {
           </div>
         </div>
       )}
-      
+
       {/* Add/Edit Payment Method Form */}
       {isAddingNew && (
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
           <h3 className="text-lg font-medium text-gray-800 mb-4">
             {isEditing ? 'Edit Payment Method' : 'Add New Payment Method'}
           </h3>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Card Number */}
@@ -341,9 +343,9 @@ const SavedPaymentMethods = () => {
                     }`}
                   />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <FontAwesomeIcon 
-                      icon={getCardType(formData.cardNumber).icon} 
-                      className="text-lg" 
+                    <FontAwesomeIcon
+                      icon={getCardType(formData.cardNumber).icon}
+                      className="text-lg"
                     />
                   </div>
                 </div>
@@ -351,7 +353,7 @@ const SavedPaymentMethods = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.cardNumber}</p>
                 )}
               </div>
-              
+
               {/* Cardholder Name */}
               <div className="col-span-2">
                 <label htmlFor="cardholderName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -372,7 +374,7 @@ const SavedPaymentMethods = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.cardholderName}</p>
                 )}
               </div>
-              
+
               {/* Expiry Date */}
               <div>
                 <label htmlFor="expiryMonth" className="block text-sm font-medium text-gray-700 mb-1">
@@ -425,7 +427,7 @@ const SavedPaymentMethods = () => {
                   </p>
                 )}
               </div>
-              
+
               {/* CVV */}
               <div>
                 <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-1">
@@ -447,7 +449,7 @@ const SavedPaymentMethods = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.cvv}</p>
                 )}
               </div>
-              
+
               {/* Default Payment Method */}
               <div className="col-span-2">
                 <div className="flex items-center">
@@ -465,13 +467,13 @@ const SavedPaymentMethods = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Security Note */}
             <div className="mb-4 text-xs text-gray-500 flex items-center">
               <FontAwesomeIcon icon={faShieldAlt} className="mr-1 text-green-600" />
               Your card information is encrypted and stored securely.
             </div>
-            
+
             {/* Form Actions */}
             <div className="flex justify-end space-x-3">
               <button
@@ -495,22 +497,22 @@ const SavedPaymentMethods = () => {
           </form>
         </div>
       )}
-      
+
       {/* Payment Methods List */}
       {paymentMethods.length > 0 ? (
         <div className="space-y-4">
           {paymentMethods.map(method => (
-            <div 
-              key={method.id} 
+            <div
+              key={method.id}
               className={`border rounded-lg p-4 ${
                 method.isDefault ? 'border-green-300 bg-green-50' : 'border-gray-200'
               }`}
             >
               <div className="flex justify-between items-start">
                 <div className="flex items-center">
-                  <FontAwesomeIcon 
-                    icon={getCardType(method.cardNumber).icon} 
-                    className="text-2xl mr-3 text-gray-700" 
+                  <FontAwesomeIcon
+                    icon={getCardType(method.cardNumber).icon}
+                    className="text-2xl mr-3 text-gray-700"
                   />
                   <div>
                     <div className="font-medium text-gray-800">
@@ -526,7 +528,7 @@ const SavedPaymentMethods = () => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex space-x-2">
                   {!method.isDefault && (
                     <button
