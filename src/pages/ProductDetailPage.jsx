@@ -37,7 +37,7 @@ const ProductDetailPage = () => {
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { currentUser } = useAuth();
-  const { convertPrice, currencySymbol } = useRegion();
+  const { convertPriceSync, currencySymbol } = useRegion();
 
   useEffect(() => {
     // Find the product by ID
@@ -240,10 +240,23 @@ const ProductDetailPage = () => {
 
           <div className="mb-6">
             <p className="text-2xl font-bold text-green-700">
-              {selectedWeightOption ?
-                `${currencySymbol}${convertPrice(selectedWeightOption.price).toFixed(2)}` :
-                `${currencySymbol}${convertPrice(product.price).toFixed(2)}`
-              }
+              {selectedWeightOption ? (
+                <>
+                  {currencySymbol}
+                  {(() => {
+                    const price = convertPriceSync(selectedWeightOption.price);
+                    return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                  })()}
+                </>
+              ) : (
+                <>
+                  {currencySymbol}
+                  {(() => {
+                    const price = convertPriceSync(product.price);
+                    return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                  })()}
+                </>
+              )}
               <span className="text-sm text-gray-500 ml-2">
                 {selectedWeightOption ? `per ${selectedWeight}` : ''}
               </span>
@@ -251,10 +264,13 @@ const ProductDetailPage = () => {
             {quantity > 1 && (
               <p className="text-lg text-gray-600 mt-1">
                 Total: {currencySymbol}
-                {selectedWeightOption ?
-                  (convertPrice(selectedWeightOption.price) * quantity).toFixed(2) :
-                  (convertPrice(product.price) * quantity).toFixed(2)
-                }
+                {(() => {
+                  const basePrice = selectedWeightOption ?
+                    convertPriceSync(selectedWeightOption.price) :
+                    convertPriceSync(product.price);
+                  const total = typeof basePrice === 'number' ? basePrice * quantity : 0;
+                  return total.toFixed(2);
+                })()}
                 {selectedWeightOption ? ` for ${quantity} × ${selectedWeight}` : ''}
               </p>
             )}
