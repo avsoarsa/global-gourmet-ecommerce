@@ -558,7 +558,13 @@ const CreateGiftBoxPage = () => {
                     <div className="pt-4 border-t border-gray-200">
                       <div className="flex justify-between font-semibold">
                         <span>Total:</span>
-                        <span className="text-green-600">{currencySymbol}{convertPrice(parseFloat(calculateTotalPrice())).toFixed(2)}</span>
+                        <span className="text-green-600">
+                          {currencySymbol}
+                          {(() => {
+                            const price = convertPriceSync(parseFloat(calculateTotalPrice()));
+                            return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                          })()}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -636,8 +642,20 @@ const CreateGiftBoxPage = () => {
                             <tr key={product.id}>
                               <td className="px-4 py-3 text-sm text-gray-700">{product.name}</td>
                               <td className="px-4 py-3 text-sm text-gray-700 text-center">{product.quantity}</td>
-                              <td className="px-4 py-3 text-sm text-gray-700 text-right">{currencySymbol}{convertPrice(product.price).toFixed(2)}</td>
-                              <td className="px-4 py-3 text-sm text-gray-700 text-right">{currencySymbol}{convertPrice(product.price * product.quantity).toFixed(2)}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700 text-right">
+                                {currencySymbol}
+                                {(() => {
+                                  const price = convertPriceSync(product.price);
+                                  return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                                })()}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-700 text-right">
+                                {currencySymbol}
+                                {(() => {
+                                  const price = convertPriceSync(product.price * product.quantity);
+                                  return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                                })()}
+                              </td>
                             </tr>
                           ))}
 
@@ -648,23 +666,35 @@ const CreateGiftBoxPage = () => {
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-700 text-center">1</td>
                             <td className="px-4 py-3 text-sm text-gray-700 text-right">
-                              {currencySymbol}{convertPrice(
-                                boxCustomization.boxSize === 'small' ? 5.99 :
-                                boxCustomization.boxSize === 'medium' ? 8.99 : 12.99
-                              ).toFixed(2)}
+                              {currencySymbol}
+                              {(() => {
+                                const boxPrice = boxCustomization.boxSize === 'small' ? 5.99 :
+                                  boxCustomization.boxSize === 'medium' ? 8.99 : 12.99;
+                                const price = convertPriceSync(boxPrice);
+                                return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                              })()}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-700 text-right">
-                              {currencySymbol}{convertPrice(
-                                boxCustomization.boxSize === 'small' ? 5.99 :
-                                boxCustomization.boxSize === 'medium' ? 8.99 : 12.99
-                              ).toFixed(2)}
+                              {currencySymbol}
+                              {(() => {
+                                const boxPrice = boxCustomization.boxSize === 'small' ? 5.99 :
+                                  boxCustomization.boxSize === 'medium' ? 8.99 : 12.99;
+                                const price = convertPriceSync(boxPrice);
+                                return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                              })()}
                             </td>
                           </tr>
                         </tbody>
                         <tfoot className="bg-gray-50 border-t border-gray-200">
                           <tr>
                             <td colSpan="3" className="px-4 py-3 text-base font-semibold text-gray-700 text-right">Total:</td>
-                            <td className="px-4 py-3 text-base font-semibold text-green-600 text-right">{currencySymbol}{convertPrice(parseFloat(calculateTotalPrice())).toFixed(2)}</td>
+                            <td className="px-4 py-3 text-base font-semibold text-green-600 text-right">
+                              {currencySymbol}
+                              {(() => {
+                                const price = convertPriceSync(parseFloat(calculateTotalPrice()));
+                                return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                              })()}
+                            </td>
                           </tr>
                         </tfoot>
                       </table>
