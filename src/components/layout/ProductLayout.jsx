@@ -1,17 +1,26 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import SimpleHeader from './SimpleHeader';
+import Header from './Header';
 import BackToTop from '../common/BackToTop';
+import Breadcrumb from '../common/Breadcrumb';
 import MobileNavigation from '../mobile/MobileNavigation';
 import PullToRefresh from '../mobile/PullToRefresh';
 
 /**
- * ConversionLayout - A distraction-free layout for high-conversion pages
- * Removes footer and other distracting elements to focus user attention on conversion
+ * ProductLayout - A layout for product-related pages without a footer
+ * Used for:
+ * - Product detail pages
+ * - Create gift box page
+ * - Products listing page
+ * - Gift boxes page
+ * - Bulk orders page
  */
-const ConversionLayout = () => {
+const ProductLayout = () => {
   const location = useLocation();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Check if we're on a product detail page
+  const isProductDetailPage = location.pathname.match(/^\/product\/\d+$/);
 
   // Handle pull-to-refresh
   const handleRefresh = async () => {
@@ -46,10 +55,11 @@ const ConversionLayout = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <SimpleHeader />
+    <div className="flex flex-col min-h-screen">
+      <Header />
       <PullToRefresh onRefresh={handleRefresh}>
         <main className="flex-grow pt-16">
+          {!isProductDetailPage && <Breadcrumb />}
           <Outlet />
         </main>
       </PullToRefresh>
@@ -59,4 +69,4 @@ const ConversionLayout = () => {
   );
 };
 
-export default ConversionLayout;
+export default ProductLayout;

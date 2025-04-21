@@ -187,7 +187,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* First Name */}
         <div>
@@ -203,7 +203,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="Enter first name"
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-2 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-1.5 ${
                 errors.firstName && (touched.firstName || showValidation) ? 'border-red-300' : ''
               }`}
             />
@@ -234,7 +234,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="Enter last name"
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-2 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-1.5 ${
                 errors.lastName && (touched.lastName || showValidation) ? 'border-red-300' : ''
               }`}
             />
@@ -266,7 +266,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Enter your street address"
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-2 ${
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-1.5 ${
               errors.street && (touched.street || showValidation) ? 'border-red-300' : ''
             }`}
           />
@@ -297,7 +297,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Enter city"
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-2 ${
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-1.5 ${
               errors.city && (touched.city || showValidation) ? 'border-red-300' : ''
             }`}
           />
@@ -328,7 +328,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
                 value={formData.state}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm appearance-none pl-3 pr-10 py-2 ${
+                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm appearance-none pl-3 pr-10 py-1.5 ${
                   errors.state && (touched.state || showValidation) ? 'border-red-300' : ''
                 }`}
               >
@@ -352,7 +352,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="Enter state or province"
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-2 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-1.5 ${
                 errors.state && (touched.state || showValidation) ? 'border-red-300' : ''
               }`}
             />
@@ -379,7 +379,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="Enter zip/postal code"
-              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-2 ${
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-1.5 ${
                 errors.zipCode && (touched.zipCode || showValidation) ? 'border-red-300' : ''
               }`}
             />
@@ -409,7 +409,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
             value={formData.country}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm appearance-none pl-3 pr-10 py-2 ${
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm appearance-none pl-3 pr-10 py-1.5 ${
               errors.country && (touched.country || showValidation) ? 'border-red-300' : ''
             }`}
           >
@@ -445,7 +445,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
             value={formData.phone}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-2 ${
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm pl-3 py-1.5 ${
               errors.phone && (touched.phone || showValidation) ? 'border-red-300' : ''
             }`}
             placeholder="(123) 456-7890"

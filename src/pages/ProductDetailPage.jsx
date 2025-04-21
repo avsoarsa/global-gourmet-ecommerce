@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStar, faStarHalfAlt, faShoppingCart,
-  faHeart as faHeartSolid, faChevronLeft, faChevronRight
+  faHeart as faHeartSolid, faChevronLeft, faChevronRight,
+  faArrowRight
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
@@ -214,6 +216,13 @@ const ProductDetailPage = () => {
       )}
       <ProductBreadcrumb productId={productId} />
       <div className="container mx-auto px-4 py-8">
+        <button
+          onClick={() => window.history.back()}
+          className="mb-4 flex items-center text-gray-600 hover:text-green-600 transition-colors"
+        >
+          <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
+          Back to previous page
+        </button>
 
       <div className="flex flex-col lg:flex-row gap-8 mb-12">
         {/* Product Image */}
@@ -362,23 +371,6 @@ const ProductDetailPage = () => {
                   image={product.image}
                 />
               </div>
-            </div>
-
-            {/* Social Proof */}
-            <div className="mt-6 bg-gray-50 p-4 rounded-md border border-gray-100">
-              <div className="flex items-center mb-2">
-                <div className="flex text-amber-400 mr-2">
-                  <FontAwesomeIcon icon={faStar} />
-                  <FontAwesomeIcon icon={faStar} />
-                  <FontAwesomeIcon icon={faStar} />
-                  <FontAwesomeIcon icon={faStar} />
-                  <FontAwesomeIcon icon={faStar} className="text-gray-300" />
-                </div>
-                <span className="text-sm text-gray-600">4.0 (128 reviews)</span>
-              </div>
-              <p className="text-sm text-gray-600 italic">
-                "These are the freshest and highest quality dry fruits I've ever purchased online. Will definitely buy again!" - Sarah K.
-              </p>
             </div>
 
             {/* Limited Time Offer */}

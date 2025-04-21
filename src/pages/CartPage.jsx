@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTrash, faArrowLeft, faShoppingCart,
-  faTimes, faPlus, faMinus
+  faTimes, faPlus, faMinus, faArrowRight
 } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -73,7 +73,7 @@ const CartPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 relative">
       <h1 className="text-3xl font-bold mb-4 text-center">Your Shopping Cart</h1>
 
       {/* Urgency Banner */}
@@ -355,6 +355,44 @@ const CartPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating Checkout Button for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:hidden z-10 shadow-lg">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <div className="text-sm text-gray-600">Total:</div>
+            <div className="text-xl font-bold text-gray-900">
+              {currencySymbol}
+              {(() => {
+                const price = convertPriceSync(total);
+                return typeof price === 'number' ? price.toFixed(2) : '0.00';
+              })()}
+            </div>
+          </div>
+
+          {currentUser ? (
+            <Link
+              to="/checkout"
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 flex items-center shadow-md"
+            >
+              Checkout
+              <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              state={{ from: '/checkout' }}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 flex items-center shadow-md"
+            >
+              Sign In
+              <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Add padding at the bottom to prevent content from being hidden behind the floating button on mobile */}
+      <div className="h-24 lg:hidden"></div>
     </div>
   );
 };

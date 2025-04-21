@@ -9,10 +9,10 @@ import {
   faLock,
   faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
-import { 
-  faCcVisa, 
-  faCcMastercard, 
-  faCcAmex, 
+import {
+  faCcVisa,
+  faCcMastercard,
+  faCcAmex,
   faCcDiscover,
   faCcPaypal,
   faApplePay,
@@ -21,10 +21,10 @@ import {
 
 const PaymentMethodCard = ({ method, isSelected, onSelect }) => {
   return (
-    <label 
-      className={`block border rounded-lg p-4 cursor-pointer transition-colors ${
-        isSelected 
-          ? 'border-green-500 bg-green-50' 
+    <label
+      className={`block border rounded-lg p-3 cursor-pointer transition-colors ${
+        isSelected
+          ? 'border-green-500 bg-green-50'
           : 'border-gray-200 hover:bg-gray-50'
       }`}
     >
@@ -63,59 +63,59 @@ const CreditCardForm = ({ onSubmit }) => {
     saveCard: false
   });
   const [errors, setErrors] = useState({});
-  
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setCardData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // Clear error when field is edited
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-  
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!cardData.cardNumber.trim()) {
       newErrors.cardNumber = t('checkout.cardNumberRequired');
     } else if (!/^\d{16}$/.test(cardData.cardNumber.replace(/\s/g, ''))) {
       newErrors.cardNumber = t('checkout.invalidCardNumber');
     }
-    
+
     if (!cardData.cardName.trim()) {
       newErrors.cardName = t('checkout.cardNameRequired');
     }
-    
+
     if (!cardData.expiryMonth) {
       newErrors.expiryMonth = t('checkout.expiryMonthRequired');
     }
-    
+
     if (!cardData.expiryYear) {
       newErrors.expiryYear = t('checkout.expiryYearRequired');
     }
-    
+
     if (!cardData.cvv.trim()) {
       newErrors.cvv = t('checkout.cvvRequired');
     } else if (!/^\d{3,4}$/.test(cardData.cvv)) {
       newErrors.cvv = t('checkout.invalidCvv');
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       onSubmit(cardData);
     }
   };
-  
+
   // Generate month options
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
     const month = i + 1;
@@ -125,7 +125,7 @@ const CreditCardForm = ({ onSubmit }) => {
       </option>
     );
   });
-  
+
   // Generate year options (current year + 10 years)
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 11 }, (_, i) => {
@@ -136,7 +136,7 @@ const CreditCardForm = ({ onSubmit }) => {
       </option>
     );
   });
-  
+
   return (
     <form onSubmit={handleSubmit} className="mt-4">
       <div className="mb-4">
@@ -167,7 +167,7 @@ const CreditCardForm = ({ onSubmit }) => {
           <p className="mt-1 text-sm text-red-600">{errors.cardNumber}</p>
         )}
       </div>
-      
+
       <div className="mb-4">
         <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 mb-1">
           {t('checkout.nameOnCard')} *
@@ -185,7 +185,7 @@ const CreditCardForm = ({ onSubmit }) => {
           <p className="mt-1 text-sm text-red-600">{errors.cardName}</p>
         )}
       </div>
-      
+
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -222,7 +222,7 @@ const CreditCardForm = ({ onSubmit }) => {
             </div>
           </div>
         </div>
-        
+
         <div>
           <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-1">
             {t('checkout.cvv')} *
@@ -247,7 +247,7 @@ const CreditCardForm = ({ onSubmit }) => {
           )}
         </div>
       </div>
-      
+
       <div className="mb-6">
         <label className="flex items-center">
           <input
@@ -262,8 +262,8 @@ const CreditCardForm = ({ onSubmit }) => {
           </span>
         </label>
       </div>
-      
-      <div className="bg-blue-50 p-4 rounded-md mb-6 flex items-start">
+
+      <div className="bg-blue-50 p-3 rounded-md mb-4 flex items-start">
         <div className="text-blue-500 mt-1">
           <FontAwesomeIcon icon={faShieldAlt} />
         </div>
@@ -282,15 +282,15 @@ const CreditCardForm = ({ onSubmit }) => {
 
 const PaypalForm = () => {
   const { t } = useTranslation();
-  
+
   return (
     <div className="mt-4">
-      <div className="bg-gray-50 p-6 rounded-lg text-center">
+      <div className="bg-gray-50 p-4 rounded-lg text-center">
         <FontAwesomeIcon icon={faCcPaypal} className="text-4xl text-blue-600 mb-4" />
         <p className="text-gray-700 mb-4">
           {t('checkout.paypalDesc')}
         </p>
-        <div className="bg-yellow-50 p-4 rounded-md mb-4 flex items-start">
+        <div className="bg-yellow-50 p-3 rounded-md mb-4 flex items-start">
           <div className="text-yellow-500 mt-1">
             <FontAwesomeIcon icon={faExclamationTriangle} />
           </div>
@@ -307,16 +307,16 @@ const PaypalForm = () => {
 
 const BankTransferForm = () => {
   const { t } = useTranslation();
-  
+
   return (
     <div className="mt-4">
-      <div className="bg-gray-50 p-6 rounded-lg">
+      <div className="bg-gray-50 p-4 rounded-lg">
         <h4 className="font-medium text-gray-900 mb-4">
           {t('checkout.bankTransferInstructions')}
         </h4>
         <div className="space-y-3 text-sm text-gray-700">
           <p>{t('checkout.bankTransferDesc')}</p>
-          <div className="bg-white p-4 rounded-md border border-gray-200">
+          <div className="bg-white p-3 rounded-md border border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-gray-500">{t('checkout.bankName')}:</p>
@@ -351,27 +351,27 @@ const BankTransferForm = () => {
 
 const ExpressCheckoutOptions = () => {
   const { t } = useTranslation();
-  
+
   return (
-    <div className="mb-8">
+    <div className="mb-4">
       <h3 className="text-lg font-medium text-gray-900 mb-4">
         {t('checkout.expressCheckout')}
       </h3>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button className="btn-outline flex items-center justify-center py-3">
           <FontAwesomeIcon icon={faApplePay} className="text-2xl" />
         </button>
-        
+
         <button className="btn-outline flex items-center justify-center py-3">
           <FontAwesomeIcon icon={faGooglePay} className="text-2xl" />
         </button>
-        
+
         <button className="btn-outline flex items-center justify-center py-3">
           <FontAwesomeIcon icon={faCcPaypal} className="text-2xl text-blue-600" />
         </button>
       </div>
-      
+
       <div className="relative flex items-center mt-6 mb-6">
         <div className="flex-grow border-t border-gray-300"></div>
         <span className="flex-shrink mx-4 text-gray-600 text-sm">
@@ -387,7 +387,7 @@ const PaymentStep = ({ onNext, onBack, paymentMethod, setPaymentMethod }) => {
   const { t } = useTranslation();
   const [selectedMethod, setSelectedMethod] = useState(paymentMethod || 'credit-card');
   const [cardData, setCardData] = useState(null);
-  
+
   // Payment methods
   const paymentMethods = [
     {
@@ -409,34 +409,34 @@ const PaymentStep = ({ onNext, onBack, paymentMethod, setPaymentMethod }) => {
       description: t('checkout.bankTransferDesc')
     }
   ];
-  
+
   const handleContinue = () => {
     // Update payment method
     setPaymentMethod({
       type: selectedMethod,
       ...(cardData && { cardData })
     });
-    
+
     onNext();
   };
-  
+
   const handleCardSubmit = (data) => {
     setCardData(data);
   };
-  
+
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-6">
+      <h2 className="text-xl font-bold text-gray-900 mb-4">
         {t('checkout.paymentInformation')}
       </h2>
-      
+
       <ExpressCheckoutOptions />
-      
-      <div className="mb-6">
+
+      <div className="mb-4">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           {t('checkout.paymentMethod')}
         </h3>
-        
+
         <div className="space-y-4">
           {paymentMethods.map(method => (
             <PaymentMethodCard
@@ -448,28 +448,28 @@ const PaymentStep = ({ onNext, onBack, paymentMethod, setPaymentMethod }) => {
           ))}
         </div>
       </div>
-      
+
       {/* Render form based on selected payment method */}
       {selectedMethod === 'credit-card' && (
         <CreditCardForm onSubmit={handleCardSubmit} />
       )}
-      
+
       {selectedMethod === 'paypal' && (
         <PaypalForm />
       )}
-      
+
       {selectedMethod === 'bank-transfer' && (
         <BankTransferForm />
       )}
-      
-      <div className="flex justify-between mt-8">
+
+      <div className="flex justify-between mt-6">
         <button
           onClick={onBack}
           className="btn-outline"
         >
           {t('checkout.back')}
         </button>
-        
+
         <button
           onClick={handleContinue}
           className="btn-primary"

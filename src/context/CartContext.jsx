@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { useRegion } from './RegionContext';
+import { useCartNotification } from './CartNotificationContext';
 
 const CartContext = createContext();
 
@@ -9,6 +10,7 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const { convertPrice } = useRegion();
+  const { showNotification } = useCartNotification();
 
   useEffect(() => {
     // Load cart from localStorage
@@ -27,19 +29,29 @@ export const CartProvider = ({ children }) => {
   }, [cartItems, loading]);
 
   const addToCart = (product, quantity = 1) => {
+    let updatedProduct;
+    let totalQuantity = quantity;
+
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
 
       if (existingItem) {
+        totalQuantity = existingItem.quantity + quantity;
+        updatedProduct = { ...existingItem, quantity: totalQuantity };
+
         return prevItems.map(item =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? updatedProduct
             : item
         );
       } else {
-        return [...prevItems, { ...product, quantity }];
+        updatedProduct = { ...product, quantity };
+        return [...prevItems, updatedProduct];
       }
     });
+
+    // Show notification with the product and quantity
+    showNotification(product, quantity);
   };
 
   const removeFromCart = (productId) => {

@@ -158,8 +158,8 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">{t('checkout.title')}</h1>
+    <div className="container mx-auto px-4 py-4 max-w-4xl">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">{t('checkout.title')}</h1>
 
       {/* Progress Indicator */}
       {currentStep < 4 && (
@@ -171,29 +171,29 @@ const CheckoutPage = () => {
       )}
 
       {/* Trust Badges */}
-      <div className="flex justify-center space-x-8 mb-8">
+      <div className="flex justify-center space-x-8 mb-4">
         <div className="text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto text-green-600 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          <span className="text-sm text-gray-600">Secure Checkout</span>
+          <span className="text-xs text-gray-600">Secure Checkout</span>
         </div>
         <div className="text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto text-green-600 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span className="text-sm text-gray-600">Quality Guarantee</span>
+          <span className="text-xs text-gray-600">Quality Guarantee</span>
         </div>
         <div className="text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto text-green-600 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
           </svg>
-          <span className="text-sm text-gray-600">Easy Returns</span>
+          <span className="text-xs text-gray-600">Easy Returns</span>
         </div>
       </div>
 
       {/* Checkout Steps */}
-      <div className="bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-100">
+      <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-4 border border-gray-100">
         {/* Validation Errors */}
         {Object.keys(validationErrors).length > 0 && (
           <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">

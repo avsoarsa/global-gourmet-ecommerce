@@ -6,9 +6,13 @@ import { WishlistProvider } from './context/WishlistContext';
 import { RegionProvider } from './context/RegionContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { AdminProvider } from './context/AdminContext';
+import { CartNotificationProvider } from './context/CartNotificationContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import DebugPage from './pages/DebugPage';
+import CartNotification from './components/cart/CartNotification';
+import CartNotificationContainer from './components/cart/CartNotificationContainer';
 import Layout from './components/layout/Layout';
+import ProductLayout from './components/layout/ProductLayout';
 import ConversionLayout from './components/layout/ConversionLayout';
 import LoginLayout from './components/layout/LoginLayout';
 import AdminLayout from './components/admin/AdminLayout';
@@ -67,11 +71,15 @@ function App() {
           <ErrorBoundary>
             <AuthProvider>
               <ErrorBoundary>
-                <NotificationProvider>
-                  <ErrorBoundary>
-                    <CartProvider>
+                <CartNotificationProvider>
+                  <NotificationProvider>
+                    <ErrorBoundary>
+                      <CartProvider>
                       <ErrorBoundary>
                         <WishlistProvider>
+                          {/* Cart Notification */}
+                          <CartNotificationContainer />
+
                           {/* Fallback loading state that will show if contexts take too long */}
                           {!isAppReady && (
                             <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
@@ -85,19 +93,23 @@ function App() {
               {/* Main Layout with Footer */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<LazyHomePage />} />
-                <Route path="products" element={<LazyProductsPage />} />
-                <Route path="category/:categorySlug" element={<LazyProductsPage />} />
-                <Route path="gift-boxes" element={<LazyGiftBoxesPage />} />
-                <Route path="bulk-orders" element={<LazyBulkOrdersPage />} />
                 <Route path="about" element={<LazyAboutPage />} />
                 <Route path="wishlist" element={<LazyWishlistPage />} />
                 <Route path="account" element={<LazyAccountPage />} />
               </Route>
 
-              {/* Conversion Layout - No Footer */}
-              <Route path="/" element={<ConversionLayout />}>
+              {/* Pages with no footer */}
+              <Route path="/" element={<ProductLayout />}>
+                <Route path="products" element={<LazyProductsPage />} />
+                <Route path="category/:categorySlug" element={<LazyProductsPage />} />
+                <Route path="gift-boxes" element={<LazyGiftBoxesPage />} />
+                <Route path="bulk-orders" element={<LazyBulkOrdersPage />} />
                 <Route path="product/:productId" element={<LazyProductDetailPage />} />
                 <Route path="create-gift-box" element={<LazyCreateGiftBoxPage />} />
+              </Route>
+
+              {/* Conversion Layout - No Footer */}
+              <Route path="/" element={<ConversionLayout />}>
                 <Route path="cart" element={<LazyCartPage />} />
                 <Route path="checkout" element={<LazyCheckoutPage />} />
               </Route>
@@ -139,6 +151,7 @@ function App() {
                     </CartProvider>
                   </ErrorBoundary>
                 </NotificationProvider>
+              </CartNotificationProvider>
               </ErrorBoundary>
             </AuthProvider>
           </ErrorBoundary>
