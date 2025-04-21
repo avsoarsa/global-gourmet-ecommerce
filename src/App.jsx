@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -5,6 +6,7 @@ import { WishlistProvider } from './context/WishlistContext';
 import { RegionProvider } from './context/RegionContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { AdminProvider } from './context/AdminContext';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import DebugPage from './pages/DebugPage';
 import Layout from './components/layout/Layout';
 import AdminLayout from './components/admin/AdminLayout';
@@ -45,14 +47,39 @@ import {
 import './i18n';
 
 function App() {
+  const [isAppReady, setIsAppReady] = useState(false);
+
+  // Add a safety timeout to ensure the app renders even if some context providers are slow
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAppReady(true);
+    }, 2000); // 2 second safety timeout
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <Router>
-      <RegionProvider>
-        <AuthProvider>
-          <NotificationProvider>
-            <CartProvider>
-              <WishlistProvider>
-              <Routes>
+    <ErrorBoundary>
+      <Router>
+        <RegionProvider>
+          <ErrorBoundary>
+            <AuthProvider>
+              <ErrorBoundary>
+                <NotificationProvider>
+                  <ErrorBoundary>
+                    <CartProvider>
+                      <ErrorBoundary>
+                        <WishlistProvider>
+                          {/* Fallback loading state that will show if contexts take too long */}
+                          {!isAppReady && (
+                            <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
+                                <p className="text-gray-600">Loading Global Gourmet...</p>
+                              </div>
+                            </div>
+                          )}
+                          <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<LazyHomePage />} />
                 <Route path="products" element={<LazyProductsPage />} />
@@ -95,13 +122,18 @@ function App() {
                   </Routes>
                 </AdminProvider>
               } />
-              </Routes>
-              </WishlistProvider>
-            </CartProvider>
-          </NotificationProvider>
-        </AuthProvider>
-      </RegionProvider>
-    </Router>
+                          </Routes>
+                        </WishlistProvider>
+                      </ErrorBoundary>
+                    </CartProvider>
+                  </ErrorBoundary>
+                </NotificationProvider>
+              </ErrorBoundary>
+            </AuthProvider>
+          </ErrorBoundary>
+        </RegionProvider>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

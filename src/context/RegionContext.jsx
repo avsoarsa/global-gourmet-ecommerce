@@ -17,20 +17,50 @@ const RegionContext = createContext();
 // Region provider component
 export const RegionProvider = ({ children }) => {
   const { i18n } = useTranslation();
+
+  // Initialize state with try-catch blocks to prevent crashes
   const [region, setRegion] = useState(() => {
-    // Try to get region from localStorage
-    const savedRegion = localStorage.getItem('userRegion');
-    return savedRegion || 'US'; // Default to US if not found
+    try {
+      // Try to get region from localStorage
+      const savedRegion = localStorage.getItem('userRegion');
+      return savedRegion || 'US'; // Default to US if not found
+    } catch (error) {
+      console.error('Error getting region from localStorage:', error);
+      return 'US'; // Default to US on error
+    }
   });
 
   const [currency, setCurrency] = useState(() => {
-    // Try to get currency from localStorage
-    const savedCurrency = localStorage.getItem('userCurrency');
-    return savedCurrency || 'USD'; // Default to USD if not found
+    try {
+      // Try to get currency from localStorage
+      const savedCurrency = localStorage.getItem('userCurrency');
+      return savedCurrency || 'USD'; // Default to USD if not found
+    } catch (error) {
+      console.error('Error getting currency from localStorage:', error);
+      return 'USD'; // Default to USD on error
+    }
   });
 
-  const [exchangeRates, setExchangeRates] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize with default fallback rates immediately
+  const defaultRates = {
+    base: 'USD',
+    rates: {
+      USD: 1,
+      EUR: 0.92,
+      GBP: 0.79,
+      JPY: 145.0,
+      CAD: 1.35,
+      AUD: 1.50,
+      INR: 83.0,
+      CNY: 7.20,
+      BRL: 4.90,
+      RUB: 90.0,
+      MXN: 17.0
+    }
+  };
+
+  const [exchangeRates, setExchangeRates] = useState(defaultRates);
+  const [isLoading, setIsLoading] = useState(false); // Start with false to prevent loading screen
   const [availableCurrencies, setAvailableCurrencies] = useState(getAvailableCurrencies());
   const [error, setError] = useState(null);
 
@@ -75,11 +105,18 @@ export const RegionProvider = ({ children }) => {
       }
     };
 
-    // Initialize with fallback rates immediately to prevent blank screen
-    if (!exchangeRates) {
-      const fallbackRates = getFallbackRates(currency);
-      setExchangeRates(fallbackRates);
-      console.log('Using initial fallback rates');
+    // We already initialize with default rates, so this is just a safety check
+    if (!exchangeRates || !exchangeRates.rates) {
+      try {
+        const fallbackRates = getFallbackRates(currency);
+        setExchangeRates(fallbackRates);
+      } catch (error) {
+        console.error('Error getting fallback rates:', error);
+        // Use hardcoded default if even the fallback function fails
+        setExchangeRates(defaultRates);
+      }
+      setIsLoading(false); // Ensure we're not stuck in loading state
+      console.log('Using fallback rates');
     }
 
     // Then try to fetch real rates
@@ -93,8 +130,13 @@ export const RegionProvider = ({ children }) => {
 
   // Effect to save region and currency to localStorage
   useEffect(() => {
-    localStorage.setItem('userRegion', region);
-    localStorage.setItem('userCurrency', currency);
+    try {
+      localStorage.setItem('userRegion', region);
+      localStorage.setItem('userCurrency', currency);
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+      // Continue without crashing if localStorage is unavailable
+    }
   }, [region, currency]);
 
   // Change region and update currency
