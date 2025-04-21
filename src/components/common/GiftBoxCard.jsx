@@ -4,7 +4,7 @@ import { faGift } from '@fortawesome/free-solid-svg-icons';
 import { useRegion } from '../../context/RegionContext';
 
 const GiftBoxCard = ({ giftBox }) => {
-  const { convertPrice, currencySymbol } = useRegion();
+  const { convertPriceSync, currencySymbol } = useRegion();
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="h-48 overflow-hidden relative">
@@ -36,7 +36,13 @@ const GiftBoxCard = ({ giftBox }) => {
         </div>
 
         <div className="flex justify-between items-center">
-          <span className="text-lg font-bold text-green-700">{currencySymbol}{convertPrice(giftBox.price).toFixed(2)}</span>
+          <span className="text-lg font-bold text-green-700">
+            {currencySymbol}
+            {(() => {
+              const price = convertPriceSync(giftBox.price);
+              return typeof price === 'number' ? price.toFixed(2) : '0.00';
+            })()}
+          </span>
 
           <Link
             to={`/create-gift-box?boxId=${giftBox.id}`}

@@ -9,7 +9,7 @@ import { useRegion } from '../../context/RegionContext';
 const ProductCard = ({ product, showAddToCart = true }) => {
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { convertPrice, currencySymbol } = useRegion();
+  const { convertPriceSync, currencySymbol } = useRegion();
 
   // Determine if product is bestseller or organic (for demo purposes)
   const isBestseller = product.featured;
@@ -95,7 +95,13 @@ const ProductCard = ({ product, showAddToCart = true }) => {
           </p>
 
           <div className="flex justify-between items-center mt-3">
-            <span className="font-bold text-gray-900">{currencySymbol}{convertPrice(product.price).toFixed(2)}</span>
+            <span className="font-bold text-gray-900">
+              {currencySymbol}
+              {(() => {
+                const price = convertPriceSync(product.price);
+                return typeof price === 'number' ? price.toFixed(2) : '0.00';
+              })()}
+            </span>
 
             {showAddToCart ? (
               <button
