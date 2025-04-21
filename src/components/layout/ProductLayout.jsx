@@ -14,6 +14,7 @@ import PullToRefresh from '../mobile/PullToRefresh';
  * - Products listing page
  * - Gift boxes page
  * - Bulk orders page
+ * - Account page
  */
 const ProductLayout = () => {
   const location = useLocation();

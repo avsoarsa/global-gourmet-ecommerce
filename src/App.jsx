@@ -46,7 +46,8 @@ import {
   LazyCheckoutPage,
   LazyWishlistPage,
   LazyAccountPage,
-  LazyLoginPage
+  LazyLoginPage,
+  LazySearchResultsPage
 } from './routes/LazyRoutes';
 
 // Import i18n configuration
@@ -95,7 +96,6 @@ function App() {
                 <Route index element={<LazyHomePage />} />
                 <Route path="about" element={<LazyAboutPage />} />
                 <Route path="wishlist" element={<LazyWishlistPage />} />
-                <Route path="account" element={<LazyAccountPage />} />
               </Route>
 
               {/* Pages with no footer */}
@@ -106,6 +106,8 @@ function App() {
                 <Route path="bulk-orders" element={<LazyBulkOrdersPage />} />
                 <Route path="product/:productId" element={<LazyProductDetailPage />} />
                 <Route path="create-gift-box" element={<LazyCreateGiftBoxPage />} />
+                <Route path="account" element={<LazyAccountPage />} />
+                <Route path="search" element={<LazySearchResultsPage />} />
               </Route>
 
               {/* Conversion Layout - No Footer */}

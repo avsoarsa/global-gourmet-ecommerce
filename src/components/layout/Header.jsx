@@ -92,8 +92,10 @@ const Header = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // In a real app, this would navigate to search results
-    console.log('Searching for:', searchQuery);
+    if (searchQuery.trim()) {
+      // Navigate to search results page with the query parameter
+      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+    }
   };
 
   return (

@@ -31,6 +31,7 @@ const LoginPage = lazyWithPreload(() => import(/* webpackChunkName: "login" */ '
 
 // Info pages
 const AboutPage = lazyWithPreload(() => import(/* webpackChunkName: "about" */ '../pages/AboutPage'));
+const SearchResultsPage = lazyWithPreload(() => import(/* webpackChunkName: "search-results" */ '../pages/SearchResultsPage'));
 
 // Preload critical pages for faster navigation
 const preloadCriticalPages = () => {
@@ -194,6 +195,14 @@ export const LazyLoginPage = () => (
   <RouteErrorBoundary>
     <Suspense fallback={<SimplePageLoader />}>
       <LoginPage />
+    </Suspense>
+  </RouteErrorBoundary>
+);
+
+export const LazySearchResultsPage = () => (
+  <RouteErrorBoundary>
+    <Suspense fallback={<ProductPageLoader />}>
+      <SearchResultsPage />
     </Suspense>
   </RouteErrorBoundary>
 );

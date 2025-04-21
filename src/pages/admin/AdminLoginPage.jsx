@@ -14,19 +14,19 @@ const AdminLoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
-    
+
     try {
       setIsLoading(true);
       setError('');
-      
+
       const result = await login(email, password);
-      
+
       if (result.success) {
         navigate('/admin');
       } else {
@@ -51,7 +51,7 @@ const AdminLoginPage = () => {
             Sign in to access the admin dashboard
           </p>
         </div>
-        
+
         {error && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
             <div className="flex items-center">
@@ -60,7 +60,7 @@ const AdminLoginPage = () => {
             </div>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -118,8 +118,13 @@ const AdminLoginPage = () => {
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
-          
-          <div className="text-center">
+
+          <div className="text-sm text-center mt-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+              <p className="text-blue-800 font-medium mb-1">Test Admin Credentials:</p>
+              <p className="text-blue-700">Email: <span className="font-mono bg-blue-100 px-2 py-1 rounded">admin@example.com</span></p>
+              <p className="text-blue-700">Password: <span className="font-mono bg-blue-100 px-2 py-1 rounded">admin123</span></p>
+            </div>
             <Link to="/" className="text-sm text-green-600 hover:text-green-500">
               Return to store
             </Link>
