@@ -72,7 +72,7 @@ const CheckoutStepper = ({ currentStep, steps, onStepClick }) => {
                     <span className="text-sm font-medium">{stepNumber}</span>
                   )}
                 </div>
-                <div className="text-xs mt-1 font-medium text-center">
+                <div className="text-xs mt-1 font-medium text-center w-full">
                   <div className={`
                     ${isActive ? 'text-green-600 font-semibold' : ''}
                     ${isCompleted ? 'text-green-600' : ''}
@@ -81,7 +81,7 @@ const CheckoutStepper = ({ currentStep, steps, onStepClick }) => {
                     {step.name}
                   </div>
                   {step.description && (
-                    <div className="text-gray-400 text-xs max-w-[80px] text-center">
+                    <div className="text-gray-400 text-xs text-center whitespace-normal w-20 mx-auto">
                       {step.description}
                     </div>
                   )}
