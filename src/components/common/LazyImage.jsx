@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { getOptimizedImageUrl, getPlaceholderImageUrl } from '../../utils/imageOptimizer';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faImage } from '@fortawesome/free-solid-svg-icons';
+import { getOptimizedImageUrl, getPlaceholderImageUrl, getFallbackImageUrl } from '../../utils/imageOptimizer';
 
 const LazyImage = ({
   src,
@@ -11,15 +13,25 @@ const LazyImage = ({
   threshold = 0.1,
   priority = false,
   quality = 80,
-  sizes = '100vw'
+  sizes = '100vw',
+  type = 'general'
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority); // If priority, consider it in view immediately
+  const [imgSrc, setImgSrc] = useState(null);
+  const [error, setError] = useState(false);
   const imgRef = useRef(null);
 
   // Generate optimized image URLs
   const optimizedSrc = getOptimizedImageUrl(src, width || 800, quality);
   const placeholderSrc = getPlaceholderImageUrl(src);
+
+  useEffect(() => {
+    // Reset state when src changes
+    setImgSrc(optimizedSrc);
+    setError(false);
+    setIsLoaded(false);
+  }, [src, optimizedSrc]);
 
   useEffect(() => {
     // Skip if image is already loaded, is priority, or IntersectionObserver is not supported
@@ -56,6 +68,12 @@ const LazyImage = ({
     setIsLoaded(true);
   };
 
+  const handleImageError = () => {
+    console.warn(`Failed to load image: ${imgSrc}`);
+    setError(true);
+    setImgSrc(getFallbackImageUrl(src, type));
+  };
+
   // Generate a placeholder color based on the image src
   const generatePlaceholderColor = () => {
     if (!src) return '#f3f4f6'; // Default gray
@@ -86,23 +104,24 @@ const LazyImage = ({
       {isInView && (
         <>
           {/* Preload the image if it's priority */}
-          {priority && (
+          {priority && !error && (
             <link
               rel="preload"
               as="image"
-              href={optimizedSrc}
-              imageSrcSet={`${optimizedSrc} 1x`}
+              href={imgSrc}
+              imageSrcSet={`${imgSrc} 1x`}
               imageSizes={sizes}
             />
           )}
 
           <img
-            src={optimizedSrc}
-            alt={alt}
+            src={imgSrc}
+            alt={alt || 'Image'}
             className={`w-full h-full object-cover transition-opacity duration-300 ${
               isLoaded ? 'opacity-100' : 'opacity-0'
             } ${className}`}
             onLoad={handleImageLoad}
+            onError={handleImageError}
             loading={priority ? 'eager' : 'lazy'}
             width={width}
             height={height}
@@ -120,7 +139,8 @@ const LazyImage = ({
             backgroundPosition: 'center'
           }}
         >
-          {/* Optional: Add a placeholder icon or spinner here */}
+          {/* Placeholder icon */}
+          <FontAwesomeIcon icon={faImage} className="text-gray-400 text-4xl" />
         </div>
       )}
     </div>

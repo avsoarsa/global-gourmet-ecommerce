@@ -2,16 +2,18 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGift } from '@fortawesome/free-solid-svg-icons';
 import { useRegion } from '../../context/RegionContext';
+import LazyImage from './LazyImage';
 
 const GiftBoxCard = ({ giftBox }) => {
   const { convertPriceSync, currencySymbol } = useRegion();
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="h-48 overflow-hidden relative">
-        <img
+        <LazyImage
           src={giftBox.image}
           alt={giftBox.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full"
+          type="product"
         />
         <div className="absolute top-0 right-0 bg-green-600 text-white px-3 py-1 m-2 rounded-full text-sm font-medium">
           <FontAwesomeIcon icon={faGift} className="mr-1" />

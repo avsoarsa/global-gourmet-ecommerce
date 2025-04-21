@@ -5,6 +5,7 @@ import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useRegion } from '../../context/RegionContext';
+import LazyImage from './LazyImage';
 
 const ProductCard = ({ product, showAddToCart = true }) => {
   const { addToCart } = useCart();
@@ -37,11 +38,14 @@ const ProductCard = ({ product, showAddToCart = true }) => {
       <div className="relative overflow-hidden">
         {/* Product Image */}
         <Link to={`/product/${product.id}`} className="block">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-64 object-cover object-center transition-transform duration-500 group-hover:scale-105"
-          />
+          <div className="w-full h-64 transition-transform duration-500 group-hover:scale-105">
+            <LazyImage
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full"
+              type="product"
+            />
+          </div>
         </Link>
 
         {/* Quick Action Buttons */}
