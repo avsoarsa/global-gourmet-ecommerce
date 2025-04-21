@@ -1,0 +1,206 @@
+{
+  "common": {
+    "appName": "Global Gourmet",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "search": "Search",
+    "searchPlaceholder": "Search products...",
+    "currency": "USD",
+    "currencySymbol": "$"
+  },
+  "navigation": {
+    "home": "Home",
+    "products": "Products",
+    "giftBoxes": "Gift Boxes",
+    "bulkOrders": "Bulk Orders",
+    "about": "About Us",
+    "account": "My Account",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register"
+  },
+  "home": {
+    "hero": {
+      "title": "Premium Quality Dry Fruits & Spices",
+      "subtitle": "Sourced directly from the finest farms around the world",
+      "cta": "Shop Now"
+    },
+    "categories": {
+      "title": "Shop by Category",
+      "viewAll": "View All"
+    },
+    "featured": {
+      "title": "Featured Products",
+      "viewAll": "View All Products"
+    },
+    "benefits": {
+      "title": "Why Choose Us",
+      "quality": {
+        "title": "Premium Quality",
+        "description": "Sourced directly from the finest farms around the world"
+      },
+      "shipping": {
+        "title": "Fast Shipping",
+        "description": "Free shipping on orders over $50"
+      },
+      "support": {
+        "title": "24/7 Support",
+        "description": "Our customer service team is always available"
+      }
+    }
+  },
+  "products": {
+    "filter": "Filter",
+    "sort": "Sort",
+    "sortOptions": {
+      "newest": "Newest",
+      "priceHighToLow": "Price: High to Low",
+      "priceLowToHigh": "Price: Low to High",
+      "popularity": "Popularity",
+      "rating": "Rating"
+    },
+    "filters": {
+      "categories": "Categories",
+      "price": "Price Range",
+      "rating": "Rating",
+      "availability": "Availability",
+      "inStock": "In Stock",
+      "outOfStock": "Out of Stock"
+    },
+    "addToCart": "Add to Cart",
+    "viewDetails": "View Details",
+    "outOfStock": "Out of Stock",
+    "quantity": "Quantity",
+    "description": "Description",
+    "reviews": "Reviews",
+    "specifications": "Specifications",
+    "relatedProducts": "You Might Also Like",
+    "writeReview": "Write a Review",
+    "shareProduct": "Share This Product",
+    "origin": "Origin",
+    "nutrition": "Nutrition"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "empty": "Your cart is empty",
+    "continueShopping": "Continue Shopping",
+    "proceedToCheckout": "Proceed to Checkout",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "total": "Total",
+    "remove": "Remove",
+    "update": "Update",
+    "estimatedTotal": "Estimated Total",
+    "discount": "Discount",
+    "promoCode": "Promo Code",
+    "apply": "Apply"
+  },
+  "wishlist": {
+    "title": "Your Wishlist",
+    "empty": "Your wishlist is empty",
+    "continueShopping": "Continue Shopping",
+    "addAllToCart": "Add All to Cart",
+    "shareWishlist": "Share Your Wishlist",
+    "remove": "Remove"
+  },
+  "account": {
+    "profile": "Profile Information",
+    "orders": "Order History",
+    "addresses": "Address Book",
+    "payments": "Payment Methods",
+    "wishlist": "Wishlist",
+    "subscriptions": "Subscriptions",
+    "rewards": "Rewards",
+    "settings": "Settings",
+    "signOut": "Sign Out",
+    "personalInfo": "Personal Information",
+    "communicationPrefs": "Communication Preferences",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "addAddress": "Add New Address",
+    "editAddress": "Edit Address",
+    "defaultAddress": "Default Address",
+    "setAsDefault": "Set as Default",
+    "deleteAddress": "Delete Address",
+    "orderDetails": "Order Details",
+    "orderDate": "Order Date",
+    "orderStatus": "Order Status",
+    "trackOrder": "Track Order",
+    "reorder": "Reorder",
+    "downloadInvoice": "Download Invoice",
+    "loyaltyPoints": "Loyalty Points",
+    "pointsAvailable": "Points Available",
+    "pointsHistory": "Points History",
+    "howToEarn": "How to Earn Points",
+    "redeem": "Redeem Points"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "shippingAddress": "Shipping Address",
+    "billingAddress": "Billing Address",
+    "sameAsShipping": "Same as shipping address",
+    "paymentMethod": "Payment Method",
+    "orderSummary": "Order Summary",
+    "placeOrder": "Place Order",
+    "orderConfirmation": "Order Confirmation",
+    "thankYou": "Thank you for your order!",
+    "orderNumber": "Order Number",
+    "shippingMethod": "Shipping Method",
+    "standard": "Standard Shipping",
+    "express": "Express Shipping",
+    "overnight": "Overnight Shipping"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember Me",
+    "loginButton": "Login",
+    "registerButton": "Register",
+    "resetPassword": "Reset Password",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone Number"
+  },
+  "footer": {
+    "about": "About Us",
+    "contact": "Contact Us",
+    "faq": "FAQ",
+    "shipping": "Shipping & Returns",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "newsletter": "Subscribe to our newsletter",
+    "subscribeButton": "Subscribe",
+    "emailPlaceholder": "Your email address",
+    "copyright": "© 2023 Global Gourmet. All rights reserved.",
+    "followUs": "Follow Us"
+  },
+  "regions": {
+    "unitedStates": "United States",
+    "canada": "Canada",
+    "unitedKingdom": "United Kingdom",
+    "australia": "Australia",
+    "germany": "Germany",
+    "france": "France",
+    "japan": "Japan",
+    "india": "India"
+  },
+  "shipping": {
+    "domestic": "Domestic Shipping",
+    "international": "International Shipping",
+    "free": "Free Shipping",
+    "standard": "Standard Shipping",
+    "express": "Express Shipping",
+    "overnight": "Overnight Shipping",
+    "estimatedDelivery": "Estimated Delivery"
+  }
+}

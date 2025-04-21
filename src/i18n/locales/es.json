@@ -1,0 +1,206 @@
+{
+  "common": {
+    "appName": "Global Gourmet",
+    "loading": "Cargando...",
+    "error": "Se produjo un error",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar productos...",
+    "currency": "EUR",
+    "currencySymbol": "€"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "products": "Productos",
+    "giftBoxes": "Cajas de Regalo",
+    "bulkOrders": "Pedidos al por Mayor",
+    "about": "Sobre Nosotros",
+    "account": "Mi Cuenta",
+    "cart": "Carrito",
+    "wishlist": "Lista de Deseos",
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "register": "Registrarse"
+  },
+  "home": {
+    "hero": {
+      "title": "Frutos Secos y Especias de Calidad Premium",
+      "subtitle": "Obtenidos directamente de las mejores granjas del mundo",
+      "cta": "Comprar Ahora"
+    },
+    "categories": {
+      "title": "Comprar por Categoría",
+      "viewAll": "Ver Todo"
+    },
+    "featured": {
+      "title": "Productos Destacados",
+      "viewAll": "Ver Todos los Productos"
+    },
+    "benefits": {
+      "title": "Por Qué Elegirnos",
+      "quality": {
+        "title": "Calidad Premium",
+        "description": "Obtenidos directamente de las mejores granjas del mundo"
+      },
+      "shipping": {
+        "title": "Envío Rápido",
+        "description": "Envío gratuito en pedidos superiores a 50€"
+      },
+      "support": {
+        "title": "Soporte 24/7",
+        "description": "Nuestro equipo de atención al cliente está siempre disponible"
+      }
+    }
+  },
+  "products": {
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "sortOptions": {
+      "newest": "Más Recientes",
+      "priceHighToLow": "Precio: De Mayor a Menor",
+      "priceLowToHigh": "Precio: De Menor a Mayor",
+      "popularity": "Popularidad",
+      "rating": "Valoración"
+    },
+    "filters": {
+      "categories": "Categorías",
+      "price": "Rango de Precio",
+      "rating": "Valoración",
+      "availability": "Disponibilidad",
+      "inStock": "En Stock",
+      "outOfStock": "Agotado"
+    },
+    "addToCart": "Añadir al Carrito",
+    "viewDetails": "Ver Detalles",
+    "outOfStock": "Agotado",
+    "quantity": "Cantidad",
+    "description": "Descripción",
+    "reviews": "Reseñas",
+    "specifications": "Especificaciones",
+    "relatedProducts": "También Te Puede Gustar",
+    "writeReview": "Escribir una Reseña",
+    "shareProduct": "Compartir Este Producto",
+    "origin": "Origen",
+    "nutrition": "Nutrición"
+  },
+  "cart": {
+    "title": "Tu Carrito",
+    "empty": "Tu carrito está vacío",
+    "continueShopping": "Continuar Comprando",
+    "proceedToCheckout": "Proceder al Pago",
+    "subtotal": "Subtotal",
+    "shipping": "Envío",
+    "tax": "Impuestos",
+    "total": "Total",
+    "remove": "Eliminar",
+    "update": "Actualizar",
+    "estimatedTotal": "Total Estimado",
+    "discount": "Descuento",
+    "promoCode": "Código Promocional",
+    "apply": "Aplicar"
+  },
+  "wishlist": {
+    "title": "Tu Lista de Deseos",
+    "empty": "Tu lista de deseos está vacía",
+    "continueShopping": "Continuar Comprando",
+    "addAllToCart": "Añadir Todo al Carrito",
+    "shareWishlist": "Compartir Tu Lista de Deseos",
+    "remove": "Eliminar"
+  },
+  "account": {
+    "profile": "Información del Perfil",
+    "orders": "Historial de Pedidos",
+    "addresses": "Libreta de Direcciones",
+    "payments": "Métodos de Pago",
+    "wishlist": "Lista de Deseos",
+    "subscriptions": "Suscripciones",
+    "rewards": "Recompensas",
+    "settings": "Configuración",
+    "signOut": "Cerrar Sesión",
+    "personalInfo": "Información Personal",
+    "communicationPrefs": "Preferencias de Comunicación",
+    "saveChanges": "Guardar Cambios",
+    "cancel": "Cancelar",
+    "addAddress": "Añadir Nueva Dirección",
+    "editAddress": "Editar Dirección",
+    "defaultAddress": "Dirección Predeterminada",
+    "setAsDefault": "Establecer como Predeterminada",
+    "deleteAddress": "Eliminar Dirección",
+    "orderDetails": "Detalles del Pedido",
+    "orderDate": "Fecha del Pedido",
+    "orderStatus": "Estado del Pedido",
+    "trackOrder": "Seguir Pedido",
+    "reorder": "Volver a Pedir",
+    "downloadInvoice": "Descargar Factura",
+    "loyaltyPoints": "Puntos de Fidelidad",
+    "pointsAvailable": "Puntos Disponibles",
+    "pointsHistory": "Historial de Puntos",
+    "howToEarn": "Cómo Ganar Puntos",
+    "redeem": "Canjear Puntos"
+  },
+  "checkout": {
+    "title": "Pago",
+    "shippingAddress": "Dirección de Envío",
+    "billingAddress": "Dirección de Facturación",
+    "sameAsShipping": "Igual que la dirección de envío",
+    "paymentMethod": "Método de Pago",
+    "orderSummary": "Resumen del Pedido",
+    "placeOrder": "Realizar Pedido",
+    "orderConfirmation": "Confirmación del Pedido",
+    "thankYou": "¡Gracias por tu pedido!",
+    "orderNumber": "Número de Pedido",
+    "shippingMethod": "Método de Envío",
+    "standard": "Envío Estándar",
+    "express": "Envío Express",
+    "overnight": "Envío Nocturno"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "forgotPassword": "¿Olvidaste tu Contraseña?",
+    "rememberMe": "Recordarme",
+    "loginButton": "Iniciar Sesión",
+    "registerButton": "Registrarse",
+    "resetPassword": "Restablecer Contraseña",
+    "createAccount": "Crear Cuenta",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "dontHaveAccount": "¿No tienes una cuenta?",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "phone": "Número de Teléfono"
+  },
+  "footer": {
+    "about": "Sobre Nosotros",
+    "contact": "Contáctanos",
+    "faq": "Preguntas Frecuentes",
+    "shipping": "Envíos y Devoluciones",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos y Condiciones",
+    "newsletter": "Suscríbete a nuestro boletín",
+    "subscribeButton": "Suscribirse",
+    "emailPlaceholder": "Tu dirección de correo electrónico",
+    "copyright": "© 2023 Global Gourmet. Todos los derechos reservados.",
+    "followUs": "Síguenos"
+  },
+  "regions": {
+    "unitedStates": "Estados Unidos",
+    "canada": "Canadá",
+    "unitedKingdom": "Reino Unido",
+    "australia": "Australia",
+    "germany": "Alemania",
+    "france": "Francia",
+    "japan": "Japón",
+    "india": "India"
+  },
+  "shipping": {
+    "domestic": "Envío Nacional",
+    "international": "Envío Internacional",
+    "free": "Envío Gratuito",
+    "standard": "Envío Estándar",
+    "express": "Envío Express",
+    "overnight": "Envío Nocturno",
+    "estimatedDelivery": "Entrega Estimada"
+  }
+}

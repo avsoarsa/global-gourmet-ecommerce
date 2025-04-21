@@ -1,0 +1,215 @@
+# Page Hierarchy for Dry Fruits & Spices E-commerce Website
+
+## Customer-Facing Pages
+
+### 1. Home Page
+- Hero section with featured products and promotional banners
+- Premium categories section
+- Recommended products section
+- Gift boxes showcase
+- Bulk order information
+- Customer testimonials
+- Company story summary
+- Newsletter subscription
+- Featured collections display
+
+### 2. Products Page
+- Main product listing with filtering and sorting options
+- Category navigation sidebar
+- Search functionality
+- Pagination
+- Product tags filtering
+- Collection filtering
+
+### 3. Category Pages
+- Dry Fruits
+  - Content: Various dry fruits with images, prices, and quick add to cart
+- Nuts & Seeds
+  - Content: Various nuts and seeds with images, prices, and quick add to cart
+- Spices
+  - Content: Various spices with images, prices, and quick add to cart
+- Whole Foods
+  - Content: Whole food products with images, prices, and quick add to cart
+- Sprouts
+  - Content: Sprout products with images, prices, and quick add to cart
+- Superfoods
+  - Content: Superfood products with images, prices, and quick add to cart
+
+### 4. Product Detail Page
+- Product images gallery
+- Product name and price
+- Product description
+- Nutritional information
+- Origin details
+- Weight selection options (250g, 500g, 1kg, 5kg)
+- Add to cart button
+- Quantity selector
+- Related products
+- Customer reviews and ratings
+- Recipes using this product (displayed as cards)
+- Product variants selection (if applicable)
+- Product tags display
+- "You might also like" recommendations
+- Social sharing buttons
+
+### 5. Collections Pages
+- Collection listing page
+  - Content: All available product collections with images and descriptions
+- Collection detail page
+  - Content: Products belonging to a specific collection
+
+### 6. Gift Boxes Page
+- Pre-designed gift box options
+  - Content: Images, descriptions, and prices for each gift box
+- Customization options
+  - Content: Interface for creating custom gift boxes
+- Custom gift box builder
+  - Content: Interactive tool to select products for a custom gift box
+
+### 7. Bulk Orders Page
+- Information about bulk ordering
+- Benefits of bulk ordering
+- Request quote form
+- Testimonials from business clients
+
+### 8. About Us Page
+- Company history
+- Mission and vision
+- Sourcing practices
+- Sustainability efforts
+- Team information
+
+### 9. User Account Pages
+- Login/Signup
+  - Content: Forms for authentication
+- User Dashboard
+  - Content: Overview of account activity
+  - Order history and tracking
+  - Saved addresses management
+  - Account settings
+  - Subscription management
+  - Loyalty points and rewards
+  - Reorder functionality
+- Wishlist
+  - Content: Saved products for future purchase
+- Reviews Management
+  - Content: User's product reviews and ratings
+
+### 10. Shopping Cart Page
+- Cart items with images, names, prices, and quantities
+- Update quantity functionality
+- Remove item functionality
+- Cart summary
+- Proceed to checkout button
+- Recommended products
+
+### 11. Checkout Pages
+- Multi-step checkout process:
+  - Step 1: Shipping information
+  - Step 2: Payment information
+  - Step 3: Order review
+  - Step 4: Order confirmation
+- Address book integration
+- Order summary with tax and shipping calculation
+- Coupon/discount code application
+
+### 12. Contact Us Page
+- Contact form
+- Company address
+- Email and phone information
+- Map
+- FAQ section
+
+### 13. Policy Pages
+- Shipping Policy
+- Return Policy
+- Privacy Policy
+- Terms of Service
+
+## Admin Dashboard Pages
+
+### 1. Admin Login
+- Login form for admin access
+- Forgot password functionality
+
+### 2. Admin Dashboard Home
+- Overview statistics
+- Recent orders
+- Low stock alerts
+- Sales charts and analytics
+- Quick access to common tasks
+
+### 3. Products Management
+- Products listing with search, filter, and sort
+- Bulk operations (edit, delete, export)
+- Product import/export via CSV
+- Product form with:
+  - Basic information
+  - Pricing and inventory
+  - Images and media
+  - Attributes and variants
+  - Tags and collections
+
+### 4. Collections Management
+- Collections listing
+- Collection creation and editing
+- Product assignment to collections
+
+### 5. Tags Management
+- Tags listing
+- Tag creation and editing
+- Product assignment to tags
+
+### 6. Orders Management
+- Orders listing with search, filter, and sort
+- Order details view
+- Order status management
+- Order notes and customer communication
+- Invoice generation and printing
+- Export functionality
+
+### 7. Customers Management
+- Customers listing with search, filter, and sort
+- Customer details view
+- Customer segmentation
+- Customer notes and activity history
+- Export functionality
+
+### 8. Inventory Management
+- Stock levels monitoring
+- Low stock alerts
+- Stock adjustment
+- Export functionality
+
+### 9. Recipe Management
+- Recipes listing with search, filter, and sort
+- Recipe creation and editing
+- Ingredient management
+- Instruction management
+- Link recipes to related products
+- Recipe difficulty and preparation time management
+
+### 10. Notifications
+- Notifications listing with filtering
+- Notification management (mark as read, delete)
+- Different notification types (orders, inventory, customers, reviews, system)
+
+### 11. Analytics and Reports
+- Sales reports with charts
+- Product performance analytics
+- Customer behavior analytics
+- Inventory forecasting
+- Export functionality
+
+### 12. Marketing Tools
+- Coupon/discount code management
+- Email campaign creation
+- Banner/promotion management
+
+### 13. Settings
+- General store settings
+- User management
+- Payment methods configuration
+- Shipping methods configuration
+- Email templates
+- Notification settings

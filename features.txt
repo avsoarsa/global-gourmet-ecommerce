@@ -1,0 +1,68 @@
+# Features for Dry Fruits & Spices E-commerce Website
+
+## User Features
+1. User Authentication
+   - Sign up
+   - Login
+   - Password recovery
+   - User profile management
+
+2. Product Browsing
+   - Category-based navigation
+   - Search functionality
+   - Product filtering
+   - Product sorting (price, popularity, etc.)
+
+3. Product Details
+   - High-quality images
+   - Detailed descriptions
+   - Nutritional information
+   - Origin information
+   - Customer reviews and ratings
+
+4. Shopping Cart
+   - Add/remove items
+   - Update quantities
+   - Save for later
+   - Cart summary
+
+5. Checkout Process
+   - Address management
+   - Multiple payment options
+   - Order summary
+   - Promo code application
+
+6. Gift Box Customization
+   - Select products for gift boxes
+   - Choose packaging
+   - Add personalized message
+   - Gift wrapping options
+
+7. Bulk Orders
+   - Request quote form
+   - Volume discounts
+   - Business account creation
+   - Custom packaging options
+
+8. User Account Dashboard
+   - Order history
+   - Saved addresses
+   - Wishlist
+   - Subscription management
+
+9. Newsletter Subscription
+   - Email updates
+   - Special offers
+   - Health tips
+
+10. Responsive Design
+    - Mobile-friendly interface
+    - Tablet optimization
+    - Desktop experience
+
+11. Currency Selection
+    - Multiple currency support
+    - Automatic conversion
+
+12. Language Selection
+    - Multi-language support
