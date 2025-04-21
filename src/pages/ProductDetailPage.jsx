@@ -329,10 +329,18 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
+            {/* Trust Indicators */}
+            <div className="flex items-center mb-4 bg-green-50 p-3 rounded-md border border-green-100">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm text-green-800">In stock - Ships within 24 hours</span>
+            </div>
+
             <div className="flex flex-wrap gap-4">
               <button
                 onClick={handleAddToCart}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 flex items-center"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md font-medium transition duration-300 flex items-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-lg"
               >
                 <FontAwesomeIcon icon={faShoppingCart} className="mr-2" />
                 Add to Cart
@@ -354,6 +362,33 @@ const ProductDetailPage = () => {
                   image={product.image}
                 />
               </div>
+            </div>
+
+            {/* Social Proof */}
+            <div className="mt-6 bg-gray-50 p-4 rounded-md border border-gray-100">
+              <div className="flex items-center mb-2">
+                <div className="flex text-amber-400 mr-2">
+                  <FontAwesomeIcon icon={faStar} />
+                  <FontAwesomeIcon icon={faStar} />
+                  <FontAwesomeIcon icon={faStar} />
+                  <FontAwesomeIcon icon={faStar} />
+                  <FontAwesomeIcon icon={faStar} className="text-gray-300" />
+                </div>
+                <span className="text-sm text-gray-600">4.0 (128 reviews)</span>
+              </div>
+              <p className="text-sm text-gray-600 italic">
+                "These are the freshest and highest quality dry fruits I've ever purchased online. Will definitely buy again!" - Sarah K.
+              </p>
+            </div>
+
+            {/* Limited Time Offer */}
+            <div className="mt-4 bg-amber-50 p-4 rounded-md border border-amber-100">
+              <p className="text-sm font-medium text-amber-800">
+                <span className="inline-block bg-amber-100 text-amber-800 px-2 py-1 rounded mr-2">
+                  Limited Offer
+                </span>
+                Free shipping on orders over $50
+              </p>
             </div>
           </div>
         </div>

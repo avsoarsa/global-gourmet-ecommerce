@@ -9,6 +9,8 @@ import { AdminProvider } from './context/AdminContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import DebugPage from './pages/DebugPage';
 import Layout from './components/layout/Layout';
+import ConversionLayout from './components/layout/ConversionLayout';
+import LoginLayout from './components/layout/LoginLayout';
 import AdminLayout from './components/admin/AdminLayout';
 
 // Import admin pages
@@ -80,21 +82,30 @@ function App() {
                             </div>
                           )}
                           <Routes>
+              {/* Main Layout with Footer */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<LazyHomePage />} />
                 <Route path="products" element={<LazyProductsPage />} />
-                <Route path="product/:productId" element={<LazyProductDetailPage />} />
                 <Route path="category/:categorySlug" element={<LazyProductsPage />} />
                 <Route path="gift-boxes" element={<LazyGiftBoxesPage />} />
-                <Route path="create-gift-box" element={<LazyCreateGiftBoxPage />} />
                 <Route path="bulk-orders" element={<LazyBulkOrdersPage />} />
                 <Route path="about" element={<LazyAboutPage />} />
-                <Route path="cart" element={<LazyCartPage />} />
-                <Route path="checkout" element={<LazyCheckoutPage />} />
                 <Route path="wishlist" element={<LazyWishlistPage />} />
                 <Route path="account" element={<LazyAccountPage />} />
               </Route>
-              <Route path="login" element={<LazyLoginPage />} />
+
+              {/* Conversion Layout - No Footer */}
+              <Route path="/" element={<ConversionLayout />}>
+                <Route path="product/:productId" element={<LazyProductDetailPage />} />
+                <Route path="create-gift-box" element={<LazyCreateGiftBoxPage />} />
+                <Route path="cart" element={<LazyCartPage />} />
+                <Route path="checkout" element={<LazyCheckoutPage />} />
+              </Route>
+
+              {/* Login Layout - Minimal */}
+              <Route path="/" element={<LoginLayout />}>
+                <Route path="login" element={<LazyLoginPage />} />
+              </Route>
               <Route path="debug" element={<DebugPage />} />
 
               {/* Admin Routes with AdminProvider */}

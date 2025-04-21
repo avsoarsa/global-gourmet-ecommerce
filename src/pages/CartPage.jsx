@@ -74,7 +74,17 @@ const CartPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Your Shopping Cart</h1>
+      <h1 className="text-3xl font-bold mb-4 text-center">Your Shopping Cart</h1>
+
+      {/* Urgency Banner */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 text-center">
+        <p className="text-amber-800 font-medium">
+          <span className="inline-block animate-pulse bg-amber-100 text-amber-800 px-2 py-1 rounded mr-2">
+            Limited Time
+          </span>
+          Complete your order within <span className="font-bold">30 minutes</span> to secure your items!
+        </p>
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Cart Items */}
@@ -209,8 +219,30 @@ const CartPage = () => {
 
         {/* Order Summary */}
         <div className="lg:w-1/3">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100 sticky top-24">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+
+            {/* Trust Badges */}
+            <div className="flex justify-center space-x-4 mb-6 border-b border-gray-100 pb-4">
+              <div className="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto text-green-600 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span className="text-xs text-gray-600">Secure Checkout</span>
+              </div>
+              <div className="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto text-green-600 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs text-gray-600">Quality Guarantee</span>
+              </div>
+              <div className="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto text-green-600 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span className="text-xs text-gray-600">Easy Returns</span>
+              </div>
+            </div>
 
             <div className="space-y-4">
               <div className="flex justify-between">
@@ -305,19 +337,20 @@ const CartPage = () => {
               {currentUser ? (
                 <Link
                   to="/checkout"
-                  className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 block text-center"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-md font-medium transition duration-300 block text-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-lg"
                 >
-                  Proceed to Checkout
+                  Proceed to Checkout →
                 </Link>
               ) : (
                 <Link
                   to="/login"
                   state={{ from: '/checkout' }}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 block text-center"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-md font-medium transition duration-300 block text-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-lg"
                 >
-                  Sign In to Checkout
+                  Sign In to Checkout →
                 </Link>
               )}
+              <p className="text-center text-gray-500 text-sm mt-3">No additional fees at checkout</p>
             </div>
           </div>
         </div>

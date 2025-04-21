@@ -170,6 +170,28 @@ const CheckoutPage = () => {
         />
       )}
 
+      {/* Trust Badges */}
+      <div className="flex justify-center space-x-8 mb-8">
+        <div className="text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span className="text-sm text-gray-600">Secure Checkout</span>
+        </div>
+        <div className="text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm text-gray-600">Quality Guarantee</span>
+        </div>
+        <div className="text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+          <span className="text-sm text-gray-600">Easy Returns</span>
+        </div>
+      </div>
+
       {/* Checkout Steps */}
       <div className="bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-100">
         {/* Validation Errors */}
