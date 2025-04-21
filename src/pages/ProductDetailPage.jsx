@@ -10,6 +10,7 @@ import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
 import { products } from '../data/products';
@@ -24,6 +25,10 @@ import WeightSelector from '../components/product/WeightSelector';
 import ProductBreadcrumb from '../components/product/ProductBreadcrumb';
 import SEO from '../components/common/SEO';
 import LazyImage from '../components/common/LazyImage';
+import FrequentlyBoughtTogether from '../components/products/FrequentlyBoughtTogether';
+import RecentlyViewedProducts from '../components/products/RecentlyViewedProducts';
+import CountdownTimer from '../components/common/CountdownTimer';
+import LowStockIndicator from '../components/common/LowStockIndicator';
 import { generateProductSchema, generateBreadcrumbSchema } from '../utils/structuredData';
 
 const ProductDetailPage = () => {
@@ -41,12 +46,16 @@ const ProductDetailPage = () => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { currentUser } = useAuth();
   const { convertPriceSync, currencySymbol } = useRegion();
+  const { addToRecentlyViewed } = useRecentlyViewed();
 
   useEffect(() => {
     // Find the product by ID
     const foundProduct = products.find(p => p.id === parseInt(productId));
     if (foundProduct) {
       setProduct(foundProduct);
+
+      // Add to recently viewed products
+      addToRecentlyViewed(foundProduct);
 
       // Find related products (same category, excluding current product)
       const related = products
@@ -352,6 +361,9 @@ const ProductDetailPage = () => {
               <span className="text-sm text-green-800">In stock - Ships within 24 hours</span>
             </div>
 
+            {/* Low Stock Indicator */}
+            <LowStockIndicator stock={Math.floor(Math.random() * 20)} threshold={10} />
+
             <div className="flex flex-wrap gap-4">
               <button
                 onClick={handleAddToCart}
@@ -387,6 +399,14 @@ const ProductDetailPage = () => {
                 </span>
                 Free shipping on orders over $50
               </p>
+              <div className="mt-2 flex items-center">
+                <span className="text-xs text-amber-800 mr-2">Offer ends in:</span>
+                <CountdownTimer
+                  endTime={Date.now() + 24 * 60 * 60 * 1000} // 24 hours from now
+                  compact={true}
+                  className="text-amber-800 text-xs font-mono"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -498,6 +518,9 @@ const ProductDetailPage = () => {
         </div>
       </div>
 
+      {/* Frequently Bought Together */}
+      <FrequentlyBoughtTogether product={product} />
+
       {/* Product Recommendations */}
       <ProductRecommendations
         currentProductId={product.id}
@@ -506,6 +529,8 @@ const ProductDetailPage = () => {
         title="You Might Also Like"
       />
 
+      {/* Recently Viewed Products */}
+      <RecentlyViewedProducts currentProductId={product.id} />
 
       {/* Social Sharing Section */}
       <div className="mt-12 mb-16 bg-gray-50 p-8 rounded-lg">

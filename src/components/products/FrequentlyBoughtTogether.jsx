@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { products } from '../../data/products';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { formatCurrency } from '../../services/currencyService';
 import { useRegion } from '../../context/RegionContext';
 import LazyImage from '../common/LazyImage';
 
@@ -24,37 +24,37 @@ const FrequentlyBoughtTogether = ({ product }) => {
 
     // Sort by relevance (for now, just randomize)
     const shuffled = [...sameCategory].sort(() => 0.5 - Math.random());
-    
+
     // Take 2-3 related products
     const selected = shuffled.slice(0, Math.min(3, shuffled.length));
-    
+
     setRelatedProducts(selected);
-    
+
     // Initialize all products as selected
     const initialSelected = { [product.id]: true };
     selected.forEach(p => {
       initialSelected[p.id] = true;
     });
-    
+
     setSelectedProducts(initialSelected);
   }, [product]);
 
   // Calculate total price when selections change
   useEffect(() => {
     let total = 0;
-    
+
     // Add main product price if selected
     if (selectedProducts[product?.id]) {
       total += product?.price || 0;
     }
-    
+
     // Add related product prices if selected
     relatedProducts.forEach(p => {
       if (selectedProducts[p.id]) {
         total += p.price;
       }
     });
-    
+
     setTotalPrice(total);
   }, [selectedProducts, product, relatedProducts]);
 
@@ -72,7 +72,7 @@ const FrequentlyBoughtTogether = ({ product }) => {
     if (selectedProducts[product?.id]) {
       addToCart(product, 1);
     }
-    
+
     // Add related products if selected
     relatedProducts.forEach(p => {
       if (selectedProducts[p.id]) {
@@ -87,7 +87,7 @@ const FrequentlyBoughtTogether = ({ product }) => {
   return (
     <div className="mt-12 bg-gray-50 rounded-lg p-6">
       <h3 className="text-xl font-semibold mb-4">Frequently Bought Together</h3>
-      
+
       <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
         {/* Main product */}
         <div className="flex items-center gap-3">
@@ -112,7 +112,7 @@ const FrequentlyBoughtTogether = ({ product }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Plus signs between products */}
         {relatedProducts.map((relatedProduct, index) => (
           <div key={relatedProduct.id} className="flex items-center gap-3">
@@ -142,7 +142,7 @@ const FrequentlyBoughtTogether = ({ product }) => {
           </div>
         ))}
       </div>
-      
+
       <div className="border-t border-gray-200 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <p className="text-lg font-semibold">
