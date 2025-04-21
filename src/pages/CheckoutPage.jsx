@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShippingFast, faCreditCard, faClipboardCheck, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
@@ -194,7 +194,16 @@ const CheckoutPage = () => {
               showValidation={!!validationErrors.shipping}
             />
 
-            <div className="mt-8 flex justify-end">
+            <div className="mt-8 flex justify-between items-center">
+              <Link
+                to="/cart"
+                className="px-6 py-3 rounded-md text-gray-600 font-medium transition-colors duration-300 flex items-center border border-gray-300 hover:bg-gray-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                </svg>
+                Back to Cart
+              </Link>
               <button
                 onClick={goToNextStep}
                 disabled={!shippingAddressValid}
