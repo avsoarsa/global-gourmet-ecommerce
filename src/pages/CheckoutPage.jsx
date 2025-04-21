@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShippingFast, faCreditCard, faClipboardCheck, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
-import CheckoutProgress from '../components/checkout/CheckoutProgress';
+import CheckoutStepper from '../components/checkout/CheckoutStepper';
+import AddressForm from '../components/checkout/AddressForm';
 import ShippingStep from '../components/checkout/ShippingStep';
 import PaymentStep from '../components/checkout/PaymentStep';
 import ReviewStep from '../components/checkout/ReviewStep';
@@ -18,20 +21,22 @@ const CheckoutPage = () => {
   const { formatPrice } = useRegion();
 
   // Checkout steps
-  const STEPS = {
-    SHIPPING: 'shipping',
-    PAYMENT: 'payment',
-    REVIEW: 'review',
-    CONFIRMATION: 'confirmation'
-  };
+  const STEPS = [
+    { name: 'Shipping', description: 'Address & delivery', icon: faShippingFast },
+    { name: 'Payment', description: 'Payment method', icon: faCreditCard },
+    { name: 'Review', description: 'Order summary', icon: faClipboardCheck },
+    { name: 'Confirmation', description: 'Order complete', icon: faCheckCircle }
+  ];
 
   // State
-  const [currentStep, setCurrentStep] = useState(STEPS.SHIPPING);
+  const [currentStep, setCurrentStep] = useState(1); // 1-based index
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState(null);
-  const [shippingAddress, setShippingAddress] = useState(null);
+  const [shippingAddress, setShippingAddress] = useState({});
+  const [shippingAddressValid, setShippingAddressValid] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   // Redirect to cart if cart is empty
   useEffect(() => {
@@ -47,20 +52,45 @@ const CheckoutPage = () => {
     }
   }, [currentUser, navigate, orderComplete]);
 
+  // Handle address change
+  const handleAddressChange = (address) => {
+    setShippingAddress(address);
+
+    // Check if all required fields are filled
+    const requiredFields = ['firstName', 'lastName', 'street', 'city', 'state', 'zipCode', 'country', 'phone'];
+    const isValid = requiredFields.every(field => address[field] && address[field].trim() !== '');
+
+    setShippingAddressValid(isValid);
+  };
+
   // Handle step navigation
   const goToNextStep = () => {
-    switch (currentStep) {
-      case STEPS.SHIPPING:
-        setCurrentStep(STEPS.PAYMENT);
-        break;
-      case STEPS.PAYMENT:
-        setCurrentStep(STEPS.REVIEW);
-        break;
-      case STEPS.REVIEW:
+    // Validate current step
+    if (currentStep === 1 && !shippingAddressValid) {
+      setValidationErrors({
+        shipping: 'Please complete all required fields'
+      });
+      return;
+    }
+
+    if (currentStep === 2 && !paymentMethod) {
+      setValidationErrors({
+        payment: 'Please select a payment method'
+      });
+      return;
+    }
+
+    // Clear validation errors
+    setValidationErrors({});
+
+    // Move to next step
+    if (currentStep < STEPS.length) {
+      if (currentStep === 3) {
+        // If on review step, place order
         handlePlaceOrder();
-        break;
-      default:
-        break;
+      } else {
+        setCurrentStep(currentStep + 1);
+      }
     }
 
     // Scroll to top when changing steps
@@ -68,19 +98,21 @@ const CheckoutPage = () => {
   };
 
   const goToPreviousStep = () => {
-    switch (currentStep) {
-      case STEPS.PAYMENT:
-        setCurrentStep(STEPS.SHIPPING);
-        break;
-      case STEPS.REVIEW:
-        setCurrentStep(STEPS.PAYMENT);
-        break;
-      default:
-        break;
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
     }
 
     // Scroll to top when changing steps
     window.scrollTo(0, 0);
+  };
+
+  // Handle direct step navigation
+  const goToStep = (step) => {
+    // Only allow navigation to completed steps or current step
+    if (step <= currentStep) {
+      setCurrentStep(step);
+      window.scrollTo(0, 0);
+    }
   };
 
   // Handle order placement
@@ -95,12 +127,31 @@ const CheckoutPage = () => {
       const newOrderId = Math.floor(100000 + Math.random() * 900000);
       setOrderId(newOrderId);
 
+      // Save order data to localStorage for persistence
+      const orderData = {
+        id: newOrderId,
+        date: new Date().toISOString(),
+        items: cartItems,
+        total: cartTotal,
+        shippingAddress,
+        paymentMethod,
+        status: 'Processing'
+      };
+
+      // Get existing orders or initialize empty array
+      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      existingOrders.push(orderData);
+      localStorage.setItem('orders', JSON.stringify(existingOrders));
+
       // Clear cart and show confirmation
       clearCart();
-      setCurrentStep(STEPS.CONFIRMATION);
+      setCurrentStep(4); // Confirmation step
       setOrderComplete(true);
     } catch (error) {
       console.error('Error placing order:', error);
+      setValidationErrors({
+        order: 'There was an error processing your order. Please try again.'
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -111,40 +162,75 @@ const CheckoutPage = () => {
       <h1 className="heading-2 mb-8">{t('checkout.title')}</h1>
 
       {/* Progress Indicator */}
-      {currentStep !== STEPS.CONFIRMATION && (
-        <CheckoutProgress currentStep={currentStep} steps={STEPS} />
+      {currentStep < 4 && (
+        <CheckoutStepper
+          currentStep={currentStep}
+          steps={STEPS}
+          onStepClick={goToStep}
+        />
       )}
 
       {/* Checkout Steps */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        {currentStep === STEPS.SHIPPING && (
-          <ShippingStep
-            onNext={goToNextStep}
-            shippingAddress={shippingAddress}
-            setShippingAddress={setShippingAddress}
-          />
+        {/* Validation Errors */}
+        {Object.keys(validationErrors).length > 0 && (
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
+            <ul className="list-disc pl-5">
+              {Object.values(validationErrors).map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
         )}
 
-        {currentStep === STEPS.PAYMENT && (
+        {/* Step 1: Shipping */}
+        {currentStep === 1 && (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">Shipping Information</h2>
+
+            <AddressForm
+              address={shippingAddress}
+              onAddressChange={handleAddressChange}
+              showValidation={!!validationErrors.shipping}
+            />
+
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={goToNextStep}
+                disabled={!shippingAddressValid}
+                className={`px-6 py-2 rounded-md text-white font-medium ${shippingAddressValid ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
+              >
+                Continue to Payment
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Payment */}
+        {currentStep === 2 && (
           <PaymentStep
             onNext={goToNextStep}
             onBack={goToPreviousStep}
             paymentMethod={paymentMethod}
             setPaymentMethod={setPaymentMethod}
+            showValidation={!!validationErrors.payment}
           />
         )}
 
-        {currentStep === STEPS.REVIEW && (
+        {/* Step 3: Review */}
+        {currentStep === 3 && (
           <ReviewStep
             onNext={goToNextStep}
             onBack={goToPreviousStep}
             shippingAddress={shippingAddress}
             paymentMethod={paymentMethod}
             isProcessing={isProcessing}
+            showValidation={!!validationErrors.order}
           />
         )}
 
-        {currentStep === STEPS.CONFIRMATION && (
+        {/* Step 4: Confirmation */}
+        {currentStep === 4 && (
           <ConfirmationStep orderId={orderId} />
         )}
       </div>

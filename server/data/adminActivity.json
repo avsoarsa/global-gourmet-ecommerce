@@ -1,0 +1,28 @@
+{
+  "activities": [
+    {
+      "id": 1,
+      "userId": 0,
+      "action": "login",
+      "details": "Admin user logged in",
+      "timestamp": "2023-04-21T11:30:00Z",
+      "ipAddress": "192.168.1.1"
+    },
+    {
+      "id": 2,
+      "userId": 0,
+      "action": "update_settings",
+      "details": "Updated shipping settings",
+      "timestamp": "2023-04-21T12:00:00Z",
+      "ipAddress": "192.168.1.1"
+    },
+    {
+      "id": 3,
+      "userId": 0,
+      "action": "create_product",
+      "details": "Created new product: Organic Almonds",
+      "timestamp": "2023-04-21T12:15:00Z",
+      "ipAddress": "192.168.1.1"
+    }
+  ]
+}

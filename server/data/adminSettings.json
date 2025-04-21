@@ -1,0 +1,40 @@
+{
+  "settings": {
+    "general": {
+      "siteName": "Global Gourmet",
+      "siteDescription": "Premium Quality Dry Fruits & Spices",
+      "contactEmail": "admin@globalgourmet.com",
+      "supportPhone": "+1-555-123-4567",
+      "address": "123 Gourmet Way, Flavor City, FC 12345",
+      "socialLinks": {
+        "facebook": "https://facebook.com/globalgourmet",
+        "twitter": "https://twitter.com/globalgourmet",
+        "instagram": "https://instagram.com/globalgourmet"
+      }
+    },
+    "shipping": {
+      "freeShippingThreshold": 75,
+      "standardShippingRate": 8.99,
+      "expressShippingRate": 14.99,
+      "internationalShippingRate": 24.99,
+      "shippingCountries": ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France"]
+    },
+    "tax": {
+      "enableTax": true,
+      "taxRate": 7.5,
+      "taxExemptCountries": ["Canada"]
+    },
+    "inventory": {
+      "lowStockThreshold": 10,
+      "outOfStockNotification": true,
+      "backorderEnabled": false
+    },
+    "display": {
+      "productsPerPage": 12,
+      "featuredProductsCount": 6,
+      "showOutOfStock": true,
+      "currencyDisplay": "symbol"
+    }
+  },
+  "lastUpdated": "2023-04-21T12:00:00Z"
+}

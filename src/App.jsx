@@ -4,9 +4,9 @@ import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { RegionProvider } from './context/RegionContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { AdminProvider } from './context/AdminContext';
 import Layout from './components/layout/Layout';
 import AdminLayout from './components/admin/AdminLayout';
-import ProtectedRoute from './components/admin/ProtectedRoute';
 
 // Import admin pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -19,7 +19,7 @@ import CustomerDetailPage from './pages/admin/CustomerDetailPage';
 import InventoryPage from './pages/admin/InventoryPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import SettingsPage from './pages/admin/SettingsPage';
-import LoginPage from './pages/admin/LoginPage';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
 import NotificationsPage from './pages/admin/NotificationsPage';
 import RecipesPage from './pages/admin/RecipesPage';
 import RecipeFormPage from './pages/admin/RecipeFormPage';
@@ -68,25 +68,31 @@ function App() {
               </Route>
               <Route path="login" element={<LazyLoginPage />} />
 
-              {/* Admin Routes */}
-              <Route path="admin/login" element={<LoginPage />} />
-              <Route path="admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                <Route index element={<AdminDashboardPage />} />
-                <Route path="products" element={<ProductsPage />} />
-                <Route path="products/new" element={<ProductFormPage />} />
-                <Route path="products/:id/edit" element={<ProductFormPage />} />
-                <Route path="orders" element={<OrdersPage />} />
-                <Route path="orders/:id" element={<OrderDetailPage />} />
-                <Route path="customers" element={<CustomersPage />} />
-                <Route path="customers/:id" element={<CustomerDetailPage />} />
-                <Route path="inventory" element={<InventoryPage />} />
-                <Route path="recipes" element={<RecipesPage />} />
-                <Route path="recipes/new" element={<RecipeFormPage />} />
-                <Route path="recipes/:id/edit" element={<RecipeFormPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="notifications" element={<NotificationsPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
+              {/* Admin Routes with AdminProvider */}
+              <Route path="admin/*" element={
+                <AdminProvider>
+                  <Routes>
+                    <Route path="login" element={<AdminLoginPage />} />
+                    <Route path="*" element={<AdminLayout />}>
+                      <Route index element={<AdminDashboardPage />} />
+                      <Route path="products" element={<ProductsPage />} />
+                      <Route path="products/new" element={<ProductFormPage />} />
+                      <Route path="products/:id/edit" element={<ProductFormPage />} />
+                      <Route path="orders" element={<OrdersPage />} />
+                      <Route path="orders/:id" element={<OrderDetailPage />} />
+                      <Route path="customers" element={<CustomersPage />} />
+                      <Route path="customers/:id" element={<CustomerDetailPage />} />
+                      <Route path="inventory" element={<InventoryPage />} />
+                      <Route path="recipes" element={<RecipesPage />} />
+                      <Route path="recipes/new" element={<RecipeFormPage />} />
+                      <Route path="recipes/:id/edit" element={<RecipeFormPage />} />
+                      <Route path="analytics" element={<AnalyticsPage />} />
+                      <Route path="notifications" element={<NotificationsPage />} />
+                      <Route path="settings" element={<SettingsPage />} />
+                    </Route>
+                  </Routes>
+                </AdminProvider>
+              } />
               </Routes>
               </WishlistProvider>
             </CartProvider>

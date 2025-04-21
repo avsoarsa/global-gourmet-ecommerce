@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,23 +15,36 @@ import {
   faSearch,
   faUser,
   faBell,
-  faUtensils
+  faUtensils,
+  faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../../context/AuthContext';
+import { useAdmin } from '../../context/AdminContext';
 import NotificationDropdown from './NotificationDropdown';
 
 const AdminLayout = () => {
-  const { currentUser, logout } = useAuth();
+  const { adminUser, logout, error } = useAdmin();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  // Check if user is admin
-  const isAdmin = currentUser?.role === 'admin';
+  // Set error message when API error occurs
+  useEffect(() => {
+    if (error) {
+      setErrorMessage(error);
 
-  // If not admin, redirect to home
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
+      // Clear error after 5 seconds
+      const timer = setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  // If not admin, redirect to admin login
+  if (!adminUser) {
+    return <Navigate to="/admin/login" replace />;
   }
 
   // Toggle sidebar
@@ -177,7 +190,7 @@ const AdminLayout = () => {
                     <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
                       <FontAwesomeIcon icon={faUser} />
                     </div>
-                    <span className="ml-2 text-gray-700 hidden md:block">{currentUser?.firstName} {currentUser?.lastName}</span>
+                    <span className="ml-2 text-gray-700 hidden md:block">{adminUser?.firstName} {adminUser?.lastName}</span>
                   </button>
                 </div>
               </div>
@@ -187,6 +200,22 @@ const AdminLayout = () => {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto pt-16 pb-6 px-4 sm:px-6 lg:px-8">
+          {/* Error message */}
+          {errorMessage && (
+            <div className="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md flex items-center justify-between">
+              <div className="flex items-center">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" />
+                <span>{errorMessage}</span>
+              </div>
+              <button
+                onClick={() => setErrorMessage(null)}
+                className="text-red-700 hover:text-red-900"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+          )}
+
           <Outlet />
         </main>
       </div>
