@@ -11,24 +11,43 @@ import { useAuth } from '../context/AuthContext';
 import ProfileSection from '../components/account/ProfileSection';
 import OrdersSection from '../components/account/OrdersSection';
 import AddressesSection from '../components/account/AddressesSection';
+import SavedPaymentMethods from '../components/account/SavedPaymentMethods';
 import LoyaltyPoints from '../components/account/LoyaltyPoints';
 import Subscriptions from '../components/account/Subscriptions';
 import PersonalizedRecommendations from '../components/account/PersonalizedRecommendations';
+import AccountDashboard from '../components/account/AccountDashboard';
 
 const AccountPage = () => {
   const { t } = useTranslation();
   const { currentUser, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const location = useLocation();
 
   // Set active tab based on URL query parameter
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['profile', 'orders', 'addresses', 'rewards', 'subscriptions', 'recommendations'].includes(tabParam)) {
+    if (tabParam && [
+      'dashboard',
+      'profile',
+      'orders',
+      'addresses',
+      'payment-methods',
+      'rewards',
+      'subscriptions',
+      'recommendations'
+    ].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [location]);
+
+  // Update URL when tab changes
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('tab', activeTab);
+    const newUrl = `${location.pathname}?${searchParams.toString()}`;
+    window.history.replaceState(null, '', newUrl);
+  }, [activeTab, location.pathname]);
 
   // Redirect to login if not authenticated
   if (!currentUser) {
@@ -37,12 +56,16 @@ const AccountPage = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'dashboard':
+        return <AccountDashboard user={currentUser} />;
       case 'profile':
         return <ProfileSection user={currentUser} />;
       case 'orders':
         return <OrdersSection orders={currentUser.orders} />;
       case 'addresses':
         return <AddressesSection addresses={currentUser.addresses} />;
+      case 'payment-methods':
+        return <SavedPaymentMethods />;
       case 'rewards':
         return <LoyaltyPoints user={currentUser} />;
       case 'subscriptions':
@@ -50,7 +73,31 @@ const AccountPage = () => {
       case 'recommendations':
         return <PersonalizedRecommendations user={currentUser} orderHistory={currentUser.orders} />;
       default:
-        return <ProfileSection user={currentUser} />;
+        return <AccountDashboard user={currentUser} />;
+    }
+  };
+
+  // Get tab title
+  const getTabTitle = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return t('account.dashboard', 'Dashboard');
+      case 'profile':
+        return t('account.profile', 'Profile');
+      case 'orders':
+        return t('account.orders', 'Orders');
+      case 'addresses':
+        return t('account.addresses', 'Addresses');
+      case 'payment-methods':
+        return t('account.paymentMethods', 'Payment Methods');
+      case 'rewards':
+        return t('account.rewards', 'Rewards');
+      case 'subscriptions':
+        return t('account.subscriptions', 'Subscriptions');
+      case 'recommendations':
+        return t('account.recommendations', 'Recommendations');
+      default:
+        return t('account.dashboard', 'Dashboard');
     }
   };
 
@@ -76,6 +123,22 @@ const AccountPage = () => {
 
             <nav className="p-4">
               <ul className="space-y-1">
+                {/* Dashboard */}
+                <li>
+                  <button
+                    onClick={() => setActiveTab('dashboard')}
+                    className={`w-full text-left px-4 py-3 rounded-md flex items-center transition-colors ${
+                      activeTab === 'dashboard'
+                        ? 'bg-green-50 text-green-700'
+                        : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faChartLine} className="mr-3" />
+                    <span>{t('account.dashboard', 'Dashboard')}</span>
+                  </button>
+                </li>
+
+                {/* Profile */}
                 <li>
                   <button
                     onClick={() => setActiveTab('profile')}
@@ -89,6 +152,8 @@ const AccountPage = () => {
                     <span>{t('account.profile')}</span>
                   </button>
                 </li>
+
+                {/* Orders */}
                 <li>
                   <button
                     onClick={() => setActiveTab('orders')}
@@ -102,6 +167,8 @@ const AccountPage = () => {
                     <span>{t('account.orders')}</span>
                   </button>
                 </li>
+
+                {/* Addresses */}
                 <li>
                   <button
                     onClick={() => setActiveTab('addresses')}
@@ -115,6 +182,23 @@ const AccountPage = () => {
                     <span>{t('account.addresses')}</span>
                   </button>
                 </li>
+
+                {/* Payment Methods */}
+                <li>
+                  <button
+                    onClick={() => setActiveTab('payment-methods')}
+                    className={`w-full text-left px-4 py-3 rounded-md flex items-center transition-colors ${
+                      activeTab === 'payment-methods'
+                        ? 'bg-green-50 text-green-700'
+                        : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faCreditCard} className="mr-3" />
+                    <span>{t('account.paymentMethods', 'Payment Methods')}</span>
+                  </button>
+                </li>
+
+                {/* Rewards */}
                 <li>
                   <button
                     onClick={() => setActiveTab('rewards')}
@@ -128,6 +212,8 @@ const AccountPage = () => {
                     <span>{t('account.rewards')}</span>
                   </button>
                 </li>
+
+                {/* Subscriptions */}
                 <li>
                   <button
                     onClick={() => setActiveTab('subscriptions')}
@@ -141,6 +227,8 @@ const AccountPage = () => {
                     <span>{t('account.subscriptions')}</span>
                   </button>
                 </li>
+
+                {/* Recommendations */}
                 <li>
                   <button
                     onClick={() => setActiveTab('recommendations')}
@@ -154,6 +242,8 @@ const AccountPage = () => {
                     <span>{t('account.recommendations')}</span>
                   </button>
                 </li>
+
+                {/* Wishlist */}
                 <li>
                   <a
                     href="/wishlist"
@@ -163,6 +253,8 @@ const AccountPage = () => {
                     <span>{t('account.wishlist')}</span>
                   </a>
                 </li>
+
+                {/* Sign Out */}
                 <li className="border-t border-gray-200 mt-2 pt-2">
                   <button
                     onClick={logout}
@@ -179,8 +271,18 @@ const AccountPage = () => {
 
         {/* Main Content */}
         <div className="md:w-3/4">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            {renderTabContent()}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            {/* Tab Header */}
+            {activeTab !== 'dashboard' && (
+              <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
+                <h2 className="text-xl font-semibold text-gray-800">{getTabTitle()}</h2>
+              </div>
+            )}
+
+            {/* Tab Content */}
+            <div className="p-6">
+              {renderTabContent()}
+            </div>
           </div>
         </div>
       </div>

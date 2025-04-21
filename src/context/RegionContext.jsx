@@ -1,7 +1,14 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { regionSettings } from '../i18n';
-import { fetchExchangeRates, convertCurrency, calculatePriceWithTax } from '../services/currencyService';
+import {
+  fetchExchangeRates,
+  convertCurrency,
+  calculatePriceWithTax,
+  formatCurrency,
+  getAvailableCurrencies,
+  getCurrencySymbol
+} from '../services/currencyService';
 
 // Create context
 const RegionContext = createContext();
@@ -9,10 +16,22 @@ const RegionContext = createContext();
 // Region provider component
 export const RegionProvider = ({ children }) => {
   const { i18n } = useTranslation();
-  const [region, setRegion] = useState('US'); // Default region
-  const [currency, setCurrency] = useState('USD'); // Default currency
+  const [region, setRegion] = useState(() => {
+    // Try to get region from localStorage
+    const savedRegion = localStorage.getItem('userRegion');
+    return savedRegion || 'US'; // Default to US if not found
+  });
+
+  const [currency, setCurrency] = useState(() => {
+    // Try to get currency from localStorage
+    const savedCurrency = localStorage.getItem('userCurrency');
+    return savedCurrency || 'USD'; // Default to USD if not found
+  });
+
   const [exchangeRates, setExchangeRates] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [availableCurrencies, setAvailableCurrencies] = useState(getAvailableCurrencies());
+  const [error, setError] = useState(null);
 
   // Get region settings based on current region
   const currentRegionSettings = regionSettings[region] || regionSettings.US;
@@ -29,10 +48,17 @@ export const RegionProvider = ({ children }) => {
     const getExchangeRates = async () => {
       try {
         setIsLoading(true);
-        const rates = await fetchExchangeRates();
-        setExchangeRates(rates);
+        setError(null);
+
+        // Fetch exchange rates with the current currency as base
+        const ratesData = await fetchExchangeRates(currency);
+        setExchangeRates(ratesData);
+
+        // Log success for debugging
+        console.log('Exchange rates updated successfully', ratesData);
       } catch (error) {
         console.error('Failed to fetch exchange rates:', error);
+        setError('Failed to fetch exchange rates. Using fallback rates.');
       } finally {
         setIsLoading(false);
       }
@@ -44,7 +70,13 @@ export const RegionProvider = ({ children }) => {
     const intervalId = setInterval(getExchangeRates, 30 * 60 * 1000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [currency]); // Re-fetch when currency changes
+
+  // Effect to save region and currency to localStorage
+  useEffect(() => {
+    localStorage.setItem('userRegion', region);
+    localStorage.setItem('userCurrency', currency);
+  }, [region, currency]);
 
   // Change region and update currency
   const changeRegion = (newRegion) => {
@@ -56,35 +88,71 @@ export const RegionProvider = ({ children }) => {
 
   // Change currency only
   const changeCurrency = (newCurrency) => {
-    // Find a region that uses this currency to get its symbol
-    const regionWithCurrency = Object.keys(regionSettings).find(
-      r => regionSettings[r].currency === newCurrency
-    );
+    // Validate that the currency is in our available currencies list
+    const isValidCurrency = availableCurrencies.some(c => c.code === newCurrency);
 
-    if (regionWithCurrency) {
+    if (isValidCurrency) {
       setCurrency(newCurrency);
+
+      // Find a region that uses this currency to get its symbol
+      const regionWithCurrency = Object.keys(regionSettings).find(
+        r => regionSettings[r].currency === newCurrency
+      );
+
       // If the region is different from current, update it to get the correct symbol
-      if (regionWithCurrency !== region) {
+      if (regionWithCurrency && regionWithCurrency !== region) {
         setRegion(regionWithCurrency);
       }
+    } else {
+      console.error(`Invalid currency code: ${newCurrency}`);
     }
   };
 
   // Convert price from USD to current currency with tax
-  const convertPrice = (priceUSD, includeTax = true) => {
-    if (!exchangeRates) return parseFloat(priceUSD); // Fallback if rates not loaded
+  const convertPrice = async (priceUSD, includeTax = true) => {
+    try {
+      if (!priceUSD) return 0;
 
-    // Convert currency
-    const convertedPrice = convertCurrency(parseFloat(priceUSD), 'USD', currency, exchangeRates);
+      const numericPrice = parseFloat(priceUSD);
+      if (isNaN(numericPrice)) return 0;
 
-    // Apply tax if needed
-    return includeTax ? calculatePriceWithTax(convertedPrice, region) : convertedPrice;
+      // Convert currency using the enhanced service
+      const convertedPrice = await convertCurrency(numericPrice, 'USD', currency);
+
+      // Apply tax if needed
+      return includeTax ? calculatePriceWithTax(convertedPrice, region) : convertedPrice;
+    } catch (error) {
+      console.error('Error converting price:', error);
+      return parseFloat(priceUSD); // Fallback to original price
+    }
   };
 
-  // Format price with currency symbol
+  // Synchronous version for immediate use (less accurate but faster)
+  const convertPriceSync = (priceUSD, includeTax = true) => {
+    try {
+      if (!priceUSD) return 0;
+
+      const numericPrice = parseFloat(priceUSD);
+      if (isNaN(numericPrice)) return 0;
+
+      // Use exchange rates directly if available
+      if (exchangeRates && exchangeRates.rates) {
+        const rate = exchangeRates.rates[currency] || 1;
+        const convertedPrice = numericPrice * rate;
+        return includeTax ? calculatePriceWithTax(convertedPrice, region) : convertedPrice;
+      }
+
+      return numericPrice; // Fallback to original price
+    } catch (error) {
+      console.error('Error in sync price conversion:', error);
+      return parseFloat(priceUSD); // Fallback to original price
+    }
+  };
+
+  // Format price with currency symbol using Intl.NumberFormat
   const formatPrice = (price, includeTax = true) => {
-    const symbol = currentRegionSettings.currencySymbol || '$';
-    return `${symbol}${convertPrice(price, includeTax).toFixed(2)}`;
+    const numericPrice = convertPriceSync(price, includeTax);
+    return formatCurrency(numericPrice, currency, currentRegionSettings.locale || 'en-US');
   };
 
   // Get shipping options for current region
@@ -102,27 +170,48 @@ export const RegionProvider = ({ children }) => {
   const value = {
     region,
     currency,
-    currencySymbol: currentRegionSettings.currencySymbol,
+    currencySymbol: getCurrencySymbol(currency),
     language: i18n.language,
+    locale: currentRegionSettings.locale || 'en-US',
     changeRegion,
     changeCurrency,
     convertPrice,
+    convertPriceSync,
     formatPrice,
     getShippingOptions,
     isFreeShipping,
     availableRegions: Object.keys(regionSettings),
+    availableCurrencies,
     isLoading,
-    exchangeRates
+    exchangeRates,
+    error
   };
 
   return (
     <RegionContext.Provider value={value}>
       {isLoading ? (
-        <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="flex flex-col justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mb-4"></div>
+          <p className="text-gray-600">Loading currency data...</p>
         </div>
       ) : (
-        children
+        <>
+          {error && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 fixed bottom-4 right-4 z-50 shadow-lg rounded-md max-w-md">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-yellow-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          {children}
+        </>
       )}
     </RegionContext.Provider>
   );
