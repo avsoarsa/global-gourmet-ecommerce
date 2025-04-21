@@ -67,7 +67,7 @@ const AccountPage = () => {
       case 'payment-methods':
         return <SavedPaymentMethods />;
       case 'rewards':
-        return <LoyaltyPoints user={currentUser} />;
+        return <LoyaltyPoints />;
       case 'subscriptions':
         return <Subscriptions user={currentUser} />;
       case 'recommendations':

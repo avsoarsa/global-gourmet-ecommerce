@@ -14,46 +14,46 @@ import {
   faArrowRight
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useLoyalty } from '../../context/LoyaltyContext';
 
 /**
  * Account dashboard component showing overview of user account
  */
 const AccountDashboard = ({ user }) => {
   const [recentOrders, setRecentOrders] = useState([]);
+  const { points: loyaltyPoints, tier } = useLoyalty();
   const [stats, setStats] = useState({
     totalOrders: 0,
     savedAddresses: 0,
     paymentMethods: 0,
-    loyaltyPoints: 0,
     activeSubscriptions: 0,
     wishlistItems: 0
   });
-  
+
   // Load user data
   useEffect(() => {
     if (user) {
       // Get recent orders (last 3)
       const orders = user.orders || [];
       setRecentOrders(orders.slice(0, 3));
-      
+
       // Calculate stats
       setStats({
         totalOrders: orders.length,
         savedAddresses: (user.addresses || []).length,
         paymentMethods: (user.paymentMethods || []).length,
-        loyaltyPoints: user.loyaltyPoints || 0,
         activeSubscriptions: (user.subscriptions || []).filter(sub => sub.status === 'active').length,
         wishlistItems: (user.wishlist || []).length
       });
     }
   }, [user]);
-  
+
   // Format date
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-  
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
@@ -61,7 +61,7 @@ const AccountDashboard = ({ user }) => {
         <h1 className="text-2xl font-bold mb-2">Welcome back, {user.firstName}!</h1>
         <p className="opacity-90">Here's an overview of your account and recent activity.</p>
       </div>
-      
+
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -75,7 +75,7 @@ const AccountDashboard = ({ user }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div className="flex items-center">
             <div className="bg-purple-100 p-3 rounded-full mr-4">
@@ -83,11 +83,12 @@ const AccountDashboard = ({ user }) => {
             </div>
             <div>
               <div className="text-sm text-gray-500">Loyalty Points</div>
-              <div className="text-2xl font-bold">{stats.loyaltyPoints}</div>
+              <div className="text-2xl font-bold">{loyaltyPoints}</div>
+              <div className="text-xs text-gray-500">{tier.name} Tier</div>
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div className="flex items-center">
             <div className="bg-red-100 p-3 rounded-full mr-4">
@@ -100,7 +101,7 @@ const AccountDashboard = ({ user }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Recent Orders */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -109,7 +110,7 @@ const AccountDashboard = ({ user }) => {
             View All <FontAwesomeIcon icon={faArrowRight} className="ml-1" />
           </Link>
         </div>
-        
+
         <div className="divide-y divide-gray-200">
           {recentOrders.length > 0 ? (
             recentOrders.map(order => (
@@ -124,25 +125,25 @@ const AccountDashboard = ({ user }) => {
                       <div className="text-sm text-gray-500">{formatDate(order.date)}</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center">
                     <div className="mr-6">
                       <div className="text-sm text-gray-500">Status</div>
                       <div className={`font-medium ${
-                        order.status === 'Delivered' ? 'text-green-600' : 
-                        order.status === 'Processing' ? 'text-blue-600' : 
+                        order.status === 'Delivered' ? 'text-green-600' :
+                        order.status === 'Processing' ? 'text-blue-600' :
                         order.status === 'Shipped' ? 'text-purple-600' : 'text-gray-600'
                       }`}>
                         {order.status}
                       </div>
                     </div>
-                    
+
                     <div className="mr-6">
                       <div className="text-sm text-gray-500">Total</div>
                       <div className="font-medium">${order.total.toFixed(2)}</div>
                     </div>
-                    
-                    <Link 
+
+                    <Link
                       to={`/account?tab=orders&id=${order.id}`}
                       className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded text-sm"
                     >
@@ -163,11 +164,11 @@ const AccountDashboard = ({ user }) => {
           )}
         </div>
       </div>
-      
+
       {/* Account Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Link 
-          to="/account?tab=addresses" 
+        <Link
+          to="/account?tab=addresses"
           className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <div className="bg-green-100 p-3 rounded-full mr-4">
@@ -178,9 +179,9 @@ const AccountDashboard = ({ user }) => {
             <div className="text-sm text-gray-500">{stats.savedAddresses} saved addresses</div>
           </div>
         </Link>
-        
-        <Link 
-          to="/account?tab=payment-methods" 
+
+        <Link
+          to="/account?tab=payment-methods"
           className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <div className="bg-blue-100 p-3 rounded-full mr-4">
@@ -191,9 +192,22 @@ const AccountDashboard = ({ user }) => {
             <div className="text-sm text-gray-500">{stats.paymentMethods} saved cards</div>
           </div>
         </Link>
-        
-        <Link 
-          to="/account?tab=subscriptions" 
+
+        <Link
+          to="/account?tab=rewards"
+          className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <div className="bg-yellow-100 p-3 rounded-full mr-4">
+            <FontAwesomeIcon icon={faStar} className="text-yellow-600" />
+          </div>
+          <div>
+            <div className="font-medium">Loyalty Rewards</div>
+            <div className="text-sm text-gray-500">{tier.name} Tier • {loyaltyPoints} points</div>
+          </div>
+        </Link>
+
+        <Link
+          to="/account?tab=subscriptions"
           className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <div className="bg-purple-100 p-3 rounded-full mr-4">

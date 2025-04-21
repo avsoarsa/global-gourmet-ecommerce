@@ -5,27 +5,14 @@ import {
   faStar, faGift, faShoppingBag, faCalendarAlt,
   faArrowUp, faArrowDown, faInfoCircle, faExchangeAlt
 } from '@fortawesome/free-solid-svg-icons';
+import { useLoyalty } from '../../context/LoyaltyContext';
 
-// Sample loyalty tiers
-const LOYALTY_TIERS = [
-  { name: 'Bronze', minPoints: 0, color: 'text-amber-700', bgColor: 'bg-amber-100' },
-  { name: 'Silver', minPoints: 500, color: 'text-gray-500', bgColor: 'bg-gray-100' },
-  { name: 'Gold', minPoints: 1000, color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-  { name: 'Platinum', minPoints: 2500, color: 'text-blue-600', bgColor: 'bg-blue-100' }
-];
-
-// Sample rewards
-const SAMPLE_REWARDS = [
-  { id: 1, name: '10% Off Coupon', points: 200, image: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=320&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
-  { id: 2, name: 'Free Shipping', points: 300, image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=320&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
-  { id: 3, name: 'Premium Gift Box', points: 500, image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=320&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
-  { id: 4, name: '$25 Store Credit', points: 1000, image: 'https://images.unsplash.com/photo-1580048915913-4f8f5cb481c4?w=320&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' }
-];
+// Using loyalty tiers and rewards from LoyaltyContext
 
 // Points Summary Component
 const PointsSummary = ({ points, pointsToNextTier, currentTier, nextTier }) => {
   const { t } = useTranslation();
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="p-6">
@@ -39,7 +26,7 @@ const PointsSummary = ({ points, pointsToNextTier, currentTier, nextTier }) => {
               <span className="ml-2 text-sm text-gray-500">{t('account.points')}</span>
             </div>
           </div>
-          
+
           <div className={`mt-4 md:mt-0 px-4 py-2 rounded-full ${currentTier.bgColor}`}>
             <div className="flex items-center">
               <FontAwesomeIcon icon={faStar} className={`mr-2 ${currentTier.color}`} />
@@ -49,7 +36,7 @@ const PointsSummary = ({ points, pointsToNextTier, currentTier, nextTier }) => {
             </div>
           </div>
         </div>
-        
+
         {nextTier && (
           <div className="mt-6">
             <div className="flex justify-between text-sm text-gray-500 mb-2">
@@ -57,8 +44,8 @@ const PointsSummary = ({ points, pointsToNextTier, currentTier, nextTier }) => {
               <span>{nextTier.name}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-green-600 h-2.5 rounded-full" 
+              <div
+                className="bg-green-600 h-2.5 rounded-full"
                 style={{ width: `${Math.min(100, (points / nextTier.minPoints) * 100)}%` }}
               ></div>
             </div>
@@ -75,7 +62,7 @@ const PointsSummary = ({ points, pointsToNextTier, currentTier, nextTier }) => {
 // Points History Component
 const PointsHistory = ({ history }) => {
   const { t } = useTranslation();
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden mt-6">
       <div className="px-6 py-4 border-b border-gray-200">
@@ -83,7 +70,7 @@ const PointsHistory = ({ history }) => {
           {t('account.pointsHistory')}
         </h3>
       </div>
-      
+
       <div className="divide-y divide-gray-200">
         {history.length > 0 ? (
           history.map((item) => (
@@ -93,9 +80,9 @@ const PointsHistory = ({ history }) => {
                   <div className={`p-2 rounded-full ${
                     item.type === 'earned' ? 'bg-green-100' : 'bg-red-100'
                   } mr-4`}>
-                    <FontAwesomeIcon 
-                      icon={item.type === 'earned' ? faArrowUp : faArrowDown} 
-                      className={item.type === 'earned' ? 'text-green-600' : 'text-red-600'} 
+                    <FontAwesomeIcon
+                      icon={item.type === 'earned' ? faArrowUp : faArrowDown}
+                      className={item.type === 'earned' ? 'text-green-600' : 'text-red-600'}
                     />
                   </div>
                   <div>
@@ -128,7 +115,7 @@ const PointsHistory = ({ history }) => {
 // Available Rewards Component
 const AvailableRewards = ({ rewards, points, onRedeem }) => {
   const { t } = useTranslation();
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden mt-6">
       <div className="px-6 py-4 border-b border-gray-200">
@@ -136,14 +123,14 @@ const AvailableRewards = ({ rewards, points, onRedeem }) => {
           {t('account.availableRewards')}
         </h3>
       </div>
-      
+
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {rewards.map((reward) => (
             <div key={reward.id} className="border rounded-lg overflow-hidden">
               <div className="h-32 bg-gray-200">
-                <img 
-                  src={reward.image} 
+                <img
+                  src={reward.image}
                   alt={reward.name}
                   className="w-full h-full object-cover"
                 />
@@ -179,31 +166,31 @@ const AvailableRewards = ({ rewards, points, onRedeem }) => {
 // How to Earn Points Component
 const HowToEarnPoints = () => {
   const { t } = useTranslation();
-  
+
   const earnMethods = [
-    { 
-      icon: faShoppingBag, 
-      title: t('account.earnByPurchase'), 
+    {
+      icon: faShoppingBag,
+      title: t('account.earnByPurchase'),
       description: t('account.earnByPurchaseDesc'),
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
     },
-    { 
-      icon: faStar, 
-      title: t('account.earnByReview'), 
+    {
+      icon: faStar,
+      title: t('account.earnByReview'),
       description: t('account.earnByReviewDesc'),
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-100'
     },
-    { 
-      icon: faGift, 
-      title: t('account.earnByReferral'), 
+    {
+      icon: faGift,
+      title: t('account.earnByReferral'),
       description: t('account.earnByReferralDesc'),
       color: 'text-green-600',
       bgColor: 'bg-green-100'
     }
   ];
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden mt-6">
       <div className="px-6 py-4 border-b border-gray-200">
@@ -211,7 +198,7 @@ const HowToEarnPoints = () => {
           {t('account.howToEarn')}
         </h3>
       </div>
-      
+
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {earnMethods.map((method, index) => (
@@ -230,46 +217,44 @@ const HowToEarnPoints = () => {
 };
 
 // Main LoyaltyPoints Component
-const LoyaltyPoints = ({ user }) => {
+const LoyaltyPoints = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
   const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
-  
-  // Sample user points data
-  const points = user?.loyaltyPoints || 750;
-  
-  // Determine current tier
-  const currentTier = LOYALTY_TIERS.reduce((prev, curr) => {
-    return (points >= curr.minPoints) ? curr : prev;
-  }, LOYALTY_TIERS[0]);
-  
+
+  // Get loyalty data from context
+  const {
+    points,
+    tier: currentTier,
+    history: pointsHistory,
+    getNextTier,
+    getPointsToNextTier,
+    redeemReward,
+    availableRewards,
+    isRewardAvailable
+  } = useLoyalty();
+
   // Determine next tier
-  const currentTierIndex = LOYALTY_TIERS.findIndex(tier => tier.name === currentTier.name);
-  const nextTier = LOYALTY_TIERS[currentTierIndex + 1];
-  const pointsToNextTier = nextTier ? nextTier.minPoints - points : 0;
-  
-  // Sample points history
-  const pointsHistory = [
-    { id: 1, type: 'earned', points: 100, description: t('account.purchasePoints'), date: '2023-11-15' },
-    { id: 2, type: 'earned', points: 50, description: t('account.reviewPoints'), date: '2023-11-10' },
-    { id: 3, type: 'redeemed', points: 200, description: t('account.redeemedDiscount'), date: '2023-10-25' },
-    { id: 4, type: 'earned', points: 300, description: t('account.referralPoints'), date: '2023-10-15' },
-    { id: 5, type: 'earned', points: 500, description: t('account.welcomePoints'), date: '2023-10-01' }
-  ];
-  
+  const nextTier = getNextTier();
+  const pointsToNextTier = getPointsToNextTier();
+
   const handleRedeem = (reward) => {
+    if (!isRewardAvailable(reward)) {
+      return; // Not enough points
+    }
     setSelectedReward(reward);
     setShowRedeemModal(true);
   };
-  
-  const confirmRedeem = () => {
-    // In a real app, this would call an API to redeem the reward
-    console.log(`Redeeming ${selectedReward.name} for ${selectedReward.points} points`);
-    setShowRedeemModal(false);
-    setSelectedReward(null);
+
+  const confirmRedeem = async () => {
+    const success = await redeemReward(selectedReward);
+    if (success) {
+      setShowRedeemModal(false);
+      setSelectedReward(null);
+    }
   };
-  
+
   return (
     <div>
       <div className="mb-6">
@@ -280,7 +265,7 @@ const LoyaltyPoints = ({ user }) => {
           {t('account.loyaltyPointsDesc')}
         </p>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
         <div className="border-b border-gray-200">
           <nav className="flex">
@@ -317,11 +302,11 @@ const LoyaltyPoints = ({ user }) => {
           </nav>
         </div>
       </div>
-      
+
       {activeTab === 'overview' && (
         <>
-          <PointsSummary 
-            points={points} 
+          <PointsSummary
+            points={points}
             pointsToNextTier={pointsToNextTier}
             currentTier={currentTier}
             nextTier={nextTier}
@@ -329,19 +314,19 @@ const LoyaltyPoints = ({ user }) => {
           <HowToEarnPoints />
         </>
       )}
-      
+
       {activeTab === 'rewards' && (
-        <AvailableRewards 
-          rewards={SAMPLE_REWARDS} 
+        <AvailableRewards
+          rewards={availableRewards}
           points={points}
           onRedeem={handleRedeem}
         />
       )}
-      
+
       {activeTab === 'history' && (
         <PointsHistory history={pointsHistory} />
       )}
-      
+
       {/* Redeem Confirmation Modal */}
       {showRedeemModal && selectedReward && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -350,9 +335,9 @@ const LoyaltyPoints = ({ user }) => {
               {t('account.confirmRedeem')}
             </h3>
             <p className="text-gray-600 mb-6">
-              {t('account.confirmRedeemDesc', { 
-                reward: selectedReward.name, 
-                points: selectedReward.points 
+              {t('account.confirmRedeemDesc', {
+                reward: selectedReward.name,
+                points: selectedReward.points
               })}
             </p>
             <div className="flex justify-between items-center bg-gray-50 p-4 rounded-md mb-6">

@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import { authenticate } from '../data/users';
+import { authenticate, updateUser } from '../data/users';
 
 const AuthContext = createContext();
 
@@ -33,10 +33,37 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
   };
 
+  // Update user profile data
+  const updateUserProfile = async (userData) => {
+    if (!currentUser) return false;
+
+    try {
+      // In a real app, this would call an API
+      // For now, we'll update the user in localStorage
+      const updatedUser = {
+        ...currentUser,
+        ...userData
+      };
+
+      // Update in state and localStorage
+      setCurrentUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      // Update in our mock data store
+      updateUser(updatedUser);
+
+      return true;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      return false;
+    }
+  };
+
   const value = {
     currentUser,
     login,
     logout,
+    updateUserProfile,
     loading
   };
 

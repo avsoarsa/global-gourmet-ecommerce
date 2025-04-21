@@ -6,6 +6,7 @@ import { faShippingFast, faCreditCard, faClipboardCheck, faCheckCircle } from '@
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
+import { useLoyalty } from '../context/LoyaltyContext';
 import CheckoutStepper from '../components/checkout/CheckoutStepper';
 import AddressForm from '../components/checkout/AddressForm';
 import ShippingStep from '../components/checkout/ShippingStep';
@@ -19,6 +20,7 @@ const CheckoutPage = () => {
   const { cartItems, cartTotal, clearCart } = useCart();
   const { currentUser } = useAuth();
   const { formatPrice } = useRegion();
+  const { addPointsForPurchase } = useLoyalty();
 
   // Checkout steps
   const STEPS = [
@@ -142,6 +144,11 @@ const CheckoutPage = () => {
       const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
       existingOrders.push(orderData);
       localStorage.setItem('orders', JSON.stringify(existingOrders));
+
+      // Add loyalty points for the purchase
+      if (currentUser) {
+        await addPointsForPurchase(cartTotal, newOrderId);
+      }
 
       // Clear cart and show confirmation
       clearCart();
