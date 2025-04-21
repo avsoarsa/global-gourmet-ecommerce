@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faPlus, faEdit, faTrash, faSave, 
-  faMapMarkerAlt, faTimes, faCheck 
+import {
+  faPlus, faEdit, faTrash, faSave,
+  faMapMarkerAlt, faTimes, faCheck
 } from '@fortawesome/free-solid-svg-icons';
 
 // Address Form Component
@@ -51,7 +51,7 @@ const AddressForm = ({ address = {}, onSave, onCancel }) => {
           <option value="Other">Other</option>
         </select>
       </div>
-      
+
       <div>
         <label htmlFor="street" className="form-label">Street Address</label>
         <input
@@ -64,7 +64,7 @@ const AddressForm = ({ address = {}, onSave, onCancel }) => {
           required
         />
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="city" className="form-label">City</label>
@@ -78,7 +78,7 @@ const AddressForm = ({ address = {}, onSave, onCancel }) => {
             required
           />
         </div>
-        
+
         <div>
           <label htmlFor="state" className="form-label">State/Province</label>
           <input
@@ -92,7 +92,7 @@ const AddressForm = ({ address = {}, onSave, onCancel }) => {
           />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="zipCode" className="form-label">ZIP/Postal Code</label>
@@ -106,7 +106,7 @@ const AddressForm = ({ address = {}, onSave, onCancel }) => {
             required
           />
         </div>
-        
+
         <div>
           <label htmlFor="country" className="form-label">Country</label>
           <select
@@ -124,13 +124,45 @@ const AddressForm = ({ address = {}, onSave, onCancel }) => {
             <option value="Germany">Germany</option>
             <option value="France">France</option>
             <option value="Japan">Japan</option>
-            <option value="China">China</option>
             <option value="India">India</option>
+            <option value="China">China</option>
             <option value="Brazil">Brazil</option>
+            <option value="Mexico">Mexico</option>
+            <option value="Italy">Italy</option>
+            <option value="Spain">Spain</option>
+            <option value="Russia">Russia</option>
+            <option value="South Korea">South Korea</option>
+            <option value="Netherlands">Netherlands</option>
+            <option value="Switzerland">Switzerland</option>
+            <option value="Sweden">Sweden</option>
+            <option value="Singapore">Singapore</option>
+            <option value="United Arab Emirates">United Arab Emirates</option>
+            <option value="South Africa">South Africa</option>
+            <option value="New Zealand">New Zealand</option>
+            <option value="Indonesia">Indonesia</option>
+            <option value="Malaysia">Malaysia</option>
+            <option value="Thailand">Thailand</option>
+            <option value="Vietnam">Vietnam</option>
+            <option value="Philippines">Philippines</option>
+            <option value="Pakistan">Pakistan</option>
+            <option value="Bangladesh">Bangladesh</option>
+            <option value="Sri Lanka">Sri Lanka</option>
+            <option value="Nepal">Nepal</option>
+            <option value="Saudi Arabia">Saudi Arabia</option>
+            <option value="Israel">Israel</option>
+            <option value="Turkey">Turkey</option>
+            <option value="Egypt">Egypt</option>
+            <option value="Nigeria">Nigeria</option>
+            <option value="Kenya">Kenya</option>
+            <option value="Ghana">Ghana</option>
+            <option value="Argentina">Argentina</option>
+            <option value="Chile">Chile</option>
+            <option value="Colombia">Colombia</option>
+            <option value="Peru">Peru</option>
           </select>
         </div>
       </div>
-      
+
       <div className="flex items-center">
         <input
           type="checkbox"
@@ -144,17 +176,17 @@ const AddressForm = ({ address = {}, onSave, onCancel }) => {
           Set as default address
         </label>
       </div>
-      
+
       <div className="flex justify-end space-x-4 pt-4">
-        <button 
-          type="button" 
+        <button
+          type="button"
           onClick={onCancel}
           className="btn-outline"
         >
           <FontAwesomeIcon icon={faTimes} className="mr-2" />
           Cancel
         </button>
-        <button 
+        <button
           type="submit"
           className="btn-primary"
         >
@@ -181,14 +213,14 @@ const AddressCard = ({ address, onEdit, onDelete, onSetDefault }) => {
           )}
         </div>
         <div className="flex space-x-2">
-          <button 
+          <button
             onClick={() => onEdit(address)}
             className="text-gray-500 hover:text-gray-700"
             title="Edit Address"
           >
             <FontAwesomeIcon icon={faEdit} />
           </button>
-          <button 
+          <button
             onClick={() => onDelete(address.id)}
             className="text-gray-500 hover:text-red-600"
             title="Delete Address"
@@ -197,15 +229,15 @@ const AddressCard = ({ address, onEdit, onDelete, onSetDefault }) => {
           </button>
         </div>
       </div>
-      
+
       <div className="text-gray-700 space-y-1">
         <p>{address.street}</p>
         <p>{address.city}, {address.state} {address.zipCode}</p>
         <p>{address.country}</p>
       </div>
-      
+
       {!address.isDefault && (
-        <button 
+        <button
           onClick={() => onSetDefault(address.id)}
           className="mt-3 text-sm text-green-600 hover:text-green-700 font-medium flex items-center"
         >
@@ -248,8 +280,8 @@ const AddressesSection = ({ addresses: initialAddresses }) => {
   const handleSaveAddress = (address) => {
     if (editingAddress) {
       // Update existing address
-      setAddresses(addresses.map(addr => 
-        addr.id === address.id ? address : 
+      setAddresses(addresses.map(addr =>
+        addr.id === address.id ? address :
         // If the new address is set as default, make sure other addresses are not default
         address.isDefault ? { ...addr, isDefault: false } : addr
       ));
@@ -257,19 +289,19 @@ const AddressesSection = ({ addresses: initialAddresses }) => {
     } else {
       // Add new address
       const newAddresses = [...addresses];
-      
+
       // If the new address is set as default, make sure other addresses are not default
       if (address.isDefault) {
         newAddresses.forEach(addr => {
           addr.isDefault = false;
         });
       }
-      
+
       // If this is the first address, make it default
       if (newAddresses.length === 0) {
         address.isDefault = true;
       }
-      
+
       newAddresses.push(address);
       setAddresses(newAddresses);
       setIsAddingNew(false);
@@ -280,9 +312,9 @@ const AddressesSection = ({ addresses: initialAddresses }) => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="heading-3">Address Book</h2>
-        
+
         {!isAddingNew && !editingAddress && (
-          <button 
+          <button
             onClick={handleAddNew}
             className="btn-primary"
           >
@@ -291,35 +323,35 @@ const AddressesSection = ({ addresses: initialAddresses }) => {
           </button>
         )}
       </div>
-      
+
       {isAddingNew && (
         <div className="mb-8 border rounded-lg p-6 bg-gray-50">
           <h3 className="heading-4 mb-4">Add New Address</h3>
-          <AddressForm 
-            onSave={handleSaveAddress} 
-            onCancel={() => setIsAddingNew(false)} 
+          <AddressForm
+            onSave={handleSaveAddress}
+            onCancel={() => setIsAddingNew(false)}
           />
         </div>
       )}
-      
+
       {editingAddress && (
         <div className="mb-8 border rounded-lg p-6 bg-gray-50">
           <h3 className="heading-4 mb-4">Edit Address</h3>
-          <AddressForm 
-            address={editingAddress} 
-            onSave={handleSaveAddress} 
-            onCancel={() => setEditingAddress(null)} 
+          <AddressForm
+            address={editingAddress}
+            onSave={handleSaveAddress}
+            onCancel={() => setEditingAddress(null)}
           />
         </div>
       )}
-      
+
       {!isAddingNew && !editingAddress && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {addresses.length > 0 ? (
             addresses.map(address => (
-              <AddressCard 
-                key={address.id} 
-                address={address} 
+              <AddressCard
+                key={address.id}
+                address={address}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onSetDefault={handleSetDefault}
@@ -328,7 +360,7 @@ const AddressesSection = ({ addresses: initialAddresses }) => {
           ) : (
             <div className="col-span-2 text-center py-8 bg-gray-50 rounded-lg">
               <p className="text-gray-500">You don't have any saved addresses yet.</p>
-              <button 
+              <button
                 onClick={handleAddNew}
                 className="mt-4 btn-outline"
               >

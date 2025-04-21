@@ -159,7 +159,7 @@ const CheckoutPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <h1 className="heading-2 mb-8">{t('checkout.title')}</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">{t('checkout.title')}</h1>
 
       {/* Progress Indicator */}
       {currentStep < 4 && (
@@ -171,7 +171,7 @@ const CheckoutPage = () => {
       )}
 
       {/* Checkout Steps */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className="bg-white rounded-lg shadow-lg p-8 mb-8 border border-gray-100">
         {/* Validation Errors */}
         {Object.keys(validationErrors).length > 0 && (
           <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
@@ -186,7 +186,7 @@ const CheckoutPage = () => {
         {/* Step 1: Shipping */}
         {currentStep === 1 && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Shipping Information</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800 pb-2 border-b border-gray-200">Shipping Information</h2>
 
             <AddressForm
               address={shippingAddress}
@@ -198,9 +198,12 @@ const CheckoutPage = () => {
               <button
                 onClick={goToNextStep}
                 disabled={!shippingAddressValid}
-                className={`px-6 py-2 rounded-md text-white font-medium ${shippingAddressValid ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                className={`px-6 py-3 rounded-md text-white font-medium transition-colors duration-300 flex items-center ${shippingAddressValid ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
               >
                 Continue to Payment
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
           </div>
