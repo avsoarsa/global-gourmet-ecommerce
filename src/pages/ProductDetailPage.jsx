@@ -23,6 +23,7 @@ import RecipeSection from '../components/product/RecipeSection';
 import WeightSelector from '../components/product/WeightSelector';
 import ProductBreadcrumb from '../components/product/ProductBreadcrumb';
 import SEO from '../components/common/SEO';
+import LazyImage from '../components/common/LazyImage';
 import { generateProductSchema, generateBreadcrumbSchema } from '../utils/structuredData';
 
 const ProductDetailPage = () => {
@@ -228,11 +229,16 @@ const ProductDetailPage = () => {
         {/* Product Image */}
         <div className="lg:w-1/2">
           <div className="bg-white rounded-lg overflow-hidden shadow-md">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-auto object-cover"
-            />
+            <div className="w-full h-[400px]">
+              <LazyImage
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full"
+                type="product"
+                priority={true}
+                quality={90}
+              />
+            </div>
           </div>
         </div>
 
