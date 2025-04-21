@@ -7,10 +7,12 @@ import { RegionProvider } from './context/RegionContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { AdminProvider } from './context/AdminContext';
 import { CartNotificationProvider } from './context/CartNotificationContext';
+import { RecentlyViewedProvider } from './context/RecentlyViewedContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import DebugPage from './pages/DebugPage';
 import CartNotification from './components/cart/CartNotification';
 import CartNotificationContainer from './components/cart/CartNotificationContainer';
+import ActivityNotification from './components/common/ActivityNotification';
 import Layout from './components/layout/Layout';
 import ProductLayout from './components/layout/ProductLayout';
 import ConversionLayout from './components/layout/ConversionLayout';
@@ -77,9 +79,13 @@ function App() {
                     <ErrorBoundary>
                       <CartProvider>
                       <ErrorBoundary>
-                        <WishlistProvider>
+                        <RecentlyViewedProvider>
+                          <WishlistProvider>
                           {/* Cart Notification */}
                           <CartNotificationContainer />
+
+                          {/* Activity Notification */}
+                          <ActivityNotification interval={15000} duration={7000} position="bottom-right" className="z-50" />
 
                           {/* Fallback loading state that will show if contexts take too long */}
                           {!isAppReady && (
@@ -149,6 +155,7 @@ function App() {
               } />
                           </Routes>
                         </WishlistProvider>
+                        </RecentlyViewedProvider>
                       </ErrorBoundary>
                     </CartProvider>
                   </ErrorBoundary>
