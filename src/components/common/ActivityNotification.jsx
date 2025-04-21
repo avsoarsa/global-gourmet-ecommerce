@@ -11,21 +11,21 @@ const generateRandomNotification = () => {
     'review',
     'signup',
   ];
-  
+
   const type = notificationTypes[Math.floor(Math.random() * notificationTypes.length)];
   const product = products[Math.floor(Math.random() * products.length)];
   const timeAgo = Math.floor(Math.random() * 30) + 1; // 1-30 minutes ago
-  
+
   const locations = [
     'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix',
     'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose',
     'London', 'Paris', 'Berlin', 'Madrid', 'Rome',
     'Toronto', 'Sydney', 'Tokyo', 'Singapore', 'Dubai'
   ];
-  
+
   const location = locations[Math.floor(Math.random() * locations.length)];
   const timestamp = new Date(Date.now() - timeAgo * 60 * 1000);
-  
+
   switch (type) {
     case 'purchase':
       return {
@@ -60,7 +60,7 @@ const generateRandomNotification = () => {
   }
 };
 
-const ActivityNotification = ({ 
+const ActivityNotification = ({
   interval = 30000, // Default: show a notification every 30 seconds
   duration = 5000,  // Default: each notification stays for 5 seconds
   position = 'bottom-right',
@@ -68,7 +68,7 @@ const ActivityNotification = ({
 }) => {
   const [notifications, setNotifications] = useState([]);
   const [currentNotification, setCurrentNotification] = useState(null);
-  
+
   // Position classes
   const positionClasses = {
     'top-left': 'top-4 left-4',
@@ -76,7 +76,7 @@ const ActivityNotification = ({
     'bottom-left': 'bottom-4 left-4',
     'bottom-right': 'bottom-4 right-4',
   };
-  
+
   // Generate a new notification at the specified interval
   useEffect(() => {
     const timer = setInterval(() => {
@@ -85,10 +85,10 @@ const ActivityNotification = ({
         setNotifications(prev => [...prev, newNotification]);
       }
     }, interval);
-    
+
     return () => clearInterval(timer);
   }, [interval]);
-  
+
   // Show notifications one at a time
   useEffect(() => {
     if (notifications.length > 0 && !currentNotification) {
@@ -96,22 +96,50 @@ const ActivityNotification = ({
       const notification = notifications[0];
       setCurrentNotification(notification);
       setNotifications(prev => prev.slice(1));
-      
+    }
+  }, [notifications, currentNotification]);
+
+  // Handle notification timeout
+  useEffect(() => {
+    let timer;
+    if (currentNotification) {
       // Remove the notification after the specified duration
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setCurrentNotification(null);
       }, duration);
-      
-      return () => clearTimeout(timer);
     }
-  }, [notifications, currentNotification, duration]);
-  
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [currentNotification, duration]);
+
   // Don't render if no current notification
   if (!currentNotification) return null;
-  
+
+  // Add state for fade-out animation
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Handle fade-out before removing notification
+  useEffect(() => {
+    if (currentNotification) {
+      setIsVisible(true);
+
+      // Start fade-out animation 500ms before removing the notification
+      const fadeTimer = setTimeout(() => {
+        setIsVisible(false);
+      }, duration - 500);
+
+      return () => clearTimeout(fadeTimer);
+    }
+  }, [currentNotification, duration]);
+
   return (
     <div className={`fixed ${positionClasses[position]} z-50 max-w-xs w-full ${className}`}>
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-500 animate-slide-in">
+      <div
+        className={`bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-500
+          ${isVisible ? 'opacity-100' : 'opacity-0'} animate-slide-in`}
+      >
         <div className="p-4">
           <div className="flex items-start">
             <div className={`flex-shrink-0 ${currentNotification.iconColor}`}>
@@ -128,7 +156,10 @@ const ActivityNotification = ({
             <div className="ml-4 flex-shrink-0 flex">
               <button
                 className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
-                onClick={() => setCurrentNotification(null)}
+                onClick={() => {
+                  setIsVisible(false);
+                  setTimeout(() => setCurrentNotification(null), 500);
+                }}
               >
                 <span className="sr-only">Close</span>
                 <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
