@@ -68,7 +68,14 @@
       "rating": 4.9,
       "reviews": 112,
       "inStock": true,
-      "featured": true
+      "featured": true,
+      "weightOptions": [
+        { "weight": "250g", "price": 9.49, "inStock": true },
+        { "weight": "500g", "price": 18.99, "inStock": true },
+        { "weight": "1kg", "price": 35.99, "inStock": true },
+        { "weight": "5kg", "price": 159.99, "inStock": true }
+      ],
+      "defaultWeight": "500g"
     },
     {
       "id": 5,

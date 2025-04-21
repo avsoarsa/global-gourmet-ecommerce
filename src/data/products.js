@@ -77,7 +77,7 @@ export const products = [
     id: 4,
     name: "Georgia Pecan Nuts",
     category: "Nuts & Seeds",
-    price: 18.99,
+    price: 18.99,  // Base price for 500g
     image: "https://images.unsplash.com/photo-1573851552153-816785fecb1f?q=80&w=1000&auto=format&fit=crop",
     description: "Premium quality pecan nuts from Georgia. Rich, buttery flavor perfect for snacking or baking.",
     origin: "Georgia, USA",
@@ -85,7 +85,14 @@ export const products = [
     rating: 4.9,
     reviews: 112,
     inStock: true,
-    featured: true
+    featured: true,
+    weightOptions: [
+      { weight: '250g', price: 9.49, inStock: true },
+      { weight: '500g', price: 18.99, inStock: true },
+      { weight: '1kg', price: 35.99, inStock: true },
+      { weight: '5kg', price: 159.99, inStock: true }
+    ],
+    defaultWeight: '500g'
   },
   {
     id: 5,
