@@ -68,6 +68,7 @@ const ActivityNotification = ({
 }) => {
   const [notifications, setNotifications] = useState([]);
   const [currentNotification, setCurrentNotification] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
 
   // Position classes
   const positionClasses = {
@@ -96,13 +97,21 @@ const ActivityNotification = ({
       const notification = notifications[0];
       setCurrentNotification(notification);
       setNotifications(prev => prev.slice(1));
+      setIsVisible(true); // Reset visibility when showing a new notification
     }
   }, [notifications, currentNotification]);
 
   // Handle notification timeout
   useEffect(() => {
     let timer;
+    let fadeTimer;
+
     if (currentNotification) {
+      // Start fade-out animation 500ms before removing the notification
+      fadeTimer = setTimeout(() => {
+        setIsVisible(false);
+      }, duration - 500);
+
       // Remove the notification after the specified duration
       timer = setTimeout(() => {
         setCurrentNotification(null);
@@ -111,28 +120,12 @@ const ActivityNotification = ({
 
     return () => {
       if (timer) clearTimeout(timer);
+      if (fadeTimer) clearTimeout(fadeTimer);
     };
   }, [currentNotification, duration]);
 
   // Don't render if no current notification
   if (!currentNotification) return null;
-
-  // Add state for fade-out animation
-  const [isVisible, setIsVisible] = useState(true);
-
-  // Handle fade-out before removing notification
-  useEffect(() => {
-    if (currentNotification) {
-      setIsVisible(true);
-
-      // Start fade-out animation 500ms before removing the notification
-      const fadeTimer = setTimeout(() => {
-        setIsVisible(false);
-      }, duration - 500);
-
-      return () => clearTimeout(fadeTimer);
-    }
-  }, [currentNotification, duration]);
 
   return (
     <div className={`fixed ${positionClasses[position]} z-50 max-w-xs w-full ${className}`}>
