@@ -5,6 +5,7 @@ import { WishlistProvider } from './context/WishlistContext';
 import { RegionProvider } from './context/RegionContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { AdminProvider } from './context/AdminContext';
+import DebugPage from './pages/DebugPage';
 import Layout from './components/layout/Layout';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -67,6 +68,7 @@ function App() {
                 <Route path="account" element={<LazyAccountPage />} />
               </Route>
               <Route path="login" element={<LazyLoginPage />} />
+              <Route path="debug" element={<DebugPage />} />
 
               {/* Admin Routes with AdminProvider */}
               <Route path="admin/*" element={

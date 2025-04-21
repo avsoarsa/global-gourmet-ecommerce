@@ -3,8 +3,12 @@
  * Handles currency conversion and formatting with real-time exchange rates
  */
 
-// API endpoint for exchange rates
-const EXCHANGE_RATE_API = 'https://api.exchangerate-api.com/v4/latest/USD';
+// API endpoints for exchange rates (with fallbacks)
+const EXCHANGE_RATE_APIS = [
+  'https://api.exchangerate-api.com/v4/latest/',  // Primary API
+  'https://open.er-api.com/v6/latest/',           // Fallback API 1
+  'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/' // Fallback API 2
+];
 
 // Cache for exchange rates to reduce API calls
 let exchangeRatesCache = {
@@ -48,17 +52,60 @@ export const fetchExchangeRates = async (baseCurrency = 'USD') => {
       exchangeRatesCache.baseCurrency === baseCurrency &&
       now - exchangeRatesCache.timestamp < CACHE_EXPIRATION
     ) {
+      console.log('Using cached exchange rates');
       return exchangeRatesCache.rates;
     }
 
-    // Fetch new rates from API
-    const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${baseCurrency}`);
+    // Try each API endpoint until one works
+    let data = null;
+    let lastError = null;
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch exchange rates: ${response.status}`);
+    for (const apiBase of EXCHANGE_RATE_APIS) {
+      try {
+        let url;
+        let responseTransformer;
+
+        // Format URL based on API endpoint pattern
+        if (apiBase.includes('jsdelivr')) {
+          // Special case for the GitHub CDN API which has a different format
+          url = `${apiBase}${baseCurrency.toLowerCase()}.json`;
+          responseTransformer = (response) => {
+            // Transform to match our expected format
+            return {
+              base: baseCurrency,
+              rates: response[baseCurrency.toLowerCase()]
+            };
+          };
+        } else {
+          // Standard format for most exchange rate APIs
+          url = `${apiBase}${baseCurrency}`;
+          responseTransformer = (response) => response;
+        }
+
+        console.log(`Trying to fetch exchange rates from: ${url}`);
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+
+        const rawData = await response.json();
+        data = responseTransformer(rawData);
+
+        // If we got here, the API call was successful
+        console.log('Successfully fetched exchange rates');
+        break;
+      } catch (err) {
+        console.warn(`Failed to fetch from API endpoint: ${err.message}`);
+        lastError = err;
+        // Continue to the next API endpoint
+      }
     }
 
-    const data = await response.json();
+    // If all API calls failed, throw the last error
+    if (!data) {
+      throw lastError || new Error('All API endpoints failed');
+    }
 
     // Update cache
     exchangeRatesCache = {
@@ -73,10 +120,12 @@ export const fetchExchangeRates = async (baseCurrency = 'USD') => {
 
     // If we have cached rates, return those even if expired
     if (exchangeRatesCache.rates) {
+      console.log('Using expired cached rates as fallback');
       return exchangeRatesCache.rates;
     }
 
     // Otherwise, return fallback rates
+    console.log('Using hardcoded fallback rates');
     return getFallbackRates(baseCurrency);
   }
 };
@@ -86,7 +135,7 @@ export const fetchExchangeRates = async (baseCurrency = 'USD') => {
  * @param {string} baseCurrency - Base currency for rates
  * @returns {Object} - Fallback exchange rates
  */
-const getFallbackRates = (baseCurrency = 'USD') => {
+export const getFallbackRates = (baseCurrency = 'USD') => {
   // Common exchange rates as fallback (as of 2023)
   const fallbackRates = {
     USD: {
@@ -276,5 +325,6 @@ export default {
   calculatePriceWithTax,
   formatCurrency,
   getAvailableCurrencies,
-  getCurrencySymbol
+  getCurrencySymbol,
+  getFallbackRates
 };

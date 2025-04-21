@@ -7,7 +7,8 @@ import {
   calculatePriceWithTax,
   formatCurrency,
   getAvailableCurrencies,
-  getCurrencySymbol
+  getCurrencySymbol,
+  getFallbackRates
 } from '../services/currencyService';
 
 // Create context
@@ -50,20 +51,38 @@ export const RegionProvider = ({ children }) => {
         setIsLoading(true);
         setError(null);
 
+        // Set a timeout to stop showing the loading screen after 3 seconds
+        // This prevents the app from being stuck on the loading screen if the API is slow
+        const loadingTimeout = setTimeout(() => {
+          setIsLoading(false);
+        }, 3000);
+
         // Fetch exchange rates with the current currency as base
         const ratesData = await fetchExchangeRates(currency);
+
+        // Clear the timeout since we got a response
+        clearTimeout(loadingTimeout);
+
         setExchangeRates(ratesData);
+        setIsLoading(false);
 
         // Log success for debugging
-        console.log('Exchange rates updated successfully', ratesData);
+        console.log('Exchange rates updated successfully');
       } catch (error) {
         console.error('Failed to fetch exchange rates:', error);
         setError('Failed to fetch exchange rates. Using fallback rates.');
-      } finally {
         setIsLoading(false);
       }
     };
 
+    // Initialize with fallback rates immediately to prevent blank screen
+    if (!exchangeRates) {
+      const fallbackRates = getFallbackRates(currency);
+      setExchangeRates(fallbackRates);
+      console.log('Using initial fallback rates');
+    }
+
+    // Then try to fetch real rates
     getExchangeRates();
 
     // Refresh exchange rates every 30 minutes
@@ -189,30 +208,31 @@ export const RegionProvider = ({ children }) => {
 
   return (
     <RegionContext.Provider value={value}>
-      {isLoading ? (
-        <div className="flex flex-col justify-center items-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mb-4"></div>
-          <p className="text-gray-600">Loading currency data...</p>
-        </div>
-      ) : (
-        <>
-          {error && (
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 fixed bottom-4 right-4 z-50 shadow-lg rounded-md max-w-md">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-700">{error}</p>
-                </div>
+      {/* Always render children to prevent blank screen */}
+      <>
+        {isLoading && (
+          <div className="fixed top-0 left-0 right-0 z-50 bg-green-500 text-white text-center text-xs py-1">
+            Loading currency data...
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 fixed bottom-4 right-4 z-50 shadow-lg rounded-md max-w-md">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">{error}</p>
               </div>
             </div>
-          )}
-          {children}
-        </>
-      )}
+          </div>
+        )}
+
+        {children}
+      </>
     </RegionContext.Provider>
   );
 };
