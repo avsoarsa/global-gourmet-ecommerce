@@ -12,6 +12,7 @@ const lazyWithPreload = (factory) => {
 
 // Core pages (higher priority)
 const HomePage = lazyWithPreload(() => import(/* webpackChunkName: "home" */ '../pages/HomePage'));
+const PersonalizedHomePage = lazyWithPreload(() => import(/* webpackChunkName: "personalized-home" */ '../pages/PersonalizedHomePage'));
 const ProductsPage = lazyWithPreload(() => import(/* webpackChunkName: "products" */ '../pages/ProductsPage'));
 const ProductDetailPage = lazyWithPreload(() => import(/* webpackChunkName: "product-detail" */ '../pages/ProductDetailPage'));
 
@@ -36,7 +37,7 @@ const SearchResultsPage = lazyWithPreload(() => import(/* webpackChunkName: "sea
 // Preload critical pages for faster navigation
 const preloadCriticalPages = () => {
   // Preload home and products pages which are most commonly accessed
-  HomePage.preload();
+  PersonalizedHomePage.preload();
   ProductsPage.preload();
 
   // Preload other pages based on user behavior or after initial load
@@ -106,7 +107,7 @@ const RouteErrorBoundary = ({ children }) => {
 export const LazyHomePage = () => (
   <RouteErrorBoundary>
     <Suspense fallback={<ProductPageLoader />}>
-      <HomePage />
+      <PersonalizedHomePage />
     </Suspense>
   </RouteErrorBoundary>
 );

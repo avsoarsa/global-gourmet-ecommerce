@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { trackPageView } from '../utils/personalizationUtils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStar, faStarHalfAlt, faShoppingCart,
@@ -63,6 +64,17 @@ const ProductDetailPage = () => {
 
       // Add to recently viewed products
       addToRecentlyViewed(foundProduct);
+
+      // Track product view for personalization
+      trackPageView(
+        `/product/${productId}`,
+        'product',
+        {
+          productId: foundProduct.id,
+          category: foundProduct.category,
+          name: foundProduct.name
+        }
+      );
 
       // Find related products (same category, excluding current product)
       const related = products

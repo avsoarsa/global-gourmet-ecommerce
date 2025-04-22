@@ -12,13 +12,16 @@ import {
   faCheck,
   faTimes,
   faTag,
-  faBoxOpen
+  faBoxOpen,
+  faFileImport,
+  faFileExport
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationDialog from '../../components/common/ConfirmationDialog';
 import { products as productsData } from '../../data/products';
 import ExportButton from '../../components/admin/ExportButton';
 import BulkActionBar from '../../components/admin/BulkActionBar';
 import BulkEditModal from '../../components/admin/BulkEditModal';
+import BatchImportExport from '../../components/admin/BatchImportExport';
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -170,6 +173,21 @@ const ProductsPage = () => {
     clearSelection();
   };
 
+  // Handle batch import
+  const handleBatchImport = (importedProducts) => {
+    // In a real app, this would be an API call
+    // For now, we'll just add the imported products to our existing products
+    // with new IDs to avoid conflicts
+    const maxId = Math.max(...products.map(p => p.id), 0);
+
+    const newProducts = importedProducts.map((product, index) => ({
+      ...product,
+      id: maxId + index + 1
+    }));
+
+    setProducts([...products, ...newProducts]);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -188,7 +206,8 @@ const ProductsPage = () => {
           </p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-2">
-          <ExportButton
+          <BatchImportExport
+            onImport={handleBatchImport}
             data={filteredProducts}
             headers={[
               { label: 'ID', key: 'id' },
@@ -198,7 +217,16 @@ const ProductsPage = () => {
               { label: 'Stock', key: 'stock', format: 'number' },
               { label: 'Description', key: 'description' }
             ]}
-            filename="products-export"
+            validationSchema={{
+              required: ['name', 'category', 'price'],
+              numeric: ['price', 'stock', 'originalPrice', 'discount'],
+              min: { price: 0, stock: 0, discount: 0 },
+              max: { discount: 100 }
+            }}
+            templateData={[
+              { id: '', name: 'Example Product', category: 'Dry Fruits', price: 19.99, stock: 100, description: 'Product description' }
+            ]}
+            entityName="products"
           />
           <Link
             to="/admin/products/new"

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { trackPageView } from '../utils/personalizationUtils';
 import ProductCard from '../components/common/ProductCard';
 import MobileFilterSort from '../components/mobile/MobileFilterSort';
 import { products, categories } from '../data/products';
@@ -23,8 +24,22 @@ const ProductsPage = () => {
         .replace('And', '&');
 
       setSelectedCategory(categoryName);
+
+      // Track category view for personalization
+      trackPageView(
+        `/category/${categorySlug}`,
+        'category',
+        { category: categoryName }
+      );
     } else {
       setSelectedCategory('All Products');
+
+      // Track all products view
+      trackPageView(
+        '/products',
+        'category',
+        { category: 'All Products' }
+      );
     }
   }, [categorySlug]);
 
