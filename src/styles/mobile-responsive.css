@@ -75,6 +75,74 @@
   .product-detail-section {
     margin-bottom: 1rem !important;
   }
+
+  /* Mobile Product Detail Specific Styles */
+  .mobile-product-detail {
+    margin-top: -16px;
+  }
+
+  .mobile-product-image {
+    height: 300px;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .mobile-product-info {
+    margin-top: -20px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    background-color: white;
+    padding: 16px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .mobile-product-tabs {
+    display: flex;
+    overflow-x: auto;
+    gap: 16px;
+    padding: 8px 0;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+  }
+
+  .mobile-product-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-product-tab {
+    white-space: nowrap;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 16px;
+    background-color: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .mobile-product-tab.active {
+    background-color: #059669;
+    color: white;
+  }
+
+  /* Fixed Add to Cart Bar */
+  .mobile-add-to-cart-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 8px 16px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+  }
+
+  /* Adjust for mobile navigation */
+  .mobile-add-to-cart-bar {
+    bottom: 64px; /* Height of mobile navigation */
+  }
 }
 
 /* Checkout Page Adjustments */

@@ -8,6 +8,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { Link } from 'react-router-dom';
+import MobileProductDetail from '../components/product/MobileProductDetail';
+import MobileAddToCartBar from '../components/product/MobileAddToCartBar';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useRecentlyViewed } from '../context/RecentlyViewedContext';
@@ -261,17 +263,49 @@ const ProductDetailPage = () => {
           structuredData={structuredData}
         />
       )}
-      <ProductBreadcrumb productId={productId} />
+      <div className="hidden md:block">
+        <ProductBreadcrumb productId={productId} />
+      </div>
       <div className="container mx-auto px-4 py-8">
+        {/* Mobile Add to Cart Bar */}
+        <MobileAddToCartBar
+          product={product}
+          selectedWeightOption={selectedWeightOption}
+          currencySymbol={currencySymbol}
+          convertPriceSync={convertPriceSync}
+          handleAddToCart={handleAddToCart}
+        />
         <button
           onClick={() => window.history.back()}
-          className="mb-4 flex items-center text-gray-600 hover:text-green-600 transition-colors"
+          className="mb-4 hidden md:flex items-center text-gray-600 hover:text-green-600 transition-colors"
         >
           <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
           Back to previous page
         </button>
 
-      <div className="flex flex-col lg:flex-row gap-8 mb-12">
+      {/* Mobile Product Detail */}
+      <MobileProductDetail
+        product={product}
+        selectedWeight={selectedWeight}
+        selectedWeightOption={selectedWeightOption}
+        quantity={quantity}
+        subscriptionData={subscriptionData}
+        isInWishlist={isInWishlist}
+        currencySymbol={currencySymbol}
+        convertPriceSync={convertPriceSync}
+        renderStars={renderStars}
+        handleWeightChange={handleWeightChange}
+        handleSubscriptionChange={handleSubscriptionChange}
+        decrementQuantity={decrementQuantity}
+        incrementQuantity={incrementQuantity}
+        handleQuantityChange={handleQuantityChange}
+        handleAddToCart={handleAddToCart}
+        toggleWishlist={toggleWishlist}
+        setActiveTab={setActiveTab}
+        reviews={reviews}
+      />
+
+      <div className="hidden md:flex flex-col lg:flex-row gap-8 mb-12">
         {/* Product Image and Tabs */}
         <div className="lg:w-1/2 flex flex-col h-full">
           <div className="bg-white rounded-lg overflow-hidden shadow-md mb-4">
@@ -610,8 +644,8 @@ const ProductDetailPage = () => {
       {/* Recently Viewed Products */}
       <RecentlyViewedProducts currentProductId={product.id} />
 
-      {/* Social Sharing Section */}
-      <div className="mt-12 mb-16 bg-gray-50 p-8 rounded-lg">
+      {/* Social Sharing Section - Desktop Only */}
+      <div className="mt-12 mb-16 bg-gray-50 p-8 rounded-lg hidden md:block">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Share This Product</h2>
           <p className="text-gray-600">If you like this product, share it with your friends!</p>
