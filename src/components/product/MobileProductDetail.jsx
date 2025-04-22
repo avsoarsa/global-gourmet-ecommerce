@@ -30,11 +30,11 @@ const MobileProductDetail = ({
   handleQuantityChange,
   handleAddToCart,
   toggleWishlist,
+  activeTab,
   setActiveTab,
   reviews
 }) => {
-  const [showDescription, setShowDescription] = useState(false);
-  
+
   return (
     <div className="md:hidden">
       {/* Back Button */}
@@ -45,7 +45,7 @@ const MobileProductDetail = ({
       >
         <FontAwesomeIcon icon={faArrowLeft} className="text-gray-700" />
       </button>
-      
+
       {/* Product Image */}
       <div className="relative w-full h-[300px] mb-4">
         <LazyImage
@@ -56,7 +56,7 @@ const MobileProductDetail = ({
           priority={true}
           quality={90}
         />
-        
+
         {/* Wishlist Button */}
         <button
           onClick={toggleWishlist}
@@ -68,7 +68,7 @@ const MobileProductDetail = ({
             className={isInWishlist(product.id) ? "text-red-500" : "text-gray-400"}
           />
         </button>
-        
+
         {/* Discount Badge */}
         {product.discount && (
           <div className="absolute top-4 left-4 z-10 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-bold">
@@ -76,11 +76,11 @@ const MobileProductDetail = ({
           </div>
         )}
       </div>
-      
+
       {/* Product Info */}
       <div className="px-4">
         <h1 className="text-xl font-bold text-gray-800 mb-1">{product.name}</h1>
-        
+
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
             <div className="flex mr-1">
@@ -88,15 +88,15 @@ const MobileProductDetail = ({
             </div>
             <span className="text-sm text-gray-600">({product.reviews})</span>
           </div>
-          
-          <button 
+
+          <button
             className="text-green-600 text-sm flex items-center"
             onClick={() => setActiveTab('reviews')}
           >
             See Reviews
           </button>
         </div>
-        
+
         {/* Price Section */}
         <div className="mb-4">
           <div className="flex items-center">
@@ -139,22 +139,22 @@ const MobileProductDetail = ({
               </p>
             ) : null}
           </div>
-          
+
           <p className="text-xs text-gray-500">
             {selectedWeightOption ? `per ${selectedWeight}` : ''}
           </p>
         </div>
-        
+
         {/* Urgency Elements */}
         <div className="mb-4">
           <LowStockIndicator stock={Math.floor(Math.random() * 20)} threshold={10} />
-          
+
           <div className="flex items-center mt-2 text-xs text-green-700">
             <FontAwesomeIcon icon={faTruck} className="mr-1" />
             <span>Free delivery on orders over $50</span>
           </div>
         </div>
-        
+
         {/* Weight Selector */}
         {product.weightOptions && product.weightOptions.length > 0 && (
           <div className="mb-4">
@@ -166,14 +166,14 @@ const MobileProductDetail = ({
             />
           </div>
         )}
-        
+
         {/* Subscription Option */}
         <SubscriptionOption
           product={product}
           selectedWeight={selectedWeight}
           onSubscribe={handleSubscriptionChange}
         />
-        
+
         {/* Quantity Selector */}
         <div className="flex items-center mb-4">
           <span className="font-medium text-gray-700 mr-4">Quantity:</span>
@@ -199,7 +199,7 @@ const MobileProductDetail = ({
             </button>
           </div>
         </div>
-        
+
         {/* Limited Time Offer */}
         <div className="mb-4 bg-amber-50 p-3 rounded-md border border-amber-100">
           <p className="text-xs font-medium text-amber-800">
@@ -217,7 +217,7 @@ const MobileProductDetail = ({
             />
           </div>
         </div>
-        
+
         {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
@@ -226,20 +226,20 @@ const MobileProductDetail = ({
           <FontAwesomeIcon icon={faShoppingCart} className="mr-2" />
           Add to Cart
         </button>
-        
+
         {/* Description Toggle */}
         <div className="border-t border-gray-200 pt-3 mb-4">
-          <button 
+          <button
             className="flex items-center justify-between w-full text-left"
             onClick={() => setShowDescription(!showDescription)}
           >
             <span className="font-medium">Product Description</span>
-            <FontAwesomeIcon 
-              icon={showDescription ? faChevronUp : faChevronDown} 
+            <FontAwesomeIcon
+              icon={showDescription ? faChevronUp : faChevronDown}
               className="text-gray-500"
             />
           </button>
-          
+
           {showDescription && (
             <div className="mt-2 text-sm text-gray-700">
               <p className="mb-2">{product.description}</p>
@@ -254,56 +254,157 @@ const MobileProductDetail = ({
             </div>
           )}
         </div>
-        
+
         {/* Tab Navigation */}
-        <div className="grid grid-cols-4 gap-1 mb-4 border-t border-b border-gray-200 py-2">
-          <button 
-            className="text-center py-2 text-xs font-medium text-gray-700"
+        <div className="mobile-product-tabs overflow-x-auto flex mb-4 border-t border-gray-200 py-2">
+          <button
+            className={`mobile-product-tab whitespace-nowrap px-4 py-2 mx-1 rounded-full text-sm font-medium ${activeTab === 'description' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
             onClick={() => setActiveTab('description')}
           >
             Details
           </button>
-          <button 
-            className="text-center py-2 text-xs font-medium text-gray-700"
+          <button
+            className={`mobile-product-tab whitespace-nowrap px-4 py-2 mx-1 rounded-full text-sm font-medium ${activeTab === 'nutrition' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
             onClick={() => setActiveTab('nutrition')}
           >
             Nutrition
           </button>
-          <button 
-            className="text-center py-2 text-xs font-medium text-gray-700"
+          <button
+            className={`mobile-product-tab whitespace-nowrap px-4 py-2 mx-1 rounded-full text-sm font-medium ${activeTab === 'reviews' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
             onClick={() => setActiveTab('reviews')}
           >
             Reviews
           </button>
-          <button 
-            className="text-center py-2 text-xs font-medium text-gray-700"
+          <button
+            className={`mobile-product-tab whitespace-nowrap px-4 py-2 mx-1 rounded-full text-sm font-medium ${activeTab === 'recipes' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
             onClick={() => setActiveTab('recipes')}
           >
             Recipes
           </button>
         </div>
-        
-        {/* Trust Badges */}
-        <div className="flex justify-between mb-4">
-          <div className="flex flex-col items-center text-center">
-            <FontAwesomeIcon icon={faTruck} className="text-gray-500 mb-1" />
-            <span className="text-xs text-gray-600">Fast Delivery</span>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <FontAwesomeIcon icon={faShieldAlt} className="text-gray-500 mb-1" />
-            <span className="text-xs text-gray-600">Quality Guarantee</span>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <svg className="w-4 h-4 text-gray-500 mb-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"></path>
-              <path d="M10 5a1 1 0 100 2 1 1 0 000-2zm0 3a1 1 0 00-1 1v3a1 1 0 002 0V9a1 1 0 00-1-1z"></path>
-            </svg>
-            <span className="text-xs text-gray-600">24/7 Support</span>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <FontAwesomeIcon icon={faShare} className="text-gray-500 mb-1" />
-            <span className="text-xs text-gray-600">Easy Returns</span>
-          </div>
+
+        {/* Tab Content */}
+        <div className="mb-6 border-b border-gray-200 pb-6">
+          {/* Description Tab */}
+          {activeTab === 'description' && (
+            <div className="text-sm text-gray-700">
+              <p className="mb-4">{product.description}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium mb-2">Origin</h4>
+                  <p>{product.origin || 'Information not available'}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Storage</h4>
+                  <p>Store in a cool, dry place away from direct sunlight.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Nutrition Tab */}
+          {activeTab === 'nutrition' && (
+            <div className="text-sm">
+              <h4 className="font-medium mb-3">Nutritional Information</h4>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <p className="mb-2">{product.nutritionalInfo || 'Detailed nutritional information not available.'}</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4">
+                  <div className="flex justify-between border-b border-gray-200 pb-1">
+                    <span>Calories</span>
+                    <span className="font-medium">240 kcal</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gray-200 pb-1">
+                    <span>Protein</span>
+                    <span className="font-medium">6g</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gray-200 pb-1">
+                    <span>Carbs</span>
+                    <span className="font-medium">12g</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gray-200 pb-1">
+                    <span>Fat</span>
+                    <span className="font-medium">18g</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gray-200 pb-1">
+                    <span>Fiber</span>
+                    <span className="font-medium">3g</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gray-200 pb-1">
+                    <span>Sugar</span>
+                    <span className="font-medium">2g</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-4">Values are approximate and may vary by product batch.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Reviews Tab */}
+          {activeTab === 'reviews' && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium">Customer Reviews</h4>
+                <div className="flex items-center">
+                  <div className="flex mr-1">
+                    {renderStars(product.rating)}
+                  </div>
+                  <span className="text-sm text-gray-600">({product.reviews})</span>
+                </div>
+              </div>
+
+              {reviews && reviews.length > 0 ? (
+                <div className="space-y-4 max-h-80 overflow-y-auto">
+                  {reviews.map((review, index) => (
+                    <div key={index} className="border-b border-gray-100 pb-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center">
+                          <div className="flex mr-2">
+                            {renderStars(review.rating)}
+                          </div>
+                          <span className="font-medium text-sm">{review.name}</span>
+                        </div>
+                        <span className="text-xs text-gray-500">{review.date}</span>
+                      </div>
+                      <p className="text-sm">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No reviews yet. Be the first to review this product!</p>
+              )}
+            </div>
+          )}
+
+          {/* Recipes Tab */}
+          {activeTab === 'recipes' && (
+            <div>
+              <h4 className="font-medium mb-3">Recipes with {product.name}</h4>
+              {product.recipes && product.recipes.length > 0 ? (
+                <div className="space-y-4">
+                  {product.recipes.map((recipe, index) => (
+                    <div key={index} className="bg-gray-50 p-3 rounded-md">
+                      <h5 className="font-medium text-green-700 mb-1">{recipe.title}</h5>
+                      <p className="text-sm mb-2">{recipe.description}</p>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <span className="mr-3">{recipe.prepTime} prep</span>
+                        <span>{recipe.cookTime} cook</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <p className="text-sm mb-2">Try these delicious ways to use {product.name}:</p>
+                  <ul className="list-disc pl-5 text-sm space-y-1">
+                    <li>Add to your morning smoothie for extra nutrition</li>
+                    <li>Mix into yogurt with honey for a healthy snack</li>
+                    <li>Sprinkle over salads for added crunch and flavor</li>
+                    <li>Use in baking for natural sweetness and texture</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

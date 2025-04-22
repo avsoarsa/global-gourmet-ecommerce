@@ -10,6 +10,7 @@ import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { Link } from 'react-router-dom';
 import MobileProductDetail from '../components/product/MobileProductDetail';
 import MobileAddToCartBar from '../components/product/MobileAddToCartBar';
+import MobileFrequentlyBoughtTogether from '../components/products/MobileFrequentlyBoughtTogether';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useRecentlyViewed } from '../context/RecentlyViewedContext';
@@ -301,6 +302,7 @@ const ProductDetailPage = () => {
         handleQuantityChange={handleQuantityChange}
         handleAddToCart={handleAddToCart}
         toggleWishlist={toggleWishlist}
+        activeTab={activeTab}
         setActiveTab={setActiveTab}
         reviews={reviews}
       />
@@ -630,8 +632,13 @@ const ProductDetailPage = () => {
 
       {/* Product Tabs section moved to below the product image */}
 
-      {/* Frequently Bought Together */}
-      <FrequentlyBoughtTogether product={product} />
+      {/* Frequently Bought Together - Desktop */}
+      <div className="hidden md:block">
+        <FrequentlyBoughtTogether product={product} />
+      </div>
+
+      {/* Frequently Bought Together - Mobile */}
+      <MobileFrequentlyBoughtTogether product={product} />
 
       {/* Product Recommendations */}
       <ProductRecommendations
