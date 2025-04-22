@@ -151,44 +151,36 @@ const ProductDetailPage = () => {
   };
 
   const handleSubscriptionChange = (subscriptionOptions) => {
+    console.log('Subscription options changed:', subscriptionOptions);
     setSubscriptionData(subscriptionOptions);
   };
 
   const handleAddToCart = () => {
     // If subscription is selected, handle subscription
     if (subscriptionData && subscriptionData.isSubscription) {
+      console.log('Adding subscription to cart:', subscriptionData);
+
       // Create subscription with selected options
       const productToSubscribe = {
         ...product,
         price: selectedWeightOption ? selectedWeightOption.price : product.price,
         selectedWeight: selectedWeight,
-        weightOption: selectedWeightOption
+        weightOption: selectedWeightOption,
+        isSubscription: true,
+        subscriptionFrequency: subscriptionData.frequency,
+        subscriptionPrice: subscriptionData.pricing?.price,
+        subscriptionDiscount: subscriptionData.pricing?.discount
       };
 
-      // Subscribe to product
-      subscribeToProduct(productToSubscribe, {
-        frequency: subscriptionData.frequency,
-        weight: selectedWeight,
-        quantity: quantity,
-        // In a real implementation, these would be selected by the user
-        paymentMethod: {
-          id: 'pm_001',
-          last4: '4242',
-          brand: 'Visa',
-          expiryMonth: 12,
-          expiryYear: 2025
-        },
-        shippingAddress: {
-          id: 'addr_001',
-          name: 'John Doe',
-          line1: '123 Main St',
-          line2: 'Apt 4B',
-          city: 'New York',
-          state: 'NY',
-          postalCode: '10001',
-          country: 'United States'
-        }
-      });
+      // Add subscription product to cart
+      addToCart(productToSubscribe, quantity);
+
+      // Show notification that subscription was added
+      // This would typically be handled by the CartContext
+
+      // In a real implementation, we would also create the subscription
+      // in the backend when the user completes checkout
+      // For now, we're just adding it to the cart with subscription flags
     } else {
       // Regular add to cart
       // If product has weight options, add the selected weight option
