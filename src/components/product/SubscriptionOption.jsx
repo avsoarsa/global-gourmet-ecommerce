@@ -33,18 +33,33 @@ const SubscriptionOption = ({ product, selectedWeight, onSubscribe }) => {
     if (!selectedFrequency || !weightOption) return null;
 
     const discount = selectedFrequency.discount;
-    const originalPrice = weightOption.price;
-    const discountedPrice = originalPrice * (1 - discount / 100);
+
+    // Check if the weight option has an original price (before any discounts)
+    // If it does, use that as the base price for subscription discount calculation
+    // Otherwise, use the current price
+    const basePrice = weightOption.originalPrice || weightOption.price;
+
+    // Apply subscription discount to the base price
+    const discountedPrice = basePrice * (1 - discount / 100);
 
     return {
       price: parseFloat(discountedPrice.toFixed(2)),
       discount,
-      originalPrice
+      originalPrice: basePrice
     };
   };
 
   // Get current subscription price
   const subscriptionPricing = getSubscriptionPrice(frequency);
+
+  // Debug log to see what's happening with the subscription price calculation
+  console.log('Subscription pricing:', {
+    weightOption,
+    originalPrice: weightOption?.price,
+    frequency,
+    discount: subscriptionPricing?.discount,
+    calculatedPrice: subscriptionPricing?.price
+  });
 
   // Handle subscription toggle
   const handleSubscriptionToggle = () => {
