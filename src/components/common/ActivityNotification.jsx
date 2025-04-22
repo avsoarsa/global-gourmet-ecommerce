@@ -135,7 +135,28 @@ const ActivityNotification = ({
   };
 
   const handleTouchMove = (e) => {
+    if (!touchStart) return;
     setTouchEnd(e.touches[0].clientX);
+
+    // Apply real-time transform during swipe
+    const distance = touchStart - e.touches[0].clientX;
+    const swipeThreshold = 50;
+
+    if (position.includes('right') && distance > 0) {
+      // Left swipe for right-positioned notifications
+      const translateX = Math.min(distance, 100);
+      if (notificationRef.current) {
+        notificationRef.current.style.transform = `translateX(-${translateX}px)`;
+        notificationRef.current.style.opacity = `${1 - (translateX / 100)}`;
+      }
+    } else if (position.includes('left') && distance < 0) {
+      // Right swipe for left-positioned notifications
+      const translateX = Math.min(Math.abs(distance), 100);
+      if (notificationRef.current) {
+        notificationRef.current.style.transform = `translateX(${translateX}px)`;
+        notificationRef.current.style.opacity = `${1 - (translateX / 100)}`;
+      }
+    }
   };
 
   const handleTouchEnd = () => {
@@ -152,6 +173,12 @@ const ActivityNotification = ({
     // For left-positioned notifications, dismiss on right swipe
     else if (position.includes('left') && isRightSwipe) {
       dismissNotification();
+    } else {
+      // Reset transform if swipe wasn't enough to dismiss
+      if (notificationRef.current) {
+        notificationRef.current.style.transform = '';
+        notificationRef.current.style.opacity = '1';
+      }
     }
 
     // Reset touch positions

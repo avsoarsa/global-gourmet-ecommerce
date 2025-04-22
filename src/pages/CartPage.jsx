@@ -89,7 +89,8 @@ const CartPage = () => {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Cart Items */}
         <div className="lg:w-2/3">
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+          {/* Desktop Cart Table */}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6 hidden md:block">
             <table className="w-full responsive-table">
               <thead className="bg-gray-50">
                 <tr>
@@ -222,6 +223,89 @@ const CartPage = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cart Items */}
+          <div className="md:hidden space-y-4 mb-6">
+            {cartItems.map(item => (
+              <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                <div className="flex p-3">
+                  <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 pl-3 flex flex-col">
+                    <div className="flex justify-between">
+                      <h3 className="text-sm font-medium text-gray-900 line-clamp-2">{item.name}</h3>
+                      <button
+                        onClick={() => handleRemoveItem(item.id)}
+                        className="text-red-600 hover:text-red-900 ml-2"
+                      >
+                        <FontAwesomeIcon icon={faTrash} size="sm" />
+                      </button>
+                    </div>
+
+                    {item.selectedWeight && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Weight: {item.selectedWeight}
+                      </div>
+                    )}
+
+                    {item.isSubscription && (
+                      <div className="text-xs text-green-600 font-medium mt-1 flex items-center">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Subscription ({item.subscriptionFrequency})
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between mt-auto pt-2">
+                      <div className="text-sm font-medium text-green-700">
+                        {currencySymbol}
+                        {(() => {
+                          let basePrice;
+                          if (item.isSubscription && item.subscriptionPrice) {
+                            basePrice = convertPriceSync(item.subscriptionPrice);
+                          } else if (item.weightOption) {
+                            basePrice = convertPriceSync(item.weightOption.price);
+                          } else {
+                            basePrice = convertPriceSync(item.price);
+                          }
+                          const total = typeof basePrice === 'number' ? basePrice * item.quantity : 0;
+                          return total.toFixed(2);
+                        })()}
+                      </div>
+
+                      <div className="flex items-center border border-gray-300 rounded-md">
+                        <button
+                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                          className="px-2 py-1 text-gray-600 hover:bg-gray-100"
+                        >
+                          <FontAwesomeIcon icon={faMinus} size="xs" />
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value))}
+                          className="w-8 text-center border-x border-gray-300 py-1 text-sm"
+                        />
+                        <button
+                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                          className="px-2 py-1 text-gray-600 hover:bg-gray-100"
+                        >
+                          <FontAwesomeIcon icon={faPlus} size="xs" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="flex justify-between items-center mb-8">
@@ -383,8 +467,8 @@ const CartPage = () => {
       </div>
 
       {/* Floating Checkout Button for Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:hidden z-10 shadow-lg">
-        <div className="flex items-center justify-between mb-2">
+      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:hidden z-50 shadow-lg">
+        <div className="flex items-center justify-between">
           <div>
             <div className="text-sm text-gray-600">Total:</div>
             <div className="text-xl font-bold text-gray-900">

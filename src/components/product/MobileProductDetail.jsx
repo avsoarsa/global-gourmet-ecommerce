@@ -257,31 +257,33 @@ const MobileProductDetail = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="mobile-product-tabs overflow-x-auto flex mb-4 border-t border-gray-200 py-2">
-          <button
-            className={`mobile-product-tab whitespace-nowrap px-4 py-2 mx-1 rounded-full text-sm font-medium ${activeTab === 'description' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
-            onClick={() => setActiveTab('description')}
-          >
-            Details
-          </button>
-          <button
-            className={`mobile-product-tab whitespace-nowrap px-4 py-2 mx-1 rounded-full text-sm font-medium ${activeTab === 'nutrition' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
-            onClick={() => setActiveTab('nutrition')}
-          >
-            Nutrition
-          </button>
-          <button
-            className={`mobile-product-tab whitespace-nowrap px-4 py-2 mx-1 rounded-full text-sm font-medium ${activeTab === 'reviews' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
-            onClick={() => setActiveTab('reviews')}
-          >
-            Reviews
-          </button>
-          <button
-            className={`mobile-product-tab whitespace-nowrap px-4 py-2 mx-1 rounded-full text-sm font-medium ${activeTab === 'recipes' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
-            onClick={() => setActiveTab('recipes')}
-          >
-            Recipes
-          </button>
+        <div className="mobile-product-tabs overflow-x-auto flex mb-4 border-t border-gray-200 py-2 no-scrollbar">
+          <div className="flex w-full justify-between px-1">
+            <button
+              className={`mobile-product-tab whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium flex-1 mx-1 ${activeTab === 'description' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+              onClick={() => setActiveTab('description')}
+            >
+              Details
+            </button>
+            <button
+              className={`mobile-product-tab whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium flex-1 mx-1 ${activeTab === 'nutrition' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+              onClick={() => setActiveTab('nutrition')}
+            >
+              Nutrition
+            </button>
+            <button
+              className={`mobile-product-tab whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium flex-1 mx-1 ${activeTab === 'reviews' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+              onClick={() => setActiveTab('reviews')}
+            >
+              Reviews
+            </button>
+            <button
+              className={`mobile-product-tab whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium flex-1 mx-1 ${activeTab === 'recipes' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+              onClick={() => setActiveTab('recipes')}
+            >
+              Recipe
+            </button>
+          </div>
         </div>
 
         {/* Tab Content */}
