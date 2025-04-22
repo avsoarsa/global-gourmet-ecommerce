@@ -34,6 +34,7 @@ const MobileProductDetail = ({
   setActiveTab,
   reviews
 }) => {
+  const [showDescription, setShowDescription] = useState(false);
 
   return (
     <div className="md:hidden">
