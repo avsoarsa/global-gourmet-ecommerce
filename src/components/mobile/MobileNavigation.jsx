@@ -118,8 +118,10 @@ const MobileNavigation = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Don't show on admin pages
-  if (location.pathname.startsWith('/admin')) {
+  // Don't show on admin pages or when cart has items
+  const cartCount = getCartCount();
+
+  if (location.pathname.startsWith('/admin') || cartCount > 0) {
     return null;
   }
 

@@ -4,6 +4,7 @@ import SimpleHeader from './SimpleHeader';
 import BackToTop from '../common/BackToTop';
 import MobileNavigation from '../mobile/MobileNavigation';
 import PullToRefresh from '../mobile/PullToRefresh';
+import PersistentCartBar from '../cart/PersistentCartBar';
 
 /**
  * ConversionLayout - A distraction-free layout for high-conversion pages
@@ -54,6 +55,7 @@ const ConversionLayout = () => {
         </main>
       </PullToRefresh>
       <BackToTop />
+      <PersistentCartBar />
       <MobileNavigation />
     </div>
   );

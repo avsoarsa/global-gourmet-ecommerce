@@ -7,6 +7,7 @@ import Breadcrumb from '../common/Breadcrumb';
 import MobileNavigation from '../mobile/MobileNavigation';
 import PullToRefresh from '../mobile/PullToRefresh';
 import SkipToContent from '../common/SkipToContent';
+import PersistentCartBar from '../cart/PersistentCartBar';
 
 const Layout = () => {
   const location = useLocation();
@@ -59,6 +60,7 @@ const Layout = () => {
       </PullToRefresh>
       <Footer />
       <BackToTop />
+      <PersistentCartBar />
       <MobileNavigation />
     </div>
   );

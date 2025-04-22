@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
+import { useCart } from '../../context/CartContext';
 
 const BackToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { getCartCount } = useCart();
+  const cartCount = getCartCount();
 
   // Show button when page is scrolled down
   useEffect(() => {
@@ -33,7 +36,7 @@ const BackToTop = () => {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-20 right-4 md:bottom-6 md:right-6 bg-green-600 hover:bg-green-700 text-white w-14 h-14 md:w-12 md:h-12 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 z-50 border-2 border-white"
+          className={`fixed ${cartCount > 0 ? 'bottom-32' : 'bottom-20'} right-4 md:bottom-6 md:right-6 bg-green-600 hover:bg-green-700 text-white w-14 h-14 md:w-12 md:h-12 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 z-50 border-2 border-white`}
           aria-label="Back to top"
         >
           <FontAwesomeIcon icon={faArrowUp} size="lg" />

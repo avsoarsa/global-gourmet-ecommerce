@@ -5,6 +5,7 @@ import BackToTop from '../common/BackToTop';
 import Breadcrumb from '../common/Breadcrumb';
 import MobileNavigation from '../mobile/MobileNavigation';
 import PullToRefresh from '../mobile/PullToRefresh';
+import PersistentCartBar from '../cart/PersistentCartBar';
 
 /**
  * ProductLayout - A layout for product-related pages without a footer
@@ -65,6 +66,7 @@ const ProductLayout = () => {
         </main>
       </PullToRefresh>
       <BackToTop />
+      <PersistentCartBar />
       <MobileNavigation />
     </div>
   );

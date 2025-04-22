@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { useCart } from '../../context/CartContext';
 
 const MobileAddToCartBar = ({
   product,
@@ -8,6 +9,13 @@ const MobileAddToCartBar = ({
   convertPriceSync,
   handleAddToCart
 }) => {
+  const { getCartCount } = useCart();
+  const cartCount = getCartCount();
+
+  // Don't show if cart already has items (persistent cart bar will be shown instead)
+  if (cartCount > 0) {
+    return null;
+  }
   // Calculate the current price based on selected weight option
   const currentPrice = selectedWeightOption ? selectedWeightOption.price : product.price;
   const formattedPrice = (() => {
