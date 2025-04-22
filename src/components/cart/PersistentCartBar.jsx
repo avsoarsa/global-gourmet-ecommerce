@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from '../../context/CartContext';
@@ -7,15 +7,16 @@ import { useRegion } from '../../context/RegionContext';
 const PersistentCartBar = () => {
   const { cartItems, getCartTotal, getCartCount } = useCart();
   const { currencySymbol, convertPriceSync } = useRegion();
-  
+  const location = useLocation();
+
   const cartCount = getCartCount();
   const cartTotal = getCartTotal();
-  
-  // Don't render if cart is empty
-  if (cartCount === 0) {
+
+  // Don't render if cart is empty or if we're on the cart page
+  if (cartCount === 0 || location.pathname === '/cart') {
     return null;
   }
-  
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex items-center justify-between z-50 md:hidden shadow-lg persistent-cart-bar">
       <div className="flex items-center">
@@ -36,7 +37,7 @@ const PersistentCartBar = () => {
           </span>
         </div>
       </div>
-      
+
       <Link
         to="/cart"
         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium flex items-center"

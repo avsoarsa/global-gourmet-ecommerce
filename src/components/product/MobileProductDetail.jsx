@@ -70,6 +70,30 @@ const MobileProductDetail = ({
           />
         </button>
 
+        {/* Share Button */}
+        <button
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: product.name,
+                text: product.description,
+                url: window.location.href,
+              })
+              .catch(err => console.error('Error sharing:', err));
+            } else {
+              // Fallback for browsers that don't support Web Share API
+              alert('Sharing is not supported in this browser');
+            }
+          }}
+          className="absolute top-4 right-16 z-10 bg-white rounded-full p-2 shadow-md"
+          aria-label="Share product"
+        >
+          <FontAwesomeIcon
+            icon={faShare}
+            className="text-gray-600"
+          />
+        </button>
+
         {/* Discount Badge */}
         {product.discount && (
           <div className="absolute top-4 left-4 z-10 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-bold">

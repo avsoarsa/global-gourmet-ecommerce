@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStar, faStarHalfAlt, faShoppingCart,
   faHeart as faHeartSolid, faChevronLeft, faChevronRight,
-  faArrowRight
+  faArrowRight, faShare
 } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { Link } from 'react-router-dom';
@@ -599,14 +599,25 @@ const ProductDetailPage = () => {
                 <FontAwesomeIcon icon={isInWishlist(product.id) ? faHeartSolid : faHeartRegular} />
               </button>
 
-              <div className="border border-gray-300 hover:border-gray-400 px-4 py-3 rounded-md transition duration-300">
-                <SocialShare
-                  compact={true}
-                  title={`Check out ${product.name} on Global Gourmet`}
-                  description={product.description}
-                  image={product.image}
-                />
-              </div>
+              <button
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: product.name,
+                      text: product.description,
+                      url: window.location.href,
+                    })
+                    .catch(err => console.error('Error sharing:', err));
+                  } else {
+                    // Fallback for browsers that don't support Web Share API
+                    alert('Sharing is not supported in this browser');
+                  }
+                }}
+                className="border border-gray-300 hover:border-gray-400 px-4 py-3 rounded-md transition duration-300"
+                title="Share this product"
+              >
+                <FontAwesomeIcon icon={faShare} />
+              </button>
             </div>
 
             {/* Limited Time Offer */}
@@ -650,21 +661,6 @@ const ProductDetailPage = () => {
 
       {/* Recently Viewed Products */}
       <RecentlyViewedProducts currentProductId={product.id} />
-
-      {/* Social Sharing Section - Desktop Only */}
-      <div className="mt-12 mb-16 bg-gray-50 p-8 rounded-lg hidden md:block">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Share This Product</h2>
-          <p className="text-gray-600">If you like this product, share it with your friends!</p>
-        </div>
-        <div className="flex justify-center">
-          <SocialShare
-            title={`Check out ${product.name} on Global Gourmet`}
-            description={product.description}
-            image={product.image}
-          />
-        </div>
-      </div>
     </div>
     </>
   );
