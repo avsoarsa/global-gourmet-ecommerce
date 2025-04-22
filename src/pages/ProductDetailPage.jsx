@@ -273,7 +273,7 @@ const ProductDetailPage = () => {
 
       <div className="flex flex-col lg:flex-row gap-8 mb-12">
         {/* Product Image and Tabs */}
-        <div className="lg:w-1/2 flex flex-col">
+        <div className="lg:w-1/2 flex flex-col h-full">
           <div className="bg-white rounded-lg overflow-hidden shadow-md mb-4">
             <div className="w-full h-[400px]">
               <LazyImage
@@ -288,12 +288,12 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Product Tabs below image */}
-          <div className="bg-white rounded-lg shadow-md p-4">
-            <div className="border-b border-gray-200">
-              <nav className="flex space-x-4">
+          <div className="bg-white rounded-lg shadow-md p-4 flex flex-col flex-grow" style={{ minHeight: '400px' }}>
+            <div className="border-b border-gray-200 sticky top-0 bg-white z-10">
+              <nav className="flex space-x-4 overflow-x-auto pb-1">
                 <button
                   onClick={() => setActiveTab('description')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeTab === 'description'
                       ? 'border-green-600 text-green-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -303,7 +303,7 @@ const ProductDetailPage = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('nutrition')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeTab === 'nutrition'
                       ? 'border-green-600 text-green-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -313,7 +313,7 @@ const ProductDetailPage = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('reviews')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeTab === 'reviews'
                       ? 'border-green-600 text-green-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -323,7 +323,7 @@ const ProductDetailPage = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('recipes')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeTab === 'recipes'
                       ? 'border-green-600 text-green-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -334,7 +334,7 @@ const ProductDetailPage = () => {
               </nav>
             </div>
 
-            <div className="py-4 max-h-[300px] overflow-y-auto">
+            <div className="py-4 flex-grow overflow-y-auto">
               {activeTab === 'description' && (
                 <div>
                   <p className="text-gray-700 text-sm leading-relaxed mb-2">

@@ -217,7 +217,7 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
             </div>
 
             <div className="divide-y divide-gray-200">
-              {filteredReviews.slice(0, 2).map(review => (
+              {filteredReviews.slice(0, 6).map(review => (
                 <div key={review.id} className="py-3">
                   <div className="flex items-center mb-1">
                     <StarRating rating={review.rating} />
@@ -225,12 +225,12 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
                       {format(parseISO(review.date), 'MMM d, yyyy')}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-700 line-clamp-2 mb-1">{review.content}</p>
+                  <p className="text-xs text-gray-700 mb-1">{review.content}</p>
                   <div className="text-xs text-gray-500">{review.userName}</div>
                 </div>
               ))}
 
-              {reviews.length > 2 && (
+              {reviews.length > 6 && (
                 <button
                   onClick={() => setActiveTab('reviews')}
                   className="w-full text-center py-2 text-xs text-green-600 hover:text-green-700 font-medium"

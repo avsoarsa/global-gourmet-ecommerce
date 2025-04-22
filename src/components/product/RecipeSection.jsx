@@ -30,7 +30,7 @@ const RecipeSection = ({ productId, compact = false, setActiveTab }) => {
         </div>
 
         <div className="space-y-3">
-          {recipes.slice(0, 2).map(recipe => (
+          {recipes.slice(0, 4).map(recipe => (
             <div key={recipe.id} className="flex items-start space-x-3 border-b border-gray-100 pb-3">
               <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
                 <img
@@ -41,13 +41,13 @@ const RecipeSection = ({ productId, compact = false, setActiveTab }) => {
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-800">{recipe.title}</h4>
-                <p className="text-xs text-gray-500 line-clamp-2">{recipe.description}</p>
+                <p className="text-xs text-gray-500">{recipe.description}</p>
               </div>
             </div>
           ))}
         </div>
 
-        {recipes.length > 2 && (
+        {recipes.length > 4 && (
           <button
             onClick={() => setActiveTab('recipes')}
             className="w-full text-center py-2 text-xs text-green-600 hover:text-green-700 font-medium"
