@@ -272,9 +272,9 @@ const ProductDetailPage = () => {
         </button>
 
       <div className="flex flex-col lg:flex-row gap-8 mb-12">
-        {/* Product Image */}
-        <div className="lg:w-1/2">
-          <div className="bg-white rounded-lg overflow-hidden shadow-md">
+        {/* Product Image and Tabs */}
+        <div className="lg:w-1/2 flex flex-col">
+          <div className="bg-white rounded-lg overflow-hidden shadow-md mb-4">
             <div className="w-full h-[400px]">
               <LazyImage
                 src={product.image}
@@ -284,6 +284,114 @@ const ProductDetailPage = () => {
                 priority={true}
                 quality={90}
               />
+            </div>
+          </div>
+
+          {/* Product Tabs below image */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <div className="border-b border-gray-200">
+              <nav className="flex space-x-4">
+                <button
+                  onClick={() => setActiveTab('description')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'description'
+                      ? 'border-green-600 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Description
+                </button>
+                <button
+                  onClick={() => setActiveTab('nutrition')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'nutrition'
+                      ? 'border-green-600 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Nutrition
+                </button>
+                <button
+                  onClick={() => setActiveTab('reviews')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'reviews'
+                      ? 'border-green-600 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Reviews ({product.reviews})
+                </button>
+                <button
+                  onClick={() => setActiveTab('recipes')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'recipes'
+                      ? 'border-green-600 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Recipes
+                </button>
+              </nav>
+            </div>
+
+            <div className="py-4 max-h-[300px] overflow-y-auto">
+              {activeTab === 'description' && (
+                <div>
+                  <p className="text-gray-700 text-sm leading-relaxed mb-2">
+                    {product.description}
+                  </p>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Our {product.name} are sourced directly from {product.origin}, ensuring the highest quality and freshness.
+                    Each batch is carefully selected and undergoes rigorous quality control to meet our premium standards.
+                  </p>
+                </div>
+              )}
+
+              {activeTab === 'nutrition' && (
+                <div>
+                  <p className="text-gray-700 text-sm leading-relaxed mb-2">
+                    {product.nutritionalInfo}
+                  </p>
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <h3 className="font-medium text-gray-800 mb-2 text-sm">Health Benefits:</h3>
+                    <ul className="list-disc pl-5 text-gray-700 space-y-1 text-sm">
+                      <li>Rich in essential nutrients and minerals</li>
+                      <li>Natural source of energy</li>
+                      <li>Supports overall well-being</li>
+                      <li>100% natural with no additives or preservatives</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'reviews' && (
+                <div className="text-sm">
+                  {isWritingReview ? (
+                    <div id="review-form-section">
+                      <ReviewForm
+                        productId={product.id}
+                        productName={product.name}
+                        onSubmit={handleSubmitReview}
+                        onCancel={() => setIsWritingReview(false)}
+                      />
+                    </div>
+                  ) : (
+                    <ReviewList
+                      reviews={reviews}
+                      onMarkHelpful={handleMarkHelpful}
+                      onWriteReview={handleWriteReview}
+                      compact={true}
+                      setActiveTab={setActiveTab}
+                    />
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'recipes' && (
+                <div>
+                  <RecipeSection productId={product.id} compact={true} setActiveTab={setActiveTab} />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -486,111 +594,7 @@ const ProductDetailPage = () => {
         </div>
       </div>
 
-      {/* Product Tabs */}
-      <div className="mb-12">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('description')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'description'
-                  ? 'border-green-600 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Description
-            </button>
-            <button
-              onClick={() => setActiveTab('nutrition')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'nutrition'
-                  ? 'border-green-600 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Nutritional Information
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'reviews'
-                  ? 'border-green-600 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Reviews ({product.reviews})
-            </button>
-            <button
-              onClick={() => setActiveTab('recipes')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'recipes'
-                  ? 'border-green-600 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Recipes
-            </button>
-          </nav>
-        </div>
-
-        <div className="py-6">
-          {activeTab === 'description' && (
-            <div>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                {product.description}
-              </p>
-              <p className="text-gray-700 leading-relaxed">
-                Our {product.name} are sourced directly from {product.origin}, ensuring the highest quality and freshness.
-                Each batch is carefully selected and undergoes rigorous quality control to meet our premium standards.
-              </p>
-            </div>
-          )}
-
-          {activeTab === 'nutrition' && (
-            <div>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                {product.nutritionalInfo}
-              </p>
-              <div className="bg-gray-50 p-4 rounded-md">
-                <h3 className="font-medium text-gray-800 mb-2">Health Benefits:</h3>
-                <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                  <li>Rich in essential nutrients and minerals</li>
-                  <li>Natural source of energy</li>
-                  <li>Supports overall well-being</li>
-                  <li>100% natural with no additives or preservatives</li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'reviews' && (
-            <div>
-              {isWritingReview ? (
-                <div id="review-form-section">
-                  <ReviewForm
-                    productId={product.id}
-                    productName={product.name}
-                    onSubmit={handleSubmitReview}
-                    onCancel={() => setIsWritingReview(false)}
-                  />
-                </div>
-              ) : (
-                <ReviewList
-                  reviews={reviews}
-                  onMarkHelpful={handleMarkHelpful}
-                  onWriteReview={handleWriteReview}
-                />
-              )}
-            </div>
-          )}
-
-          {activeTab === 'recipes' && (
-            <div>
-              <RecipeSection productId={product.id} />
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Product Tabs section moved to below the product image */}
 
       {/* Frequently Bought Together */}
       <FrequentlyBoughtTogether product={product} />
