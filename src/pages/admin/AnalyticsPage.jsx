@@ -5,11 +5,14 @@ import {
   faUsers,
   faShoppingCart,
   faChartPie,
-  faChartBar
+  faChartBar,
+  faLightbulb,
+  faDownload
 } from '@fortawesome/free-solid-svg-icons';
 import AnalyticsDashboard from '../../components/admin/analytics/AnalyticsDashboard';
 import UserBehaviorAnalytics from '../../components/admin/analytics/UserBehaviorAnalytics';
 import SalesAnalytics from '../../components/admin/analytics/SalesAnalytics';
+import PersonalizationPerformance from '../../components/admin/PersonalizationPerformance';
 
 // Sample analytics data (in a real app, this would come from an API)
 const sampleData = {
@@ -398,6 +401,7 @@ const AnalyticsPage = () => {
     { id: 'overview', label: 'Overview', icon: faChartLine },
     { id: 'sales', label: 'Sales Analytics', icon: faChartBar },
     { id: 'behavior', label: 'User Behavior', icon: faUsers },
+    { id: 'personalization', label: 'Personalization', icon: faLightbulb },
   ];
 
   return (
@@ -430,6 +434,7 @@ const AnalyticsPage = () => {
         {activeTab === 'overview' && <AnalyticsDashboard />}
         {activeTab === 'sales' && <SalesAnalytics />}
         {activeTab === 'behavior' && <UserBehaviorAnalytics />}
+        {activeTab === 'personalization' && <PersonalizationPerformance />}
       </div>
     </div>
   );
