@@ -34,9 +34,8 @@ const SubscriptionOption = ({ product, selectedWeight, onSubscribe }) => {
 
     const discount = selectedFrequency.discount;
 
-    // Check if the weight option has an original price (before any discounts)
-    // If it does, use that as the base price for subscription discount calculation
-    // Otherwise, use the current price
+    // For subscription pricing, we should always use the original price (MRP) if available
+    // This ensures subscription discounts are applied to the full retail price
     const basePrice = weightOption.originalPrice || weightOption.price;
 
     // Apply subscription discount to the base price
@@ -53,12 +52,16 @@ const SubscriptionOption = ({ product, selectedWeight, onSubscribe }) => {
   const subscriptionPricing = getSubscriptionPrice(frequency);
 
   // Debug log to see what's happening with the subscription price calculation
-  console.log('Subscription pricing:', {
+  console.log('Subscription pricing details:', {
+    productName: product?.name,
     weightOption,
-    originalPrice: weightOption?.price,
+    weightOptionPrice: weightOption?.price,
+    weightOptionOriginalPrice: weightOption?.originalPrice,
+    basePrice: weightOption?.originalPrice || weightOption?.price,
     frequency,
-    discount: subscriptionPricing?.discount,
-    calculatedPrice: subscriptionPricing?.price
+    subscriptionDiscount: subscriptionPricing?.discount,
+    calculatedPrice: subscriptionPricing?.price,
+    calculation: `${weightOption?.originalPrice || weightOption?.price} * (1 - ${subscriptionPricing?.discount}/100) = ${subscriptionPricing?.price}`
   });
 
   // Handle subscription toggle

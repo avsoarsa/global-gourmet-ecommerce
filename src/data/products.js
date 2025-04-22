@@ -393,8 +393,8 @@ export const products = [
     id: 18,
     name: "Dried Mango Slices",
     category: "Dried Fruits",
-    price: 10.99,
-    originalPrice: 13.99,
+    price: 11.79,
+    originalPrice: 15.00,
     discount: 21,
     image: "https://images.unsplash.com/photo-1596273312170-8f17f4cc9980?q=80&w=1000&auto=format&fit=crop",
     description: "Sweet and tangy dried mango slices with no added sugar. A tropical treat.",
@@ -405,10 +405,10 @@ export const products = [
     inStock: true,
     featured: true,
     weightOptions: [
-      { weight: '250g', price: 5.49, originalPrice: 6.99, inStock: true },
-      { weight: '500g', price: 10.99, originalPrice: 13.99, inStock: true },
-      { weight: '1kg', price: 20.99, originalPrice: 26.99, inStock: true },
-      { weight: '5kg', price: 99.99, originalPrice: 119.99, inStock: true }
+      { weight: '250g', price: 5.89, originalPrice: 7.50, inStock: true },
+      { weight: '500g', price: 11.79, originalPrice: 15.00, inStock: true },
+      { weight: '1kg', price: 22.51, originalPrice: 28.65, inStock: true },
+      { weight: '5kg', price: 107.24, originalPrice: 136.69, inStock: true }
     ],
     defaultWeight: '500g'
   },
