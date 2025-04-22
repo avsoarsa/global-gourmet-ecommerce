@@ -81,7 +81,7 @@ const CheckoutStepper = ({ currentStep, steps, onStepClick }) => {
                     {step.name}
                   </div>
                   {step.description && (
-                    <div className="text-gray-400 text-xs text-center whitespace-normal w-20 mx-auto">
+                    <div className="text-gray-400 text-xs text-center whitespace-normal w-20 mx-auto hidden sm:block">
                       {step.description}
                     </div>
                   )}

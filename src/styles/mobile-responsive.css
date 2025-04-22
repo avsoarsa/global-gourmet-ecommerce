@@ -1,0 +1,300 @@
+/* Mobile Responsiveness Styles */
+
+/* General Mobile Adjustments */
+@media (max-width: 640px) {
+  /* Reduce padding on mobile */
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Adjust font sizes for mobile */
+  h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  h3 {
+    font-size: 1.125rem !important;
+  }
+  
+  /* Improve button touch targets */
+  button, 
+  .btn,
+  a.btn,
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+  }
+  
+  /* Improve form elements */
+  input, 
+  select, 
+  textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+  
+  /* Adjust table display for small screens */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  /* Ensure images don't overflow */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Product Detail Page Adjustments */
+@media (max-width: 640px) {
+  /* Adjust product image height */
+  .product-detail-image {
+    height: 300px !important;
+  }
+  
+  /* Make tabs scrollable */
+  .product-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  .product-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+  
+  /* Adjust spacing */
+  .product-detail-section {
+    margin-bottom: 1rem !important;
+  }
+}
+
+/* Checkout Page Adjustments */
+@media (max-width: 640px) {
+  /* Simplify checkout steps */
+  .checkout-step-description {
+    display: none;
+  }
+  
+  /* Stack form fields */
+  .checkout-form-row {
+    flex-direction: column !important;
+  }
+  
+  .checkout-form-field {
+    width: 100% !important;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Adjust order summary */
+  .order-summary {
+    position: static !important;
+    width: 100% !important;
+  }
+}
+
+/* Admin Dashboard Adjustments */
+@media (max-width: 768px) {
+  /* Adjust chart containers */
+  .chart-container {
+    height: 250px !important;
+  }
+  
+  /* Stack admin cards */
+  .admin-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Improve table scrolling */
+  .admin-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Analytics Dashboard Adjustments */
+@media (max-width: 640px) {
+  /* Adjust chart sizes */
+  .analytics-chart {
+    height: 250px !important;
+  }
+  
+  /* Stack filter controls */
+  .analytics-filters {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .analytics-filter-item {
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+}
+
+/* Cart Page Adjustments */
+@media (max-width: 640px) {
+  /* Simplify cart items */
+  .cart-item {
+    grid-template-columns: 80px 1fr !important;
+  }
+  
+  .cart-item-details {
+    grid-column: 1 / -1;
+  }
+  
+  /* Fix cart summary */
+  .cart-summary {
+    position: static !important;
+    width: 100% !important;
+  }
+}
+
+/* Fix for iOS Safari 100vh issue */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Improve touch targets for all interactive elements */
+@media (max-width: 640px) {
+  a, button, input, select, textarea, [role="button"] {
+    padding: 0.5rem;
+  }
+  
+  /* Add spacing between stacked elements */
+  .mobile-stack > * + * {
+    margin-top: 0.75rem;
+  }
+}
+
+/* Fix for mobile navigation */
+@media (max-width: 640px) {
+  .mobile-nav-padding {
+    padding-bottom: 4rem !important;
+  }
+  
+  .mobile-nav-fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+  }
+}
+
+/* Improve mobile scrolling */
+@media (max-width: 640px) {
+  .mobile-smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Fix for mobile modals */
+@media (max-width: 640px) {
+  .mobile-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+  
+  .mobile-modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+}
+
+/* Improve mobile form layouts */
+@media (max-width: 640px) {
+  .form-grid {
+    display: block !important;
+  }
+  
+  .form-grid > * {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Fix for mobile tables */
+@media (max-width: 640px) {
+  .responsive-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .responsive-table thead {
+    display: none;
+  }
+  
+  .responsive-table tbody tr {
+    display: block;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.75rem 0;
+  }
+  
+  .responsive-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border: none;
+  }
+  
+  .responsive-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 500;
+    margin-right: 1rem;
+  }
+}
+
+/* Improve mobile charts */
+@media (max-width: 640px) {
+  canvas.chart-canvas {
+    height: 200px !important;
+  }
+}
+
+/* Fix for mobile filters and sorting */
+@media (max-width: 640px) {
+  .filter-sort-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-sort-container > * {
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+}
+
+/* Improve mobile product grid */
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+  
+  .product-card {
+    padding: 0.5rem !important;
+  }
+  
+  .product-card-title {
+    font-size: 0.875rem !important;
+  }
+  
+  .product-card-price {
+    font-size: 0.875rem !important;
+  }
+}

@@ -292,7 +292,7 @@ const UserBehaviorAnalytics = () => {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-blue-100 text-blue-600">
@@ -400,7 +400,7 @@ const UserBehaviorAnalytics = () => {
       </div>
 
       {/* Device & User Distribution */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 overflow-x-auto">
         {/* Device Distribution */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">

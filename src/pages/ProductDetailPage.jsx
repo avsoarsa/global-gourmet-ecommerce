@@ -275,7 +275,7 @@ const ProductDetailPage = () => {
         {/* Product Image and Tabs */}
         <div className="lg:w-1/2 flex flex-col h-full">
           <div className="bg-white rounded-lg overflow-hidden shadow-md mb-4">
-            <div className="w-full h-[400px]">
+            <div className="w-full h-[400px] product-detail-image">
               <LazyImage
                 src={product.image}
                 alt={product.name}
@@ -288,9 +288,9 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Product Tabs below image */}
-          <div className="bg-white rounded-lg shadow-md p-4 flex flex-col flex-grow" style={{ minHeight: '400px' }}>
+          <div className="bg-white rounded-lg shadow-md p-4 flex flex-col flex-grow" style={{ minHeight: '300px' }}>
             <div className="border-b border-gray-200 sticky top-0 bg-white z-10">
-              <nav className="flex space-x-4 overflow-x-auto pb-1">
+              <nav className="flex space-x-4 overflow-x-auto pb-1 product-tabs">
                 <button
                   onClick={() => setActiveTab('description')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${

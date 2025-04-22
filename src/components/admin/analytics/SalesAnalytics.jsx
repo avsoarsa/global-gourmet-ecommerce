@@ -393,7 +393,7 @@ const SalesAnalytics = () => {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-green-100 text-green-600">
@@ -495,7 +495,7 @@ const SalesAnalytics = () => {
           <h3 className="text-lg font-medium text-gray-900">Sales by Category</h3>
         </div>
 
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-x-auto">
           <div>
             <Pie
               data={prepareSalesByCategoryChart()}

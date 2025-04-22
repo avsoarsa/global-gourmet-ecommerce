@@ -90,7 +90,7 @@ const CartPage = () => {
         {/* Cart Items */}
         <div className="lg:w-2/3">
           <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-            <table className="w-full">
+            <table className="w-full responsive-table">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -245,7 +245,7 @@ const CartPage = () => {
 
         {/* Order Summary */}
         <div className="lg:w-1/3">
-          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100 sticky top-24">
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100 sticky top-24 cart-summary">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
             {/* Trust Badges */}

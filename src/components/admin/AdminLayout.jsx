@@ -201,7 +201,7 @@ const AdminLayout = () => {
         </header>
 
         {/* Page content */}
-        <main id="main-content" className="flex-1 overflow-y-auto pt-16 pb-6 px-4 sm:px-6 lg:px-8">
+        <main id="main-content" className="flex-1 overflow-y-auto pt-16 pb-6 px-2 sm:px-4 md:px-6 lg:px-8">
           {/* Error message */}
           {errorMessage && (
             <div className="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md flex items-center justify-between">

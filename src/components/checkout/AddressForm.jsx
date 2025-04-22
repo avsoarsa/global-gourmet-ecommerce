@@ -188,7 +188,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 checkout-form-row">
         {/* First Name */}
         <div>
           <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
@@ -314,7 +314,7 @@ const AddressForm = ({ address = {}, onAddressChange, showValidation = false }) 
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 checkout-form-row">
         {/* State/Province */}
         <div>
           <label htmlFor="state" className="block text-sm font-medium text-gray-700">
