@@ -173,21 +173,21 @@ const Header = () => {
                       className={`w-full text-left px-4 py-2 text-sm ${i18n.language === 'en' ? 'text-green-600 font-medium' : 'text-gray-700'} hover:bg-green-50 hover:text-green-700 transition-colors duration-200 flex justify-between items-center`}
                     >
                       <span>English</span>
-                      {i18n.language === 'en' && <FontAwesomeIcon icon={faCheck} className="text-green-600" />}
+                      {i18n.language === 'en' && <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
                     </button>
                     <button
                       onClick={() => changeLanguage('es')}
                       className={`w-full text-left px-4 py-2 text-sm ${i18n.language === 'es' ? 'text-green-600 font-medium' : 'text-gray-700'} hover:bg-green-50 hover:text-green-700 transition-colors duration-200 flex justify-between items-center`}
                     >
                       <span>Español</span>
-                      {i18n.language === 'es' && <FontAwesomeIcon icon={faCheck} className="text-green-600" />}
+                      {i18n.language === 'es' && <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
                     </button>
                     <button
                       onClick={() => changeLanguage('fr')}
                       className={`w-full text-left px-4 py-2 text-sm ${i18n.language === 'fr' ? 'text-green-600 font-medium' : 'text-gray-700'} hover:bg-green-50 hover:text-green-700 transition-colors duration-200 flex justify-between items-center`}
                     >
                       <span>Français</span>
-                      {i18n.language === 'fr' && <FontAwesomeIcon icon={faCheck} className="text-green-600" />}
+                      {i18n.language === 'fr' && <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
                     </button>
                   </div>
                 )}

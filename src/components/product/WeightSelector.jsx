@@ -63,12 +63,22 @@ const WeightSelector = ({
             >
               <span className="flex flex-col items-center">
                 <span>{option.weight}</span>
-                <span className="text-xs mt-1">
-                  {option.inStock
-                    ? `${currencySymbol}${typeof convertPriceSync(option.price) === 'number' ? convertPriceSync(option.price).toFixed(2) : '0.00'}`
-                    : 'Out of Stock'
-                  }
-                </span>
+                <div className="text-xs mt-1">
+                  {option.inStock ? (
+                    <div className="flex flex-col items-center">
+                      <span className="font-medium">
+                        {currencySymbol}{typeof convertPriceSync(option.price) === 'number' ? convertPriceSync(option.price).toFixed(2) : '0.00'}
+                      </span>
+                      {option.originalPrice && (
+                        <span className="text-gray-500 line-through">
+                          {currencySymbol}{typeof convertPriceSync(option.originalPrice) === 'number' ? convertPriceSync(option.originalPrice).toFixed(2) : '0.00'}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    'Out of Stock'
+                  )}
+                </div>
               </span>
             </button>
           ))}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * CheckoutStepper component for multi-step checkout process
@@ -67,7 +67,7 @@ const CheckoutStepper = ({ currentStep, steps, onStepClick }) => {
                   `}
                 >
                   {isCompleted ? (
-                    <FontAwesomeIcon icon={faCheck} className="text-sm" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                   ) : (
                     <span className="text-sm font-medium">{stepNumber}</span>
                   )}

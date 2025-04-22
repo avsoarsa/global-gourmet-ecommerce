@@ -74,6 +74,11 @@ const ProductCard = ({ product, showAddToCart = true }) => {
 
         {/* Product Label */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {product.discount && (
+            <span className="badge-danger">
+              {product.discount}% OFF
+            </span>
+          )}
           {isBestseller && (
             <span className="badge-accent">
               BESTSELLER
@@ -99,13 +104,31 @@ const ProductCard = ({ product, showAddToCart = true }) => {
           </p>
 
           <div className="flex justify-between items-center mt-3">
-            <span className="font-bold text-gray-900">
-              {currencySymbol}
-              {(() => {
-                const price = convertPriceSync(product.price);
-                return typeof price === 'number' ? price.toFixed(2) : '0.00';
-              })()}
-            </span>
+            <div className="flex flex-col">
+              <span className="font-bold text-green-700">
+                {currencySymbol}
+                {(() => {
+                  const price = convertPriceSync(product.price);
+                  return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                })()}
+              </span>
+              {product.originalPrice && (
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-gray-500 line-through">
+                    {currencySymbol}
+                    {(() => {
+                      const price = convertPriceSync(product.originalPrice);
+                      return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                    })()}
+                  </span>
+                  {product.discount && (
+                    <span className="text-xs font-medium text-red-600">
+                      -{product.discount}%
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
 
             {showAddToCart ? (
               <button

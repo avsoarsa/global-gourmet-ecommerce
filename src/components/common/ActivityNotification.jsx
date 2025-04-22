@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShoppingCart, faUser, faStar, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faShoppingCart, faUser, faStar } from '@fortawesome/free-solid-svg-icons';
 import { products } from '../../data/products';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -155,7 +155,7 @@ const ActivityNotification = ({
                 }}
               >
                 <span className="sr-only">Close</span>
-                <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               </button>
             </div>
           </div>

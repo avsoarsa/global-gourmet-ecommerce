@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobe, faChevronDown, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { useRegion } from '../../context/RegionContext';
 
 const RegionSelector = ({ compact = false }) => {
@@ -69,7 +69,7 @@ const RegionSelector = ({ compact = false }) => {
                     {regionNames[r]}
                   </span>
                   {region === r && (
-                    <FontAwesomeIcon icon={faCheck} className="text-green-600" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                   )}
                 </button>
               ))}
@@ -104,7 +104,7 @@ const RegionSelector = ({ compact = false }) => {
               <span>{regionNames[r]}</span>
             </span>
             {region === r && (
-              <FontAwesomeIcon icon={faCheck} className="text-green-600" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             )}
           </button>
         ))}

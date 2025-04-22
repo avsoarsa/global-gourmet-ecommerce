@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useRegion } from '../context/RegionContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faBoxOpen, faGift, faCheck, faArrowRight,
+  faBoxOpen, faGift, faArrowRight,
   faPlus, faMinus, faTrash, faShoppingCart
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -203,7 +203,7 @@ const CreateGiftBoxPage = () => {
               {/* Step 1: Select Products */}
               <div className="flex flex-col items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= 1 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'} mb-2`}>
-                  {currentStep > 1 ? <FontAwesomeIcon icon={faCheck} /> : 1}
+                  {currentStep > 1 ? <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> : 1}
                 </div>
                 <div className="text-center">
                   <p className={`font-medium ${currentStep >= 1 ? 'text-green-600' : 'text-gray-500'}`}>Select Products</p>
@@ -216,7 +216,7 @@ const CreateGiftBoxPage = () => {
               {/* Step 2: Customize Box */}
               <div className="flex flex-col items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= 2 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'} mb-2`}>
-                  {currentStep > 2 ? <FontAwesomeIcon icon={faCheck} /> : 2}
+                  {currentStep > 2 ? <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> : 2}
                 </div>
                 <div className="text-center">
                   <p className={`font-medium ${currentStep >= 2 ? 'text-green-600' : 'text-gray-500'}`}>Customize Box</p>
@@ -229,7 +229,7 @@ const CreateGiftBoxPage = () => {
               {/* Step 3: Review & Checkout */}
               <div className="flex flex-col items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= 3 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'} mb-2`}>
-                  {currentStep > 3 ? <FontAwesomeIcon icon={faCheck} /> : 3}
+                  {currentStep > 3 ? <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> : 3}
                 </div>
                 <div className="text-center">
                   <p className={`font-medium ${currentStep >= 3 ? 'text-green-600' : 'text-gray-500'}`}>Review & Checkout</p>
@@ -273,7 +273,7 @@ const CreateGiftBoxPage = () => {
                               />
                               {isSelected && (
                                 <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                                  <FontAwesomeIcon icon={faCheck} size="xs" />
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                 </div>
                               )}
                             </div>

@@ -491,6 +491,23 @@ const ProductsPage = () => {
             placeholder: 'Enter price'
           },
           {
+            name: 'originalPrice',
+            label: 'Original Price (MRP)',
+            type: 'number',
+            min: 0,
+            step: 0.01,
+            placeholder: 'Enter original price'
+          },
+          {
+            name: 'discount',
+            label: 'Discount Percentage',
+            type: 'number',
+            min: 0,
+            max: 99,
+            step: 1,
+            placeholder: 'Enter discount percentage'
+          },
+          {
             name: 'stock',
             label: 'Stock',
             type: 'number',

@@ -100,6 +100,10 @@
     @apply badge bg-amber-100 text-amber-800;
   }
 
+  .badge-danger {
+    @apply badge bg-red-100 text-red-800;
+  }
+
   /* Typography */
   .heading-1 {
     @apply text-4xl md:text-5xl font-bold leading-tight;

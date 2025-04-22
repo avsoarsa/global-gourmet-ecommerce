@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMoneyBillWave, faChevronDown, faCheck, faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
+import { faMoneyBillWave, faChevronDown, faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
 import { useRegion } from '../../context/RegionContext';
 
 const CurrencySelector = ({ compact = false }) => {
@@ -86,7 +86,7 @@ const CurrencySelector = ({ compact = false }) => {
                   <span className="text-xs text-gray-500">- {c.name}</span>
                 </span>
                 {currency === c.code ? (
-                  <FontAwesomeIcon icon={faCheck} className="text-green-600" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                 ) : (
                   <span className="text-xs text-gray-500">
                     {exchangeRates?.base === 'USD' ? `$1 = ${c.symbol}${getExchangeRate(c.code)}` : ''}
@@ -136,7 +136,7 @@ const CurrencySelector = ({ compact = false }) => {
             {currency === c.code ? (
               <div className="flex items-center text-green-600">
                 <span className="mr-2 text-sm">Active</span>
-                <FontAwesomeIcon icon={faCheck} />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               </div>
             ) : (
               <span className="text-sm text-gray-700 font-medium">

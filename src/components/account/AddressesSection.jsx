@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPlus, faEdit, faTrash, faSave,
-  faMapMarkerAlt, faTimes, faCheck
+  faMapMarkerAlt, faTimes
 } from '@fortawesome/free-solid-svg-icons';
 
 // Address Form Component
@@ -241,7 +241,7 @@ const AddressCard = ({ address, onEdit, onDelete, onSetDefault }) => {
           onClick={() => onSetDefault(address.id)}
           className="mt-3 text-sm text-green-600 hover:text-green-700 font-medium flex items-center"
         >
-          <FontAwesomeIcon icon={faCheck} className="mr-1" />
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
           Set as Default
         </button>
       )}
