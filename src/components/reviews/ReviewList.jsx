@@ -174,7 +174,7 @@ const RatingSummary = ({ reviews }) => {
 };
 
 // Main ReviewList Component
-const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, setActiveTab }) => {
+const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false }) => {
   const { currentUser } = useAuth();
   const [sortBy, setSortBy] = useState('newest');
   const [filterRating, setFilterRating] = useState(0); // 0 means all ratings
@@ -231,8 +231,8 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
               </button>
             </div>
 
-            <div className="divide-y divide-gray-200">
-              {filteredReviews.slice(0, 6).map(review => (
+            <div className="divide-y divide-gray-200 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              {filteredReviews.map(review => (
                 <div key={review.id} className="py-3">
                   <div className="flex items-center mb-1">
                     <StarRating rating={review.rating} />
@@ -244,15 +244,6 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
                   <div className="text-xs text-gray-500">{review.userName}</div>
                 </div>
               ))}
-
-              {reviews.length > 6 && (
-                <button
-                  onClick={() => setActiveTab('reviews')}
-                  className="w-full text-center py-2 text-xs text-green-600 hover:text-green-700 font-medium"
-                >
-                  View All {reviews.length} Reviews
-                </button>
-              )}
             </div>
           </>
         ) : (
@@ -328,7 +319,7 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
             </div>
           </div>
 
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {filteredReviews.length > 0 ? (
               filteredReviews.map(review => (
                 <ReviewItem
