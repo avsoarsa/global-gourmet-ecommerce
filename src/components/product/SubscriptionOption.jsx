@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faSync, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faSync } from '@fortawesome/free-solid-svg-icons';
 import { useSubscription } from '../../context/SubscriptionContext';
 
 /**
@@ -168,19 +168,25 @@ const SubscriptionOption = ({ product, selectedWeight, onSubscribe }) => {
             </h4>
             <ul className="space-y-2">
               <li className="flex items-start">
-                <FontAwesomeIcon icon={faCheck} className="text-green-600 mt-1 mr-2" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 mt-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
                 <span className="text-sm text-gray-600">
                   Save up to 15% on every order
                 </span>
               </li>
               <li className="flex items-start">
-                <FontAwesomeIcon icon={faCheck} className="text-green-600 mt-1 mr-2" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 mt-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
                 <span className="text-sm text-gray-600">
                   Convenient automatic deliveries
                 </span>
               </li>
               <li className="flex items-start">
-                <FontAwesomeIcon icon={faCheck} className="text-green-600 mt-1 mr-2" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600 mt-1 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
                 <span className="text-sm text-gray-600">
                   Easily pause, skip, or cancel anytime
                 </span>
