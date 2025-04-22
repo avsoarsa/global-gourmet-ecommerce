@@ -20,6 +20,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAdmin } from '../../context/AdminContext';
 import NotificationDropdown from './NotificationDropdown';
+import SkipToContent from '../common/SkipToContent';
 
 const AdminLayout = () => {
   const { adminUser, logout, error } = useAdmin();
@@ -82,6 +83,7 @@ const AdminLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
+      <SkipToContent />
       {/* Sidebar - Desktop */}
       <aside
         className={`bg-gray-800 text-white w-64 fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
@@ -199,7 +201,7 @@ const AdminLayout = () => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto pt-16 pb-6 px-4 sm:px-6 lg:px-8">
+        <main id="main-content" className="flex-1 overflow-y-auto pt-16 pb-6 px-4 sm:px-6 lg:px-8">
           {/* Error message */}
           {errorMessage && (
             <div className="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md flex items-center justify-between">

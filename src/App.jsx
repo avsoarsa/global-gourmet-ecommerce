@@ -10,9 +10,10 @@ import { CartNotificationProvider } from './context/CartNotificationContext';
 import { RecentlyViewedProvider } from './context/RecentlyViewedContext';
 import { LoyaltyProvider } from './context/LoyaltyContext';
 import { SubscriptionProvider } from './context/SubscriptionContext';
+import { AccessibilityProvider } from './context/AccessibilityContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import DebugPage from './pages/DebugPage';
-import CartNotification from './components/cart/CartNotification';
+// import CartNotification from './components/cart/CartNotification';
 import CartNotificationContainer from './components/cart/CartNotificationContainer';
 import ActivityNotification from './components/common/ActivityNotification';
 import Layout from './components/layout/Layout';
@@ -72,8 +73,9 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <RegionProvider>
-          <ErrorBoundary>
+        <AccessibilityProvider>
+          <RegionProvider>
+            <ErrorBoundary>
             <AuthProvider>
               <ErrorBoundary>
                 <NotificationProvider>
@@ -174,7 +176,8 @@ function App() {
               </ErrorBoundary>
             </AuthProvider>
           </ErrorBoundary>
-        </RegionProvider>
+          </RegionProvider>
+        </AccessibilityProvider>
       </Router>
     </ErrorBoundary>
   );

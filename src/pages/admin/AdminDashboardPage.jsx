@@ -10,10 +10,12 @@ import {
   faArrowDown,
   faExclamationTriangle,
   faEye,
-  faBell
+  faBell,
+  faChartLine
 } from '@fortawesome/free-solid-svg-icons';
 import { useNotifications } from '../../context/NotificationContext';
 import { generateRandomNotification } from '../../utils/notificationGenerator';
+import AnalyticsDashboard from '../../components/admin/analytics/AnalyticsDashboard';
 
 // Sample data (in a real app, this would come from an API)
 const sampleData = {
@@ -260,7 +262,14 @@ const AdminDashboardPage = () => {
           </p>
         </div>
 
-        <div className="mt-4 md:mt-0">
+        <div className="mt-4 md:mt-0 flex space-x-2">
+          <Link
+            to="/admin/analytics"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+          >
+            <FontAwesomeIcon icon={faChartLine} className="mr-2" />
+            Full Analytics
+          </Link>
           <button
             onClick={handleGenerateNotification}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"

@@ -8,8 +8,10 @@ import {
   faCreditCard,
   faEnvelope,
   faExclamationTriangle,
-  faCheckCircle
+  faCheckCircle,
+  faUniversalAccess
 } from '@fortawesome/free-solid-svg-icons';
+import AccessibilitySettings from '../../components/admin/AccessibilitySettings';
 
 const SettingsPage = () => {
   // Store settings
@@ -22,7 +24,7 @@ const SettingsPage = () => {
     storeLanguage: 'en',
     storeTimeZone: 'America/New_York'
   });
-  
+
   // Shipping settings
   const [shippingSettings, setShippingSettings] = useState({
     enableFreeShipping: true,
@@ -38,7 +40,7 @@ const SettingsPage = () => {
       express: 39.99
     }
   });
-  
+
   // Payment settings
   const [paymentSettings, setPaymentSettings] = useState({
     acceptedPaymentMethods: {
@@ -49,7 +51,7 @@ const SettingsPage = () => {
     taxRate: 8.5,
     enableTaxExemption: true
   });
-  
+
   // Email notification settings
   const [emailSettings, setEmailSettings] = useState({
     orderConfirmation: true,
@@ -59,12 +61,12 @@ const SettingsPage = () => {
     lowStockAlert: true,
     newsletterFrequency: 'weekly'
   });
-  
+
   // Form submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formError, setFormError] = useState(null);
-  
+
   // Handle store settings change
   const handleStoreSettingsChange = (e) => {
     const { name, value } = e.target;
@@ -73,11 +75,11 @@ const SettingsPage = () => {
       [name]: value
     }));
   };
-  
+
   // Handle shipping settings change
   const handleShippingSettingsChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name === 'enableFreeShipping' || name === 'internationalShipping') {
       setShippingSettings(prev => ({
         ...prev,
@@ -90,7 +92,7 @@ const SettingsPage = () => {
       }));
     } else if (name.startsWith('domestic') || name.startsWith('international')) {
       const [category, rate] = name.split('.');
-      
+
       setShippingSettings(prev => ({
         ...prev,
         [`${category}Rates`]: {
@@ -100,14 +102,14 @@ const SettingsPage = () => {
       }));
     }
   };
-  
+
   // Handle payment settings change
   const handlePaymentSettingsChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name.startsWith('acceptedPaymentMethods')) {
       const method = name.split('.')[1];
-      
+
       setPaymentSettings(prev => ({
         ...prev,
         acceptedPaymentMethods: {
@@ -127,11 +129,11 @@ const SettingsPage = () => {
       }));
     }
   };
-  
+
   // Handle email settings change
   const handleEmailSettingsChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (type === 'checkbox') {
       setEmailSettings(prev => ({
         ...prev,
@@ -144,14 +146,14 @@ const SettingsPage = () => {
       }));
     }
   };
-  
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setFormSuccess(false);
     setFormError(null);
-    
+
     try {
       // In a real app, this would be an API call to save settings
       console.log('Saving settings:', {
@@ -160,12 +162,12 @@ const SettingsPage = () => {
         paymentSettings,
         emailSettings
       });
-      
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       setFormSuccess(true);
-      
+
       // Reset success message after 3 seconds
       setTimeout(() => {
         setFormSuccess(false);
@@ -177,7 +179,7 @@ const SettingsPage = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div>
       <div className="mb-6">
@@ -186,7 +188,7 @@ const SettingsPage = () => {
           Configure your store settings and preferences
         </p>
       </div>
-      
+
       {/* Settings Form */}
       <form onSubmit={handleSubmit}>
         {/* Success/Error Messages */}
@@ -204,7 +206,7 @@ const SettingsPage = () => {
             </div>
           </div>
         )}
-        
+
         {formError && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4">
             <div className="flex">
@@ -219,7 +221,7 @@ const SettingsPage = () => {
             </div>
           </div>
         )}
-        
+
         {/* Store Settings */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -228,7 +230,7 @@ const SettingsPage = () => {
               <h2 className="text-lg font-medium text-gray-900">Store Information</h2>
             </div>
           </div>
-          
+
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -245,7 +247,7 @@ const SettingsPage = () => {
                   required
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="storeEmail" className="block text-sm font-medium text-gray-700 mb-1">
                   Store Email
@@ -260,7 +262,7 @@ const SettingsPage = () => {
                   required
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="storePhone" className="block text-sm font-medium text-gray-700 mb-1">
                   Store Phone
@@ -274,7 +276,7 @@ const SettingsPage = () => {
                   className="form-input block w-full"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="storeAddress" className="block text-sm font-medium text-gray-700 mb-1">
                   Store Address
@@ -289,7 +291,7 @@ const SettingsPage = () => {
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
               <div>
                 <label htmlFor="storeCurrency" className="block text-sm font-medium text-gray-700 mb-1">
@@ -309,7 +311,7 @@ const SettingsPage = () => {
                   <option value="AUD">Australian Dollar (AUD)</option>
                 </select>
               </div>
-              
+
               <div>
                 <label htmlFor="storeLanguage" className="block text-sm font-medium text-gray-700 mb-1">
                   Language
@@ -328,7 +330,7 @@ const SettingsPage = () => {
                   <option value="it">Italian</option>
                 </select>
               </div>
-              
+
               <div>
                 <label htmlFor="storeTimeZone" className="block text-sm font-medium text-gray-700 mb-1">
                   Time Zone
@@ -351,7 +353,7 @@ const SettingsPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Shipping Settings */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -360,7 +362,7 @@ const SettingsPage = () => {
               <h2 className="text-lg font-medium text-gray-900">Shipping</h2>
             </div>
           </div>
-          
+
           <div className="p-6">
             <div className="mb-6">
               <div className="flex items-center">
@@ -376,7 +378,7 @@ const SettingsPage = () => {
                   Enable free shipping
                 </label>
               </div>
-              
+
               {shippingSettings.enableFreeShipping && (
                 <div className="mt-4 ml-6">
                   <label htmlFor="freeShippingThreshold" className="block text-sm font-medium text-gray-700 mb-1">
@@ -395,7 +397,7 @@ const SettingsPage = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-3">Domestic Shipping Rates</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -414,7 +416,7 @@ const SettingsPage = () => {
                     className="form-input block w-full"
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="domestic.express" className="block text-sm text-gray-500 mb-1">
                     Express Shipping ($)
@@ -430,7 +432,7 @@ const SettingsPage = () => {
                     className="form-input block w-full"
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="domestic.overnight" className="block text-sm text-gray-500 mb-1">
                     Overnight Shipping ($)
@@ -448,7 +450,7 @@ const SettingsPage = () => {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <div className="flex items-center mb-3">
                 <input
@@ -463,7 +465,7 @@ const SettingsPage = () => {
                   Enable international shipping
                 </label>
               </div>
-              
+
               {shippingSettings.internationalShipping && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-6">
                   <div>
@@ -481,7 +483,7 @@ const SettingsPage = () => {
                       className="form-input block w-full"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="international.express" className="block text-sm text-gray-500 mb-1">
                       International Express ($)
@@ -502,7 +504,7 @@ const SettingsPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Payment Settings */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -511,7 +513,7 @@ const SettingsPage = () => {
               <h2 className="text-lg font-medium text-gray-900">Payment</h2>
             </div>
           </div>
-          
+
           <div className="p-6">
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-3">Accepted Payment Methods</h3>
@@ -529,7 +531,7 @@ const SettingsPage = () => {
                     Credit Card
                   </label>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -543,7 +545,7 @@ const SettingsPage = () => {
                     PayPal
                   </label>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -559,7 +561,7 @@ const SettingsPage = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="taxRate" className="block text-sm font-medium text-gray-700 mb-1">
@@ -576,7 +578,7 @@ const SettingsPage = () => {
                   className="form-input block w-full"
                 />
               </div>
-              
+
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -593,7 +595,12 @@ const SettingsPage = () => {
             </div>
           </div>
         </div>
-        
+
+        {/* Accessibility Settings */}
+        <div className="mb-6">
+          <AccessibilitySettings />
+        </div>
+
         {/* Email Notification Settings */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -602,7 +609,7 @@ const SettingsPage = () => {
               <h2 className="text-lg font-medium text-gray-900">Email Notifications</h2>
             </div>
           </div>
-          
+
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
@@ -620,7 +627,7 @@ const SettingsPage = () => {
                   </label>
                 </div>
               </div>
-              
+
               <div>
                 <div className="flex items-center">
                   <input
@@ -636,7 +643,7 @@ const SettingsPage = () => {
                   </label>
                 </div>
               </div>
-              
+
               <div>
                 <div className="flex items-center">
                   <input
@@ -652,7 +659,7 @@ const SettingsPage = () => {
                   </label>
                 </div>
               </div>
-              
+
               <div>
                 <div className="flex items-center">
                   <input
@@ -668,7 +675,7 @@ const SettingsPage = () => {
                   </label>
                 </div>
               </div>
-              
+
               <div>
                 <div className="flex items-center">
                   <input
@@ -685,7 +692,7 @@ const SettingsPage = () => {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="newsletterFrequency" className="block text-sm font-medium text-gray-700 mb-1">
                 Newsletter Frequency
@@ -705,7 +712,7 @@ const SettingsPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Form Actions */}
         <div className="flex justify-end">
           <button

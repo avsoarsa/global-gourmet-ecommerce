@@ -7,6 +7,7 @@ import {
   faTimes,
   faChevronDown
 } from '@fortawesome/free-solid-svg-icons';
+import ConfirmationDialog from '../common/ConfirmationDialog';
 
 const BulkActionBar = ({
   selectedItems,
@@ -19,45 +20,45 @@ const BulkActionBar = ({
 }) => {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  
+
   // Toggle actions dropdown
   const toggleActions = () => {
     setIsActionsOpen(!isActionsOpen);
   };
-  
+
   // Handle bulk delete
   const handleDelete = () => {
     setShowConfirmDelete(true);
     setIsActionsOpen(false);
   };
-  
+
   // Confirm bulk delete
   const confirmDelete = () => {
     onDelete(selectedItems);
     setShowConfirmDelete(false);
   };
-  
+
   // Cancel bulk delete
   const cancelDelete = () => {
     setShowConfirmDelete(false);
   };
-  
+
   // Handle bulk edit
   const handleEdit = () => {
     onEdit(selectedItems);
     setIsActionsOpen(false);
   };
-  
+
   // Handle custom action
   const handleCustomAction = (action) => {
     action.handler(selectedItems);
     setIsActionsOpen(false);
   };
-  
+
   if (selectedItems.length === 0) {
     return null;
   }
-  
+
   return (
     <div className={`bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4 ${className}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -71,7 +72,7 @@ const BulkActionBar = ({
             </p>
           </div>
         </div>
-        
+
         <div className="flex space-x-2">
           <button
             onClick={onClearSelection}
@@ -79,7 +80,7 @@ const BulkActionBar = ({
           >
             Clear
           </button>
-          
+
           <div className="relative">
             <button
               onClick={toggleActions}
@@ -88,7 +89,7 @@ const BulkActionBar = ({
               Actions
               <FontAwesomeIcon icon={faChevronDown} className="ml-2" />
             </button>
-            
+
             {isActionsOpen && (
               <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
                 <div className="py-1" role="menu" aria-orientation="vertical">
@@ -102,7 +103,7 @@ const BulkActionBar = ({
                       Edit Selected
                     </button>
                   )}
-                  
+
                   {onDelete && (
                     <button
                       onClick={handleDelete}
@@ -113,7 +114,7 @@ const BulkActionBar = ({
                       Delete Selected
                     </button>
                   )}
-                  
+
                   {customActions.map((action, index) => (
                     <button
                       key={index}
@@ -133,38 +134,19 @@ const BulkActionBar = ({
           </div>
         </div>
       </div>
-      
-      {/* Delete Confirmation */}
-      {showConfirmDelete && (
-        <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-400 rounded-md">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <FontAwesomeIcon icon={faTrash} className="h-5 w-5 text-red-400" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">
-                Are you sure you want to delete {selectedItems.length} {itemName}{selectedItems.length !== 1 ? 's' : ''}? This action cannot be undone.
-              </p>
-              <div className="mt-2 flex space-x-2">
-                <button
-                  onClick={confirmDelete}
-                  className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
-                  <FontAwesomeIcon icon={faCheckCircle} className="mr-1.5" />
-                  Confirm
-                </button>
-                <button
-                  onClick={cancelDelete}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                >
-                  <FontAwesomeIcon icon={faTimes} className="mr-1.5" />
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showConfirmDelete}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Selected Items"
+        message={`Are you sure you want to delete ${selectedItems.length} ${itemName}${selectedItems.length !== 1 ? 's' : ''}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+        icon={faTrash}
+      />
     </div>
   );
 };

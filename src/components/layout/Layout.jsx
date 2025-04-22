@@ -6,6 +6,7 @@ import BackToTop from '../common/BackToTop';
 import Breadcrumb from '../common/Breadcrumb';
 import MobileNavigation from '../mobile/MobileNavigation';
 import PullToRefresh from '../mobile/PullToRefresh';
+import SkipToContent from '../common/SkipToContent';
 
 const Layout = () => {
   const location = useLocation();
@@ -48,9 +49,10 @@ const Layout = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <SkipToContent />
       <Header />
       <PullToRefresh onRefresh={handleRefresh}>
-        <main className="flex-grow pt-16">
+        <main id="main-content" className="flex-grow pt-16">
           {!isProductDetailPage && <Breadcrumb />}
           <Outlet />
         </main>

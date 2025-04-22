@@ -13,6 +13,7 @@ import {
   faMoneyBillWave,
   faBoxOpen
 } from '@fortawesome/free-solid-svg-icons';
+import AnalyticsDashboard from '../../components/admin/analytics/AnalyticsDashboard';
 import LineChart from '../../components/admin/charts/LineChart';
 import BarChart from '../../components/admin/charts/BarChart';
 import PieChart from '../../components/admin/charts/PieChart';
@@ -418,88 +419,7 @@ const AnalyticsPage = () => {
     );
   }
 
-  return (
-    <div>
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Track your store's performance and sales metrics
-          </p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex items-center">
-          <FontAwesomeIcon icon={faCalendarAlt} className="text-gray-400 mr-2" />
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="form-select rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-500 focus:ring-opacity-50"
-          >
-            <option value="daily">Today</option>
-            <option value="weekly">This Week</option>
-            <option value="monthly">This Month</option>
-            <option value="yearly">This Year</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <StatCard
-          title="Total Sales"
-          value={`$${data.salesOverview[timeRange].toLocaleString()}`}
-          icon={faMoneyBillWave}
-          change={`${data.salesOverview[`${timeRange}Change`]}%`}
-          changeType="increase"
-          period={timeRange.slice(0, -2) + (timeRange === 'daily' ? 'day' : '')}
-        />
-        <StatCard
-          title="Orders"
-          value="156"
-          icon={faShoppingCart}
-          change="8.2%"
-          changeType="increase"
-          period={timeRange.slice(0, -2) + (timeRange === 'daily' ? 'day' : '')}
-        />
-        <StatCard
-          title="Customers"
-          value={data.customerStats.total}
-          icon={faUsers}
-          change="5.1%"
-          changeType="increase"
-          period={timeRange.slice(0, -2) + (timeRange === 'daily' ? 'day' : '')}
-        />
-        <StatCard
-          title="Products Sold"
-          value="1,245"
-          icon={faBoxOpen}
-          change="3.2%"
-          changeType="decrease"
-          period={timeRange.slice(0, -2) + (timeRange === 'daily' ? 'day' : '')}
-        />
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Chart title="Sales Overview" type="line" height={300} data={data} />
-        <Chart title="Orders Overview" type="bar" height={300} data={data} />
-      </div>
-
-      {/* More Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <TopProductsTable products={data.topProducts} />
-        </div>
-        <div>
-          <SalesByCategory categories={data.salesByCategory} />
-        </div>
-      </div>
-
-      {/* Customer Stats */}
-      <div className="mt-6">
-        <CustomerStats stats={data.customerStats} />
-      </div>
-    </div>
-  );
+  return <AnalyticsDashboard />;
 };
 
 export default AnalyticsPage;
