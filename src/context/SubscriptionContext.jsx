@@ -1,10 +1,10 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
-import { 
-  getUserSubscriptions, 
-  getSubscriptionById, 
-  createSubscription, 
+import {
+  getUserSubscriptions,
+  getSubscriptionById,
+  createSubscription,
   updateSubscription,
   pauseSubscription,
   resumeSubscription,
@@ -14,7 +14,8 @@ import {
   SUBSCRIPTION_FREQUENCIES,
   SUBSCRIPTION_STATUS
 } from '../data/subscriptions';
-import { SUBSCRIPTION_ELIGIBLE_CATEGORIES } from '../data/products';
+import * as ProductsData from '../data/products';
+const { SUBSCRIPTION_ELIGIBLE_CATEGORIES } = ProductsData;
 
 // Create subscription context
 const SubscriptionContext = createContext();
@@ -67,9 +68,9 @@ export const SubscriptionProvider = ({ children }) => {
       const basePrice = productData.weightOptions.find(
         option => option.weight === subscriptionDetails.weight
       ).price;
-      
+
       const subscriptionPrice = calculateSubscriptionPrice(
-        basePrice, 
+        basePrice,
         subscriptionDetails.frequency
       );
 
@@ -96,7 +97,7 @@ export const SubscriptionProvider = ({ children }) => {
 
       // Create subscription
       const newSubscription = createSubscription(subscriptionData);
-      
+
       // Update local state
       setSubscriptions([...subscriptions, newSubscription]);
 
@@ -110,13 +111,13 @@ export const SubscriptionProvider = ({ children }) => {
       return newSubscription;
     } catch (error) {
       console.error('Error creating subscription:', error);
-      
+
       addNewNotification({
         title: 'Subscription Error',
         message: 'Failed to create subscription. Please try again.',
         type: 'error'
       });
-      
+
       return null;
     }
   };
@@ -128,7 +129,7 @@ export const SubscriptionProvider = ({ children }) => {
       if (!updatedSubscription) return false;
 
       // Update local state
-      setSubscriptions(subscriptions.map(sub => 
+      setSubscriptions(subscriptions.map(sub =>
         sub.id === subscriptionId ? updatedSubscription : sub
       ));
 
@@ -142,13 +143,13 @@ export const SubscriptionProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Error pausing subscription:', error);
-      
+
       addNewNotification({
         title: 'Subscription Error',
         message: 'Failed to pause subscription. Please try again.',
         type: 'error'
       });
-      
+
       return false;
     }
   };
@@ -160,7 +161,7 @@ export const SubscriptionProvider = ({ children }) => {
       if (!updatedSubscription) return false;
 
       // Update local state
-      setSubscriptions(subscriptions.map(sub => 
+      setSubscriptions(subscriptions.map(sub =>
         sub.id === subscriptionId ? updatedSubscription : sub
       ));
 
@@ -174,13 +175,13 @@ export const SubscriptionProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Error resuming subscription:', error);
-      
+
       addNewNotification({
         title: 'Subscription Error',
         message: 'Failed to resume subscription. Please try again.',
         type: 'error'
       });
-      
+
       return false;
     }
   };
@@ -192,7 +193,7 @@ export const SubscriptionProvider = ({ children }) => {
       if (!updatedSubscription) return false;
 
       // Update local state
-      setSubscriptions(subscriptions.map(sub => 
+      setSubscriptions(subscriptions.map(sub =>
         sub.id === subscriptionId ? updatedSubscription : sub
       ));
 
@@ -206,13 +207,13 @@ export const SubscriptionProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Error cancelling subscription:', error);
-      
+
       addNewNotification({
         title: 'Subscription Error',
         message: 'Failed to cancel subscription. Please try again.',
         type: 'error'
       });
-      
+
       return false;
     }
   };
@@ -224,7 +225,7 @@ export const SubscriptionProvider = ({ children }) => {
       if (!updatedSubscription) return false;
 
       // Update local state
-      setSubscriptions(subscriptions.map(sub => 
+      setSubscriptions(subscriptions.map(sub =>
         sub.id === subscriptionId ? updatedSubscription : sub
       ));
 
@@ -238,13 +239,13 @@ export const SubscriptionProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Error updating subscription:', error);
-      
+
       addNewNotification({
         title: 'Subscription Error',
         message: 'Failed to update subscription. Please try again.',
         type: 'error'
       });
-      
+
       return false;
     }
   };
@@ -256,7 +257,7 @@ export const SubscriptionProvider = ({ children }) => {
       if (!updatedSubscription) return false;
 
       // Update local state
-      setSubscriptions(subscriptions.map(sub => 
+      setSubscriptions(subscriptions.map(sub =>
         sub.id === subscriptionId ? updatedSubscription : sub
       ));
 
