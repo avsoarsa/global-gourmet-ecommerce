@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStar as faStarSolid,
@@ -174,8 +175,22 @@ const RatingSummary = ({ reviews }) => {
 
 // Main ReviewList Component
 const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, setActiveTab }) => {
+  const { currentUser } = useAuth();
   const [sortBy, setSortBy] = useState('newest');
   const [filterRating, setFilterRating] = useState(0); // 0 means all ratings
+
+  // Handle write review click with auth check
+  const handleWriteReviewClick = () => {
+    if (!currentUser) {
+      // Show a more user-friendly message with login option
+      const confirmLogin = window.confirm('You need to be logged in to write a review. Would you like to log in now?');
+      if (confirmLogin) {
+        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+      }
+      return;
+    }
+    onWriteReview();
+  };
 
   // Sort reviews
   const sortedReviews = [...reviews].sort((a, b) => {
@@ -206,10 +221,10 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
           <>
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-sm font-medium text-gray-700">
-                Top Reviews ({reviews.length})
+                Top Reviews ({reviews.length}) <span className="text-xs text-gray-500">(Showing most recent)</span>
               </h3>
               <button
-                onClick={onWriteReview}
+                onClick={handleWriteReviewClick}
                 className="text-xs text-green-600 hover:text-green-700 font-medium"
               >
                 Write a Review
@@ -244,7 +259,7 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
           <div className="text-center py-3">
             <p className="text-xs text-gray-600 mb-2">No reviews yet</p>
             <button
-              onClick={onWriteReview}
+              onClick={handleWriteReviewClick}
               className="text-xs text-green-600 hover:text-green-700 font-medium"
             >
               Be the first to review
@@ -260,10 +275,10 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
     <div className="mt-12">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
-          Customer Reviews ({reviews.length})
+          Customer Reviews ({reviews.length}) <span className="text-sm font-normal text-gray-500">(Showing most recent)</span>
         </h2>
         <button
-          onClick={onWriteReview}
+          onClick={handleWriteReviewClick}
           className="btn-primary"
         >
           Write a Review
@@ -340,7 +355,7 @@ const ReviewList = ({ reviews, onMarkHelpful, onWriteReview, compact = false, se
           <p className="text-gray-600 mb-4">This product doesn't have any reviews yet.</p>
           <p className="text-gray-600 mb-6">Be the first to share your experience!</p>
           <button
-            onClick={onWriteReview}
+            onClick={handleWriteReviewClick}
             className="btn-primary"
           >
             Write a Review

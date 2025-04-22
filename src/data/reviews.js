@@ -46,13 +46,13 @@ export const reviews = [
   },
   {
     id: 4,
-    productId: 2, // Dried Cranberries
+    productId: 2, // Organic Turkish Apricots
     userId: 4,
     userName: "Emily Wilson",
     userAvatar: "https://randomuser.me/api/portraits/women/2.jpg",
     rating: 5,
-    title: "Perfect sweetness",
-    content: "These cranberries have the perfect balance of tartness and sweetness. They're not overly sugary like many other brands. Great for baking and snacking!",
+    title: "Perfect balance of tartness and sweetness",
+    content: "These apricots have the perfect balance of tartness and sweetness. They're not overly sugary like many other brands. Great for baking and snacking!",
     date: "2023-11-05",
     helpfulCount: 9,
     verified: true,
@@ -62,15 +62,43 @@ export const reviews = [
   },
   {
     id: 5,
-    productId: 2, // Dried Cranberries
+    productId: 2, // Organic Turkish Apricots
     userId: 5,
     userName: "David Brown",
     userAvatar: "https://randomuser.me/api/portraits/men/3.jpg",
     rating: 4,
     title: "Good quality but a bit dry",
-    content: "The cranberries are good quality and taste great, but they're a bit drier than I prefer. Still, they work well in my morning oatmeal and baking recipes.",
+    content: "The apricots are good quality and taste great, but they're a bit drier than I prefer. Still, they work well in my morning oatmeal and baking recipes.",
     date: "2023-10-18",
     helpfulCount: 3,
+    verified: true,
+    images: []
+  },
+  {
+    id: 11,
+    productId: 2, // Organic Turkish Apricots
+    userId: 11,
+    userName: "Peter Wright",
+    userAvatar: "https://randomuser.me/api/portraits/men/11.jpg",
+    rating: 5,
+    title: "Best dried apricots I've ever had",
+    content: "These apricots maintain the perfect balance of tartness and sweetness. They're not overly sugary like many other brands. Great for baking and snacking!",
+    date: "2023-11-05",
+    helpfulCount: 7,
+    verified: true,
+    images: []
+  },
+  {
+    id: 12,
+    productId: 2, // Organic Turkish Apricots
+    userId: 12,
+    userName: "Sarah Wilson",
+    userAvatar: "https://randomuser.me/api/portraits/women/12.jpg",
+    rating: 5,
+    title: "Naturally sweet and delicious",
+    content: "These Turkish apricots have the perfect natural sweetness. I love that there's no added sugar or preservatives. They make a great healthy snack!",
+    date: "2023-09-15",
+    helpfulCount: 12,
     verified: true,
     images: []
   },
@@ -149,6 +177,63 @@ export const reviews = [
     images: [
       "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
     ]
+  },
+  // Additional reviews for Organic Turkish Apricots (product ID 2)
+  {
+    id: 13,
+    productId: 2,
+    userId: 13,
+    userName: "Michael Chen",
+    userAvatar: "https://randomuser.me/api/portraits/men/13.jpg",
+    rating: 5,
+    title: "Great for baking",
+    content: "I use these apricots in my homemade granola bars and they're perfect! Just the right amount of sweetness and they stay nice and soft.",
+    date: "2023-08-22",
+    helpfulCount: 5,
+    verified: true,
+    images: []
+  },
+  {
+    id: 14,
+    productId: 2,
+    userId: 14,
+    userName: "Jessica Taylor",
+    userAvatar: "https://randomuser.me/api/portraits/women/14.jpg",
+    rating: 4,
+    title: "Good quality but pricey",
+    content: "These apricots are definitely high quality, but they are a bit expensive compared to other brands. Still, the taste is worth it.",
+    date: "2023-07-15",
+    helpfulCount: 3,
+    verified: true,
+    images: []
+  },
+  {
+    id: 15,
+    productId: 2,
+    userId: 15,
+    userName: "Robert Johnson",
+    userAvatar: "https://randomuser.me/api/portraits/men/15.jpg",
+    rating: 5,
+    title: "Perfect texture",
+    content: "Not too dry, not too moist - these apricots have the perfect texture. I've tried many brands and these are by far the best.",
+    date: "2023-10-05",
+    helpfulCount: 8,
+    verified: true,
+    images: []
+  },
+  {
+    id: 16,
+    productId: 2,
+    userId: 16,
+    userName: "Amanda Lee",
+    userAvatar: "https://randomuser.me/api/portraits/women/16.jpg",
+    rating: 5,
+    title: "Excellent quality",
+    content: "These Turkish apricots are excellent quality. They're soft, flavorful, and have a beautiful color. Will definitely buy again!",
+    date: "2023-09-28",
+    helpfulCount: 6,
+    verified: true,
+    images: []
   }
 ];
 
@@ -161,7 +246,7 @@ export const getProductReviews = (productId) => {
 export const getProductAverageRating = (productId) => {
   const productReviews = getProductReviews(productId);
   if (productReviews.length === 0) return 0;
-  
+
   const totalRating = productReviews.reduce((sum, review) => sum + review.rating, 0);
   return totalRating / productReviews.length;
 };
@@ -175,7 +260,7 @@ export const addReview = (review) => {
     helpfulCount: 0,
     verified: true
   };
-  
+
   reviews.push(newReview);
   return newReview;
 };

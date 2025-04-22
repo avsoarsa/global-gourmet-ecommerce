@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 // Star Rating Input Component
 const StarRatingInput = ({ rating, setRating }) => {
   const [hoverRating, setHoverRating] = useState(0);
-  
+
   const ratingLabels = {
     1: 'Poor',
     2: 'Fair',
@@ -15,7 +15,7 @@ const StarRatingInput = ({ rating, setRating }) => {
     4: 'Very Good',
     5: 'Excellent'
   };
-  
+
   return (
     <div>
       <div className="flex items-center mb-1">
@@ -47,7 +47,7 @@ const StarRatingInput = ({ rating, setRating }) => {
 // Image Upload Preview Component
 const ImagePreview = ({ images, removeImage }) => {
   if (images.length === 0) return null;
-  
+
   return (
     <div className="mt-4">
       <p className="text-sm font-medium text-gray-700 mb-2">Image Previews:</p>
@@ -86,14 +86,14 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when field is edited
     if (errors[name]) {
       setErrors(prev => ({
@@ -102,13 +102,13 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
       }));
     }
   };
-  
+
   const handleRatingChange = (rating) => {
     setFormData(prev => ({
       ...prev,
       rating
     }));
-    
+
     if (errors.rating) {
       setErrors(prev => ({
         ...prev,
@@ -116,53 +116,59 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
       }));
     }
   };
-  
+
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    
+
     // For demo purposes, we'll just use the file URLs
     // In a real app, you would upload these to a server
     const newImages = files.map(file => URL.createObjectURL(file));
-    
+
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, ...newImages]
     }));
   };
-  
+
   const removeImage = (index) => {
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
   };
-  
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (formData.rating === 0) {
       newErrors.rating = 'Please select a rating';
     }
-    
+
     if (!formData.content.trim()) {
       newErrors.content = 'Please enter your review';
     } else if (formData.content.trim().length < 10) {
       newErrors.content = 'Review must be at least 10 characters';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
+      // Check if user is logged in
+      if (!currentUser) {
+        setErrors({ submit: 'Please log in to submit a review.' });
+        return;
+      }
+
       // In a real app, this would be an API call
       const reviewData = {
         productId,
@@ -174,10 +180,10 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
         content: formData.content.trim(),
         images: formData.images
       };
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       onSubmit(reviewData);
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -186,7 +192,7 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -199,11 +205,11 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
           <FontAwesomeIcon icon={faTimes} />
         </button>
       </div>
-      
+
       <div className="mb-6">
         <p className="text-gray-700">You're reviewing: <span className="font-medium">{productName}</span></p>
       </div>
-      
+
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -217,7 +223,7 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
             <p className="mt-1 text-sm text-red-600">{errors.rating}</p>
           )}
         </div>
-        
+
         <div className="mb-6">
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
             Review Title
@@ -232,7 +238,7 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
             placeholder="Summarize your experience (optional)"
           />
         </div>
-        
+
         <div className="mb-6">
           <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
             Review *
@@ -250,7 +256,7 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
             <p className="mt-1 text-sm text-red-600">{errors.content}</p>
           )}
         </div>
-        
+
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Add Photos (optional)
@@ -273,13 +279,20 @@ const ReviewForm = ({ productId, productName, onSubmit, onCancel }) => {
           </div>
           <ImagePreview images={formData.images} removeImage={removeImage} />
         </div>
-        
+
         {errors.submit && (
           <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-md">
             {errors.submit}
+            {errors.submit === 'Please log in to submit a review.' && (
+              <div className="mt-2">
+                <a href={`/login?redirect=${encodeURIComponent(window.location.pathname)}`} className="text-red-700 font-medium underline">Log in</a>
+                <span className="mx-2">or</span>
+                <a href={`/register?redirect=${encodeURIComponent(window.location.pathname)}`} className="text-red-700 font-medium underline">Create an account</a>
+              </div>
+            )}
           </div>
         )}
-        
+
         <div className="flex justify-end space-x-4">
           <button
             type="button"
