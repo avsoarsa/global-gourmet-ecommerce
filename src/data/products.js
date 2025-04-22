@@ -1,3 +1,13 @@
+// Define which products are eligible for subscription
+export const SUBSCRIPTION_ELIGIBLE_CATEGORIES = [
+  'Dry Fruits',
+  'Dried Fruits',
+  'Nuts & Seeds',
+  'Spices',
+  'Whole Foods',
+  'Superfoods'
+];
+
 export const products = [
   // Helper function to calculate prices for different weights
   // This would normally be on the server side
