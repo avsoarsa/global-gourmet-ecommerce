@@ -62,8 +62,12 @@ const MobileNavigation = () => {
     };
   }, []);
 
-  // Handle scroll behavior with improved performance
+  // Always keep navigation visible on mobile
   useEffect(() => {
+    // Always keep the navigation visible
+    setIsVisible(true);
+
+    // Only close the more menu when scrolling down significantly
     let ticking = false;
 
     const handleScroll = () => {
@@ -71,15 +75,9 @@ const MobileNavigation = () => {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
 
-          // Show/hide based on scroll direction with thresholds
-          if (currentScrollY > lastScrollY && currentScrollY > 100) {
-            // Scrolling down - hide the navigation
-            setIsVisible(false);
-            // Also close more menu when scrolling down
+          // Only close more menu when scrolling down significantly
+          if (currentScrollY > lastScrollY && currentScrollY > 100 && showMoreMenu) {
             setShowMoreMenu(false);
-          } else if (currentScrollY < lastScrollY || currentScrollY < 50) {
-            // Scrolling up or near top - show the navigation
-            setIsVisible(true);
           }
 
           setLastScrollY(currentScrollY);
@@ -95,9 +93,9 @@ const MobileNavigation = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [lastScrollY]);
+  }, [lastScrollY, showMoreMenu]);
 
-  // Handle touch gestures for swipe up/down
+  // Handle touch gestures for the more menu only
   const handleTouchStart = (e) => {
     setTouchStartY(e.touches[0].clientY);
   };
@@ -106,14 +104,9 @@ const MobileNavigation = () => {
     const touchEndY = e.changedTouches[0].clientY;
     const diff = touchStartY - touchEndY;
 
-    // Swipe up - hide navigation
-    if (diff > 50) {
-      setIsVisible(false);
+    // Swipe up - close more menu
+    if (diff > 50 && showMoreMenu) {
       setShowMoreMenu(false);
-    }
-    // Swipe down - show navigation
-    else if (diff < -50) {
-      setIsVisible(true);
     }
   };
 
@@ -180,9 +173,7 @@ const MobileNavigation = () => {
 
       {/* Bottom navigation bar */}
       <nav
-        className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 transition-transform duration-300 md:hidden shadow-lg ${
-          isVisible ? 'translate-y-0' : 'translate-y-full'
-        }`}
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden shadow-lg"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >

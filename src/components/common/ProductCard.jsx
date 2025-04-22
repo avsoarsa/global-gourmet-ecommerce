@@ -38,7 +38,7 @@ const ProductCard = ({ product, showAddToCart = true }) => {
       <div className="relative overflow-hidden">
         {/* Product Image */}
         <Link to={`/product/${product.id}`} className="block">
-          <div className="w-full h-64 transition-transform duration-500 group-hover:scale-105">
+          <div className="w-full h-40 sm:h-48 md:h-56 lg:h-64 transition-transform duration-500 group-hover:scale-105">
             <LazyImage
               src={product.image}
               alt={product.name}
@@ -93,19 +93,19 @@ const ProductCard = ({ product, showAddToCart = true }) => {
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className="p-2 sm:p-3 md:p-4">
         <Link to={`/product/${product.id}`} className="block">
-          <h3 className="heading-5 mb-1 text-gray-900 hover:text-green-600 transition-colors">
+          <h3 className="text-sm sm:text-base font-medium mb-1 text-gray-900 hover:text-green-600 transition-colors line-clamp-2">
             {product.name}
           </h3>
 
-          <p className="body-small text-gray-600 mb-3 line-clamp-2">
+          <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 line-clamp-1 sm:line-clamp-2">
             {product.description}
           </p>
 
           <div className="flex justify-between items-center mt-3">
             <div className="flex flex-col">
-              <span className="font-bold text-green-700">
+              <span className="text-sm sm:text-base font-bold text-green-700">
                 {currencySymbol}
                 {(() => {
                   const price = convertPriceSync(product.price);
@@ -114,7 +114,7 @@ const ProductCard = ({ product, showAddToCart = true }) => {
               </span>
               {product.originalPrice && (
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-500 line-through">
+                  <span className="text-xs sm:text-sm text-gray-500 line-through">
                     {currencySymbol}
                     {(() => {
                       const price = convertPriceSync(product.originalPrice);
@@ -130,18 +130,38 @@ const ProductCard = ({ product, showAddToCart = true }) => {
               )}
             </div>
 
-            {showAddToCart ? (
-              <button
-                onClick={handleAddToCart}
-                className="btn-primary py-1.5 px-3 text-sm"
-              >
-                Add to Cart
-              </button>
-            ) : (
-              <button className="btn-secondary py-1.5 px-3 text-sm">
-                View Details
-              </button>
-            )}
+            {/* Desktop buttons */}
+            <div className="hidden sm:block">
+              {showAddToCart ? (
+                <button
+                  onClick={handleAddToCart}
+                  className="btn-primary py-1.5 px-3 text-sm"
+                >
+                  Add to Cart
+                </button>
+              ) : (
+                <button className="btn-secondary py-1.5 px-3 text-sm">
+                  View Details
+                </button>
+              )}
+            </div>
+
+            {/* Mobile compact button */}
+            <div className="sm:hidden">
+              {showAddToCart ? (
+                <button
+                  onClick={handleAddToCart}
+                  className="btn-primary py-1 px-2 text-xs rounded-full w-8 h-8 flex items-center justify-center"
+                  aria-label="Add to cart"
+                >
+                  <FontAwesomeIcon icon={faShoppingCart} className="text-white" />
+                </button>
+              ) : (
+                <button className="btn-secondary py-1 px-2 text-xs">
+                  View
+                </button>
+              )}
+            </div>
           </div>
         </Link>
       </div>

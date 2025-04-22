@@ -18,14 +18,14 @@ const SearchResultsPage = () => {
   useEffect(() => {
     // Reset to first page when query changes
     setCurrentPage(1);
-    
+
     // Simulate search delay
     setIsLoading(true);
-    
+
     const timer = setTimeout(() => {
       if (query) {
         // Filter products based on search query
-        const results = products.filter(product => 
+        const results = products.filter(product =>
           product.name.toLowerCase().includes(query.toLowerCase()) ||
           product.description.toLowerCase().includes(query.toLowerCase()) ||
           product.category.toLowerCase().includes(query.toLowerCase())
@@ -36,7 +36,7 @@ const SearchResultsPage = () => {
       }
       setIsLoading(false);
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, [query]);
 
@@ -85,12 +85,12 @@ const SearchResultsPage = () => {
         title={`Search Results for "${query}" | Global Gourmet`}
         description={`Search results for "${query}" - Find premium quality dry fruits, spices, nuts, and superfoods at Global Gourmet.`}
       />
-      
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
           {query ? `Search Results for "${query}"` : 'Search Our Products'}
         </h1>
-        
+
         {/* Search Form */}
         <form onSubmit={handleSearch} className="max-w-xl">
           <div className="relative">
@@ -113,7 +113,7 @@ const SearchResultsPage = () => {
           </div>
         </form>
       </div>
-      
+
       {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
@@ -125,7 +125,7 @@ const SearchResultsPage = () => {
               <p className="text-gray-600 mb-4 sm:mb-0">
                 {searchResults.length} {searchResults.length === 1 ? 'result' : 'results'} found
               </p>
-              
+
               {searchResults.length > 0 && (
                 <div className="flex items-center">
                   <label htmlFor="sort" className="mr-2 text-gray-700">Sort by:</label>
@@ -144,15 +144,15 @@ const SearchResultsPage = () => {
               )}
             </div>
           )}
-          
+
           {searchResults.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 product-grid">
                 {currentProducts.map(product => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
-              
+
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex justify-center mt-10">
@@ -168,7 +168,7 @@ const SearchResultsPage = () => {
                     >
                       Previous
                     </button>
-                    
+
                     {[...Array(totalPages)].map((_, i) => (
                       <button
                         key={i}
@@ -182,7 +182,7 @@ const SearchResultsPage = () => {
                         {i + 1}
                       </button>
                     ))}
-                    
+
                     <button
                       onClick={() => paginate(currentPage + 1)}
                       disabled={currentPage === totalPages}

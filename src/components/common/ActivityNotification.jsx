@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShoppingCart, faUser, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faShoppingCart, faUser, faStar, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { products } from '../../data/products';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -69,6 +69,11 @@ const ActivityNotification = ({
   const [notifications, setNotifications] = useState([]);
   const [currentNotification, setCurrentNotification] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
+  const notificationRef = useRef(null);
+
+  // Touch handling for swipe to dismiss
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   // Position classes
   const positionClasses = {
@@ -124,14 +129,53 @@ const ActivityNotification = ({
     };
   }, [currentNotification, duration]);
 
+  // Handle swipe to dismiss
+  const handleTouchStart = (e) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    // For right-positioned notifications, dismiss on left swipe
+    if (position.includes('right') && isLeftSwipe) {
+      dismissNotification();
+    }
+    // For left-positioned notifications, dismiss on right swipe
+    else if (position.includes('left') && isRightSwipe) {
+      dismissNotification();
+    }
+
+    // Reset touch positions
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  const dismissNotification = () => {
+    setIsVisible(false);
+    setTimeout(() => setCurrentNotification(null), 500);
+  };
+
   // Don't render if no current notification
   if (!currentNotification) return null;
 
   return (
     <div className={`fixed ${positionClasses[position]} z-50 max-w-xs w-full ${className}`}>
       <div
+        ref={notificationRef}
         className={`bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-500
           ${isVisible ? 'opacity-100' : 'opacity-0'} animate-slide-in`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="p-4">
           <div className="flex items-start">
@@ -148,17 +192,17 @@ const ActivityNotification = ({
             </div>
             <div className="ml-4 flex-shrink-0 flex">
               <button
-                className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
-                onClick={() => {
-                  setIsVisible(false);
-                  setTimeout(() => setCurrentNotification(null), 500);
-                }}
+                className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none p-1"
+                onClick={dismissNotification}
+                aria-label="Close notification"
               >
-                <span className="sr-only">Close</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                <FontAwesomeIcon icon={faTimes} className="h-4 w-4" />
               </button>
             </div>
           </div>
+        </div>
+        <div className="px-4 pb-2 text-xs text-gray-500 text-center">
+          Swipe to dismiss
         </div>
       </div>
     </div>

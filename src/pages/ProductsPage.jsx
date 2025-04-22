@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ProductCard from '../components/common/ProductCard';
+import MobileFilterSort from '../components/mobile/MobileFilterSort';
 import { products, categories } from '../data/products';
 
 const ProductsPage = () => {
@@ -8,7 +9,8 @@ const ProductsPage = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 8; // Show 8 products per page
+  const [sortBy, setSortBy] = useState('featured');
+  const productsPerPage = 12; // Show 12 products per page for mobile-friendly grid
 
   // Initialize selected category based on URL
   useEffect(() => {
@@ -26,17 +28,37 @@ const ProductsPage = () => {
     }
   }, [categorySlug]);
 
-  // Filter products based on selected category
+  // Filter and sort products
   useEffect(() => {
     let result = [...products];
 
+    // Filter by category
     if (selectedCategory !== 'All Products') {
       result = result.filter(product => product.category === selectedCategory);
     }
 
+    // Sort products
+    switch (sortBy) {
+      case 'price-low':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        break;
+      case 'rating':
+        result.sort((a, b) => b.rating - a.rating);
+        break;
+      default: // featured
+        result.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+        break;
+    }
+
     setFilteredProducts(result);
     setCurrentPage(1);
-  }, [selectedCategory]);
+  }, [selectedCategory, sortBy]);
 
   // Calculate pagination
   const indexOfLastProduct = currentPage * productsPerPage;
@@ -47,14 +69,28 @@ const ProductsPage = () => {
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Handle sort change
+  const handleSortChange = (newSortBy) => {
+    setSortBy(newSortBy);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">
+      <h1 className="text-3xl font-bold mb-4 text-center">
         {selectedCategory}
       </h1>
 
-      {/* Category Navigation */}
-      <div className="mb-8">
+      {/* Mobile Filter/Sort Component */}
+      <MobileFilterSort
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        selectedSort={sortBy}
+        onSortChange={handleSortChange}
+      />
+
+      {/* Desktop Category Navigation */}
+      <div className="mb-8 hidden md:block">
         <div className="flex flex-wrap justify-center gap-4">
           <Link
             to="/products"
@@ -77,9 +113,32 @@ const ProductsPage = () => {
         </div>
       </div>
 
+      {/* Product Count and Sort (Desktop) */}
+      <div className="flex justify-between items-center mb-6 hidden md:flex">
+        <p className="text-gray-600">
+          Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+        </p>
+
+        <div className="flex items-center">
+          <label htmlFor="desktop-sort" className="mr-2 text-gray-700">Sort by:</label>
+          <select
+            id="desktop-sort"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="form-select border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+            <option value="featured">Featured</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="newest">Newest First</option>
+            <option value="rating">Customer Rating</option>
+          </select>
+        </div>
+      </div>
+
       {/* Products */}
       {currentProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 product-grid">
           {currentProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
