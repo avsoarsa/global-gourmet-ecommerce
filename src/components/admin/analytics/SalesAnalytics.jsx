@@ -16,7 +16,7 @@ import {
   faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 import { Line, Bar, Pie } from 'react-chartjs-2';
-import { getSalesAnalyticsData, exportAnalyticsData } from '../../../services/analyticsService';
+// Import statements for chart components
 
 const SalesAnalytics = () => {
   const [data, setData] = useState(null);
@@ -25,51 +25,110 @@ const SalesAnalytics = () => {
   const [timeRange, setTimeRange] = useState('monthly');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch sales analytics data
-  useEffect(() => {
-    fetchData();
-  }, [timeRange]);
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const salesData = await getSalesAnalyticsData({ timeRange });
-      setData(salesData);
-    } catch (error) {
-      console.error('Error fetching sales analytics data:', error);
-      setError('Failed to load sales analytics data. Please try again.');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
+  // Mock data for sales analytics
+  const mockSalesData = {
+    summary: {
+      totalSales: 425000.00,
+      totalOrders: 1250,
+      averageOrderValue: 340.00,
+      monthlyGrowth: 15.3
+    },
+    salesByDay: {
+      '2023-07-01': 1250.75,
+      '2023-07-02': 1350.50,
+      '2023-07-03': 1450.25,
+      '2023-07-04': 1550.00,
+      '2023-07-05': 1650.75,
+      '2023-07-06': 1750.50,
+      '2023-07-07': 1850.25
+    },
+    salesByMonth: {
+      '2023-01': 28000,
+      '2023-02': 32000,
+      '2023-03': 35000,
+      '2023-04': 30000,
+      '2023-05': 28000,
+      '2023-06': 32000,
+      '2023-07': 38000,
+      '2023-08': 42000,
+      '2023-09': 45000,
+      '2023-10': 50000,
+      '2023-11': 55000,
+      '2023-12': 60000
+    },
+    salesByCategory: {
+      'Nuts': 12500,
+      'Dried Fruits': 9800,
+      'Spices': 7200,
+      'Seeds': 3600,
+      'Superfoods': 1800,
+      'Gift Boxes': 1100
+    },
+    topProducts: [
+      { id: 1, name: 'Organic Almonds', category: 'Nuts', unitsSold: 520, revenue: 15600 },
+      { id: 2, name: 'Dried Cranberries', category: 'Dried Fruits', unitsSold: 480, revenue: 12000 },
+      { id: 3, name: 'Cashew Nuts', category: 'Nuts', unitsSold: 420, revenue: 14700 },
+      { id: 4, name: 'Organic Turmeric', category: 'Spices', unitsSold: 380, revenue: 7600 },
+      { id: 5, name: 'Chia Seeds', category: 'Seeds', unitsSold: 350, revenue: 8750 },
+      { id: 6, name: 'Organic Walnuts', category: 'Nuts', unitsSold: 320, revenue: 9600 },
+      { id: 7, name: 'Dried Apricots', category: 'Dried Fruits', unitsSold: 310, revenue: 7750 },
+      { id: 8, name: 'Cinnamon Sticks', category: 'Spices', unitsSold: 290, revenue: 5800 },
+      { id: 9, name: 'Flax Seeds', category: 'Seeds', unitsSold: 280, revenue: 5600 },
+      { id: 10, name: 'Goji Berries', category: 'Superfoods', unitsSold: 250, revenue: 7500 }
+    ]
   };
+
+  // Use mock data instead of API call
+  useEffect(() => {
+    const loadMockData = () => {
+      setIsLoading(true);
+      // Simulate API delay
+      setTimeout(() => {
+        setData(mockSalesData);
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }, 800);
+    };
+
+    loadMockData();
+  }, [timeRange]);
 
   // Handle refresh
   const handleRefresh = () => {
     setIsRefreshing(true);
-    fetchData();
+    // Simulate API delay
+    setTimeout(() => {
+      setData(mockSalesData);
+      setIsRefreshing(false);
+    }, 800);
   };
 
   // Handle export
-  const handleExport = async () => {
+  const handleExport = () => {
     try {
-      const blob = await exportAnalyticsData('sales', { timeRange });
-      
+      // Generate CSV content from mock data
+      let csvContent = 'data:text/csv;charset=utf-8,';
+
+      // Add headers
+      csvContent += 'Product,Category,Units Sold,Revenue\n';
+
+      // Add data rows
+      mockSalesData.topProducts.forEach(product => {
+        csvContent += `"${product.name}","${product.category}",${product.unitsSold},${product.revenue}\n`;
+      });
+
       // Create download link
-      const url = window.URL.createObjectURL(blob);
+      const encodedUri = encodeURI(csvContent);
       const a = document.createElement('a');
       a.style.display = 'none';
-      a.href = url;
+      a.href = encodedUri;
       a.download = `sales-report-${timeRange}.csv`;
-      
+
       // Trigger download
       document.body.appendChild(a);
       a.click();
-      
+
       // Clean up
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error exporting data:', error);
@@ -108,14 +167,14 @@ const SalesAnalytics = () => {
   const prepareSalesByMonthChart = () => {
     const months = Object.keys(data.salesByMonth).sort();
     const values = months.map(month => data.salesByMonth[month]);
-    
+
     // Format month labels (YYYY-MM to MMM YYYY)
     const labels = months.map(month => {
       const [year, monthNum] = month.split('-');
       const date = new Date(parseInt(year), parseInt(monthNum) - 1);
       return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     });
-    
+
     return {
       labels,
       datasets: [
@@ -130,11 +189,11 @@ const SalesAnalytics = () => {
       ]
     };
   };
-  
+
   const prepareSalesByCategoryChart = () => {
     const categories = Object.keys(data.salesByCategory);
     const values = categories.map(category => data.salesByCategory[category]);
-    
+
     // Generate colors for each category
     const backgroundColors = [
       'rgba(255, 99, 132, 0.6)',
@@ -148,7 +207,7 @@ const SalesAnalytics = () => {
       'rgba(40, 159, 64, 0.6)',
       'rgba(210, 199, 199, 0.6)'
     ];
-    
+
     return {
       labels: categories,
       datasets: [
@@ -161,12 +220,12 @@ const SalesAnalytics = () => {
       ]
     };
   };
-  
+
   const prepareTopProductsChart = () => {
     const products = data.topProducts.slice(0, 5); // Top 5 products
     const labels = products.map(product => product.name);
     const values = products.map(product => product.revenue);
-    
+
     return {
       labels,
       datasets: [
@@ -217,7 +276,7 @@ const SalesAnalytics = () => {
       }
     }
   };
-  
+
   const barChartOptions = {
     responsive: true,
     plugins: {
@@ -253,7 +312,7 @@ const SalesAnalytics = () => {
       }
     }
   };
-  
+
   const pieChartOptions = {
     responsive: true,
     plugins: {
@@ -295,7 +354,7 @@ const SalesAnalytics = () => {
         <h2 className="text-xl font-bold text-gray-900 mb-2 md:mb-0">
           Sales Analytics
         </h2>
-        
+
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           {/* Time range selector */}
           <select
@@ -308,20 +367,20 @@ const SalesAnalytics = () => {
             <option value="monthly">Last 30 Days</option>
             <option value="yearly">Last 365 Days</option>
           </select>
-          
+
           {/* Refresh button */}
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
-            <FontAwesomeIcon 
-              icon={faSync} 
-              className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} 
+            <FontAwesomeIcon
+              icon={faSync}
+              className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`}
             />
             Refresh
           </button>
-          
+
           {/* Export button */}
           <button
             onClick={handleExport}
@@ -332,7 +391,7 @@ const SalesAnalytics = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
@@ -343,7 +402,7 @@ const SalesAnalytics = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Sales</p>
               <p className="text-2xl font-semibold text-gray-900">{formatCurrency(data.summary.totalSales)}</p>
-              
+
               <div className="mt-1 flex items-center">
                 <span className={`text-sm font-medium ${data.summary.monthlyGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   <FontAwesomeIcon
@@ -357,7 +416,7 @@ const SalesAnalytics = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-blue-100 text-blue-600">
@@ -369,7 +428,7 @@ const SalesAnalytics = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-purple-100 text-purple-600">
@@ -381,7 +440,7 @@ const SalesAnalytics = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
@@ -396,7 +455,7 @@ const SalesAnalytics = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Monthly Sales Trend */}
@@ -404,53 +463,53 @@ const SalesAnalytics = () => {
           <div className="px-6 py-5 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900">Monthly Sales Trend</h3>
           </div>
-          
+
           <div className="p-6">
-            <Line 
-              data={prepareSalesByMonthChart()} 
+            <Line
+              data={prepareSalesByMonthChart()}
               options={lineChartOptions}
               height={300}
             />
           </div>
         </div>
-        
+
         {/* Top Products */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900">Top Products by Revenue</h3>
           </div>
-          
+
           <div className="p-6">
-            <Bar 
-              data={prepareTopProductsChart()} 
+            <Bar
+              data={prepareTopProductsChart()}
               options={barChartOptions}
               height={300}
             />
           </div>
         </div>
       </div>
-      
+
       {/* Sales by Category */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
         <div className="px-6 py-5 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Sales by Category</h3>
         </div>
-        
+
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Pie 
-              data={prepareSalesByCategoryChart()} 
+            <Pie
+              data={prepareSalesByCategoryChart()}
               options={pieChartOptions}
               height={300}
             />
           </div>
-          
+
           <div className="space-y-4 flex flex-col justify-center">
             {Object.entries(data.salesByCategory)
               .sort((a, b) => b[1] - a[1])
               .map(([category, sales]) => {
                 const percentage = (sales / Object.values(data.salesByCategory).reduce((a, b) => a + b, 0)) * 100;
-                
+
                 return (
                   <div key={category}>
                     <div className="flex justify-between items-center mb-1">
@@ -459,7 +518,7 @@ const SalesAnalytics = () => {
                         {formatCurrency(sales)} ({percentage.toFixed(1)}%)
                       </span>
                     </div>
-                    
+
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="bg-green-600 h-2.5 rounded-full"
@@ -472,13 +531,13 @@ const SalesAnalytics = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Top Products Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Top Selling Products</h3>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

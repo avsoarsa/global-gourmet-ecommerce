@@ -15,16 +15,16 @@ import {
   faFilter,
   faSync
 } from '@fortawesome/free-solid-svg-icons';
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  PointElement, 
-  LineElement, 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
   BarElement,
   ArcElement,
-  Title, 
-  Tooltip, 
+  Title,
+  Tooltip,
   Legend,
   Filler
 } from 'chart.js';
@@ -461,11 +461,12 @@ const AnalyticsDashboard = () => {
       setTimeout(() => {
         setData(sampleData);
         setIsLoading(false);
-      }, 1000);
+        setIsRefreshing(false);
+      }, 800);
     };
 
     fetchData();
-  }, []);
+  }, [timeRange]);
 
   // Handle refresh data
   const handleRefresh = () => {
@@ -474,7 +475,7 @@ const AnalyticsDashboard = () => {
     setTimeout(() => {
       setData(sampleData);
       setIsRefreshing(false);
-    }, 1000);
+    }, 800);
   };
 
   if (isLoading) {
@@ -510,15 +511,15 @@ const AnalyticsDashboard = () => {
               <option value="yearly">This Year</option>
             </select>
           </div>
-          
+
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
-            <FontAwesomeIcon 
-              icon={faSync} 
-              className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} 
+            <FontAwesomeIcon
+              icon={faSync}
+              className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`}
             />
             {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
           </button>
@@ -563,23 +564,23 @@ const AnalyticsDashboard = () => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Chart 
-          title="Sales Overview" 
-          type="line" 
-          height={300} 
+        <Chart
+          title="Sales Overview"
+          type="line"
+          height={300}
           data={{
             labels: data.salesChart.labels,
             datasets: data.salesChart.datasets
-          }} 
+          }}
         />
-        <Chart 
-          title="Orders Overview" 
-          type="bar" 
-          height={300} 
+        <Chart
+          title="Orders Overview"
+          type="bar"
+          height={300}
           data={{
             labels: data.ordersChart.labels,
             datasets: data.ordersChart.datasets
-          }} 
+          }}
         />
       </div>
 

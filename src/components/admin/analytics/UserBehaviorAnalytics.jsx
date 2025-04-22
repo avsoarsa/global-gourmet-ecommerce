@@ -14,7 +14,7 @@ import {
   faUserSlash,
   faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
-import { getUserBehaviorData, exportAnalyticsData } from '../../../services/analyticsService';
+// Import statements for user behavior analytics
 
 const UserBehaviorAnalytics = () => {
   const [data, setData] = useState(null);
@@ -23,51 +23,172 @@ const UserBehaviorAnalytics = () => {
   const [timeRange, setTimeRange] = useState('monthly');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch user behavior data
-  useEffect(() => {
-    fetchData();
-  }, [timeRange]);
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const behaviorData = await getUserBehaviorData({ timeRange });
-      setData(behaviorData);
-    } catch (error) {
-      console.error('Error fetching user behavior data:', error);
-      setError('Failed to load user behavior data. Please try again.');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
+  // Mock data for user behavior analytics
+  const mockBehaviorData = {
+    totalSessions: 1250,
+    sessionMetrics: [
+      {
+        sessionId: 'session-001',
+        userId: 1,
+        isLoggedIn: true,
+        deviceType: 'desktop',
+        startTime: '2023-07-01T10:00:00Z',
+        endTime: '2023-07-01T10:15:30Z',
+        durationSeconds: 930,
+        pageViews: 8,
+        totalEvents: 15,
+        madePurchase: true
+      },
+      {
+        sessionId: 'session-002',
+        userId: null,
+        isLoggedIn: false,
+        deviceType: 'mobile',
+        startTime: '2023-07-01T11:20:00Z',
+        endTime: '2023-07-01T11:25:45Z',
+        durationSeconds: 345,
+        pageViews: 4,
+        totalEvents: 6,
+        madePurchase: false
+      },
+      {
+        sessionId: 'session-003',
+        userId: 2,
+        isLoggedIn: true,
+        deviceType: 'tablet',
+        startTime: '2023-07-01T12:10:00Z',
+        endTime: '2023-07-01T12:30:20Z',
+        durationSeconds: 1220,
+        pageViews: 12,
+        totalEvents: 20,
+        madePurchase: true
+      },
+      {
+        sessionId: 'session-004',
+        userId: null,
+        isLoggedIn: false,
+        deviceType: 'desktop',
+        startTime: '2023-07-01T13:05:00Z',
+        endTime: '2023-07-01T13:08:30Z',
+        durationSeconds: 210,
+        pageViews: 2,
+        totalEvents: 3,
+        madePurchase: false
+      },
+      {
+        sessionId: 'session-005',
+        userId: 3,
+        isLoggedIn: true,
+        deviceType: 'mobile',
+        startTime: '2023-07-01T14:30:00Z',
+        endTime: '2023-07-01T14:45:15Z',
+        durationSeconds: 915,
+        pageViews: 7,
+        totalEvents: 14,
+        madePurchase: true
+      }
+    ],
+    userJourneys: [
+      {
+        sessionId: 'session-001',
+        userId: 1,
+        journey: [
+          { eventType: 'page_view', timestamp: '2023-07-01T10:00:00Z', pageName: 'home' },
+          { eventType: 'page_view', timestamp: '2023-07-01T10:02:30Z', pageName: 'products' },
+          { eventType: 'product_view', timestamp: '2023-07-01T10:04:15Z', productId: 1, productName: 'Organic Almonds' },
+          { eventType: 'add_to_cart', timestamp: '2023-07-01T10:06:00Z', productId: 1, productName: 'Organic Almonds' },
+          { eventType: 'page_view', timestamp: '2023-07-01T10:08:30Z', pageName: 'cart' },
+          { eventType: 'begin_checkout', timestamp: '2023-07-01T10:10:45Z' },
+          { eventType: 'purchase', timestamp: '2023-07-01T10:15:30Z' }
+        ]
+      },
+      {
+        sessionId: 'session-002',
+        userId: null,
+        journey: [
+          { eventType: 'page_view', timestamp: '2023-07-01T11:20:00Z', pageName: 'home' },
+          { eventType: 'page_view', timestamp: '2023-07-01T11:22:15Z', pageName: 'products' },
+          { eventType: 'product_view', timestamp: '2023-07-01T11:24:30Z', productId: 2, productName: 'Dried Cranberries' },
+          { eventType: 'page_view', timestamp: '2023-07-01T11:25:45Z', pageName: 'home' }
+        ]
+      },
+      {
+        sessionId: 'session-003',
+        userId: 2,
+        journey: [
+          { eventType: 'page_view', timestamp: '2023-07-01T12:10:00Z', pageName: 'home' },
+          { eventType: 'page_view', timestamp: '2023-07-01T12:12:30Z', pageName: 'products' },
+          { eventType: 'product_view', timestamp: '2023-07-01T12:15:00Z', productId: 3, productName: 'Cashew Nuts' },
+          { eventType: 'add_to_cart', timestamp: '2023-07-01T12:17:30Z', productId: 3, productName: 'Cashew Nuts' },
+          { eventType: 'page_view', timestamp: '2023-07-01T12:20:00Z', pageName: 'products' },
+          { eventType: 'product_view', timestamp: '2023-07-01T12:22:30Z', productId: 4, productName: 'Organic Turmeric' },
+          { eventType: 'add_to_cart', timestamp: '2023-07-01T12:25:00Z', productId: 4, productName: 'Organic Turmeric' },
+          { eventType: 'page_view', timestamp: '2023-07-01T12:27:30Z', pageName: 'cart' },
+          { eventType: 'begin_checkout', timestamp: '2023-07-01T12:28:45Z' },
+          { eventType: 'purchase', timestamp: '2023-07-01T12:30:20Z' }
+        ]
+      }
+    ],
+    funnelAnalysis: [
+      { step: 'page_view', sessionsReachingStep: 1250, conversionRate: 100, dropOffRate: 0 },
+      { step: 'product_view', sessionsReachingStep: 875, conversionRate: 70, dropOffRate: 30 },
+      { step: 'add_to_cart', sessionsReachingStep: 500, conversionRate: 40, dropOffRate: 42.9 },
+      { step: 'begin_checkout', sessionsReachingStep: 375, conversionRate: 30, dropOffRate: 25 },
+      { step: 'purchase', sessionsReachingStep: 250, conversionRate: 20, dropOffRate: 33.3 }
+    ]
   };
+
+  // Use mock data instead of API call
+  useEffect(() => {
+    const loadMockData = () => {
+      setIsLoading(true);
+      // Simulate API delay
+      setTimeout(() => {
+        setData(mockBehaviorData);
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }, 800);
+    };
+
+    loadMockData();
+  }, [timeRange]);
 
   // Handle refresh
   const handleRefresh = () => {
     setIsRefreshing(true);
-    fetchData();
+    // Simulate API delay
+    setTimeout(() => {
+      setData(mockBehaviorData);
+      setIsRefreshing(false);
+    }, 800);
   };
 
   // Handle export
-  const handleExport = async () => {
+  const handleExport = () => {
     try {
-      const blob = await exportAnalyticsData('user-behavior', { timeRange });
-      
+      // Generate CSV content from mock data
+      let csvContent = 'data:text/csv;charset=utf-8,';
+
+      // Add headers
+      csvContent += 'Session ID,User ID,Device Type,Start Time,Duration (sec),Page Views,Total Events,Made Purchase\n';
+
+      // Add data rows
+      mockBehaviorData.sessionMetrics.forEach(session => {
+        csvContent += `"${session.sessionId}",${session.userId || 'guest'},"${session.deviceType}","${session.startTime}",${session.durationSeconds},${session.pageViews},${session.totalEvents},${session.madePurchase}\n`;
+      });
+
       // Create download link
-      const url = window.URL.createObjectURL(blob);
+      const encodedUri = encodeURI(csvContent);
       const a = document.createElement('a');
       a.style.display = 'none';
-      a.href = url;
+      a.href = encodedUri;
       a.download = `user-behavior-report-${timeRange}.csv`;
-      
+
       // Trigger download
       document.body.appendChild(a);
       a.click();
-      
+
       // Clean up
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error exporting data:', error);
@@ -132,7 +253,7 @@ const UserBehaviorAnalytics = () => {
         <h2 className="text-xl font-bold text-gray-900 mb-2 md:mb-0">
           User Behavior Analytics
         </h2>
-        
+
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           {/* Time range selector */}
           <select
@@ -145,20 +266,20 @@ const UserBehaviorAnalytics = () => {
             <option value="monthly">Last 30 Days</option>
             <option value="yearly">Last 365 Days</option>
           </select>
-          
+
           {/* Refresh button */}
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
-            <FontAwesomeIcon 
-              icon={faSync} 
-              className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} 
+            <FontAwesomeIcon
+              icon={faSync}
+              className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`}
             />
             Refresh
           </button>
-          
+
           {/* Export button */}
           <button
             onClick={handleExport}
@@ -169,7 +290,7 @@ const UserBehaviorAnalytics = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
@@ -183,7 +304,7 @@ const UserBehaviorAnalytics = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-green-100 text-green-600">
@@ -195,7 +316,7 @@ const UserBehaviorAnalytics = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-purple-100 text-purple-600">
@@ -209,7 +330,7 @@ const UserBehaviorAnalytics = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
@@ -224,13 +345,13 @@ const UserBehaviorAnalytics = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Funnel Analysis */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
         <div className="px-6 py-5 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Conversion Funnel</h3>
         </div>
-        
+
         <div className="p-6">
           <div className="space-y-6">
             {data.funnelAnalysis.map((step, index) => {
@@ -242,10 +363,10 @@ const UserBehaviorAnalytics = () => {
                 'begin_checkout': 'Begin Checkout',
                 'purchase': 'Purchase'
               };
-              
+
               const stepLabel = stepLabels[step.step] || step.step;
               const width = `${step.conversionRate}%`;
-              
+
               return (
                 <div key={step.step}>
                   <div className="flex justify-between items-center mb-1">
@@ -256,14 +377,14 @@ const UserBehaviorAnalytics = () => {
                       {step.sessionsReachingStep.toLocaleString()} sessions ({step.conversionRate.toFixed(1)}%)
                     </div>
                   </div>
-                  
+
                   <div className="w-full bg-gray-200 rounded-full h-4">
                     <div
                       className="bg-green-600 h-4 rounded-full transition-all duration-500"
                       style={{ width }}
                     ></div>
                   </div>
-                  
+
                   {index < data.funnelAnalysis.length - 1 && (
                     <div className="flex justify-end mt-1">
                       <span className="text-xs text-red-500">
@@ -277,7 +398,7 @@ const UserBehaviorAnalytics = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Device & User Distribution */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Device Distribution */}
@@ -285,12 +406,12 @@ const UserBehaviorAnalytics = () => {
           <div className="px-6 py-5 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900">Device Distribution</h3>
           </div>
-          
+
           <div className="p-6">
             <div className="space-y-4">
               {Object.entries(deviceDistribution).map(([device, count]) => {
                 const percentage = (count / totalSessions) * 100;
-                
+
                 // Map device types to icons
                 const deviceIcons = {
                   'desktop': faDesktop,
@@ -298,9 +419,9 @@ const UserBehaviorAnalytics = () => {
                   'tablet': faTabletAlt,
                   'unknown': faDesktop
                 };
-                
+
                 const icon = deviceIcons[device] || deviceIcons.unknown;
-                
+
                 return (
                   <div key={device}>
                     <div className="flex justify-between items-center mb-1">
@@ -314,7 +435,7 @@ const UserBehaviorAnalytics = () => {
                         {count.toLocaleString()} ({percentage.toFixed(1)}%)
                       </span>
                     </div>
-                    
+
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="bg-blue-600 h-2.5 rounded-full"
@@ -327,32 +448,32 @@ const UserBehaviorAnalytics = () => {
             </div>
           </div>
         </div>
-        
+
         {/* User Status Distribution */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900">User Status</h3>
           </div>
-          
+
           <div className="p-6">
             <div className="space-y-4">
               {Object.entries(loginDistribution).map(([status, count]) => {
                 const percentage = (count / totalSessions) * 100;
-                
+
                 // Map status to readable labels and icons
                 const statusLabels = {
                   'logged_in': 'Logged In Users',
                   'guest': 'Guest Users'
                 };
-                
+
                 const statusIcons = {
                   'logged_in': faUserCheck,
                   'guest': faUserSlash
                 };
-                
+
                 const label = statusLabels[status] || status;
                 const icon = statusIcons[status] || faUsers;
-                
+
                 return (
                   <div key={status}>
                     <div className="flex justify-between items-center mb-1">
@@ -364,7 +485,7 @@ const UserBehaviorAnalytics = () => {
                         {count.toLocaleString()} ({percentage.toFixed(1)}%)
                       </span>
                     </div>
-                    
+
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className={`h-2.5 rounded-full ${status === 'logged_in' ? 'bg-green-600' : 'bg-gray-500'}`}
@@ -378,14 +499,14 @@ const UserBehaviorAnalytics = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Recent User Journeys */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-900">Recent User Journeys</h3>
           <span className="text-sm text-gray-500">Showing {data.userJourneys.length} of {totalSessions} sessions</span>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -421,10 +542,10 @@ const UserBehaviorAnalytics = () => {
                           'begin_checkout': { icon: faRoute, color: 'bg-yellow-100 text-yellow-600' },
                           'purchase': { icon: faChartLine, color: 'bg-red-100 text-red-600' }
                         };
-                        
-                        const { icon, color } = eventIcons[step.eventType] || 
+
+                        const { icon, color } = eventIcons[step.eventType] ||
                           { icon: faUsers, color: 'bg-gray-100 text-gray-600' };
-                        
+
                         return (
                           <div key={index} className="flex items-center mr-2 mb-2">
                             <div className={`p-1.5 rounded-full ${color} mr-1`}>
