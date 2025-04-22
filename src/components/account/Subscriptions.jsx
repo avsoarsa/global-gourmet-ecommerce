@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarAlt, faCreditCard, faPause, faPlay,
-  faEdit, faTimes, faInfoCircle, faPlus, faCheck
+  faEdit, faTimes, faInfoCircle, faPlus
 } from '@fortawesome/free-solid-svg-icons';
 import { useRegion } from '../../context/RegionContext';
 import { useSubscription } from '../../context/SubscriptionContext';
@@ -325,7 +325,9 @@ const CreateSubscriptionModal = ({ products, onSave, onCancel }) => {
                     <div className="text-sm text-gray-500">{formatPrice(product.price)}</div>
                   </div>
                   {selectedProduct?.id === product.id && (
-                    <FontAwesomeIcon icon={faCheck} className="text-green-600" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
                   )}
                 </div>
               </div>
