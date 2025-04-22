@@ -1,22 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faChartLine,
-  faChartBar,
-  faChartPie,
-  faCalendarAlt,
-  faDownload,
-  faArrowUp,
-  faArrowDown,
-  faShoppingCart,
   faUsers,
-  faMoneyBillWave,
-  faBoxOpen
+  faShoppingCart,
+  faChartPie,
+  faChartBar
 } from '@fortawesome/free-solid-svg-icons';
 import AnalyticsDashboard from '../../components/admin/analytics/AnalyticsDashboard';
-import LineChart from '../../components/admin/charts/LineChart';
-import BarChart from '../../components/admin/charts/BarChart';
-import PieChart from '../../components/admin/charts/PieChart';
+import UserBehaviorAnalytics from '../../components/admin/analytics/UserBehaviorAnalytics';
+import SalesAnalytics from '../../components/admin/analytics/SalesAnalytics';
 
 // Sample analytics data (in a real app, this would come from an API)
 const sampleData = {
@@ -398,28 +391,48 @@ const CustomerStats = ({ stats }) => {
 };
 
 const AnalyticsPage = () => {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('monthly');
+  const [activeTab, setActiveTab] = useState('overview');
 
-  // Fetch analytics data (simulated)
-  useEffect(() => {
-    // In a real app, this would be an API call
-    setTimeout(() => {
-      setData(sampleData);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  // Tab options
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: faChartLine },
+    { id: 'sales', label: 'Sales Analytics', icon: faChartBar },
+    { id: 'behavior', label: 'User Behavior', icon: faUsers },
+  ];
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+  return (
+    <div className="space-y-6">
+      {/* Tabs */}
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-6 px-6" aria-label="Tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                  ${activeTab === tab.id
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                `}
+              >
+                <FontAwesomeIcon icon={tab.icon} className="mr-2" />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
       </div>
-    );
-  }
 
-  return <AnalyticsDashboard />;
+      {/* Tab Content */}
+      <div>
+        {activeTab === 'overview' && <AnalyticsDashboard />}
+        {activeTab === 'sales' && <SalesAnalytics />}
+        {activeTab === 'behavior' && <UserBehaviorAnalytics />}
+      </div>
+    </div>
+  );
 };
 
 export default AnalyticsPage;

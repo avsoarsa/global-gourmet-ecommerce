@@ -433,6 +433,443 @@ app.get('/api/admin/activity', validateAdmin, (req, res) => {
   }
 });
 
+// Analytics Events
+app.post('/api/analytics/events', (req, res) => {
+  try {
+    const data = readDataFile('analytics.json');
+    const newEvent = {
+      id: data.events.length > 0 ? Math.max(...data.events.map(e => e.id || 0)) + 1 : 1,
+      ...req.body,
+      serverTimestamp: new Date().toISOString()
+    };
+
+    data.events.push(newEvent);
+    data.lastUpdated = new Date().toISOString();
+    writeDataFile('analytics.json', data);
+
+    res.status(201).json({ success: true, eventId: newEvent.id });
+  } catch (error) {
+    console.error('Error storing analytics event:', error);
+    res.status(500).json({ error: 'Failed to store analytics event' });
+  }
+});
+
+// Analytics Data
+app.get('/api/analytics/data', validateAdmin, (req, res) => {
+  try {
+    const timeRange = req.query.timeRange || 'monthly';
+    const data = readDataFile('analytics.json');
+
+    // Get cutoff date based on time range
+    const now = new Date();
+    let cutoffDate = new Date();
+
+    switch (timeRange) {
+      case 'daily':
+        cutoffDate.setDate(now.getDate() - 1);
+        break;
+      case 'weekly':
+        cutoffDate.setDate(now.getDate() - 7);
+        break;
+      case 'monthly':
+        cutoffDate.setMonth(now.getMonth() - 1);
+        break;
+      case 'yearly':
+        cutoffDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        cutoffDate.setMonth(now.getMonth() - 1); // Default to monthly
+    }
+
+    // Filter events by date
+    const filteredEvents = data.events.filter(event => {
+      const eventDate = new Date(event.timestamp);
+      return eventDate >= cutoffDate;
+    });
+
+    // Process events to generate analytics data
+    const pageViews = filteredEvents.filter(e => e.eventType === 'page_view');
+    const productViews = filteredEvents.filter(e => e.eventType === 'product_view');
+    const addToCartEvents = filteredEvents.filter(e => e.eventType === 'add_to_cart');
+    const purchaseEvents = filteredEvents.filter(e => e.eventType === 'purchase');
+
+    // Calculate page view statistics
+    const pageViewsByPage = {};
+    pageViews.forEach(event => {
+      const pageName = event.eventData?.pageName || 'unknown';
+      pageViewsByPage[pageName] = (pageViewsByPage[pageName] || 0) + 1;
+    });
+
+    // Calculate product view statistics
+    const productViewsByProduct = {};
+    productViews.forEach(event => {
+      const productId = event.eventData?.productId;
+      if (productId) {
+        productViewsByProduct[productId] = (productViewsByProduct[productId] || 0) + 1;
+      }
+    });
+
+    // Calculate conversion rates
+    const uniqueVisitors = new Set(pageViews.map(e => e.sessionId)).size;
+    const uniquePurchasers = new Set(purchaseEvents.map(e => e.sessionId)).size;
+    const conversionRate = uniqueVisitors > 0 ? (uniquePurchasers / uniqueVisitors) * 100 : 0;
+
+    // Calculate cart abandonment rate
+    const uniqueCartAdders = new Set(addToCartEvents.map(e => e.sessionId)).size;
+    const cartAbandonmentRate = uniqueCartAdders > 0 ? ((uniqueCartAdders - uniquePurchasers) / uniqueCartAdders) * 100 : 0;
+
+    // Calculate revenue
+    const revenue = purchaseEvents.reduce((total, event) => {
+      return total + (event.eventData?.revenue || 0);
+    }, 0);
+
+    // Calculate average order value
+    const averageOrderValue = purchaseEvents.length > 0 ? revenue / purchaseEvents.length : 0;
+
+    // Return analytics data
+    res.json({
+      timeRange,
+      summary: {
+        pageViews: pageViews.length,
+        uniqueVisitors,
+        productViews: productViews.length,
+        addToCartEvents: addToCartEvents.length,
+        purchases: purchaseEvents.length,
+        revenue,
+        averageOrderValue,
+        conversionRate,
+        cartAbandonmentRate
+      },
+      pageViewsByPage,
+      productViewsByProduct,
+      events: filteredEvents.slice(0, 100) // Return only the first 100 events for debugging
+    });
+  } catch (error) {
+    console.error('Error generating analytics data:', error);
+    res.status(500).json({ error: 'Failed to generate analytics data' });
+  }
+});
+
+// User Behavior Analytics
+app.get('/api/analytics/user-behavior', validateAdmin, (req, res) => {
+  try {
+    const data = readDataFile('analytics.json');
+
+    // Get all sessions
+    const sessions = {};
+    data.events.forEach(event => {
+      if (event.sessionId) {
+        if (!sessions[event.sessionId]) {
+          sessions[event.sessionId] = [];
+        }
+        sessions[event.sessionId].push(event);
+      }
+    });
+
+    // Calculate session metrics
+    const sessionMetrics = Object.entries(sessions).map(([sessionId, events]) => {
+      // Sort events by timestamp
+      events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+      const firstEvent = events[0];
+      const lastEvent = events[events.length - 1];
+
+      // Calculate session duration in seconds
+      const startTime = new Date(firstEvent.timestamp);
+      const endTime = new Date(lastEvent.timestamp);
+      const durationSeconds = (endTime - startTime) / 1000;
+
+      // Count page views in this session
+      const pageViews = events.filter(e => e.eventType === 'page_view').length;
+
+      // Check if user made a purchase
+      const madePurchase = events.some(e => e.eventType === 'purchase');
+
+      // Get user info
+      const userId = firstEvent.userId;
+      const isLoggedIn = firstEvent.isLoggedIn;
+      const deviceType = firstEvent.deviceType;
+
+      return {
+        sessionId,
+        userId,
+        isLoggedIn,
+        deviceType,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        durationSeconds,
+        pageViews,
+        totalEvents: events.length,
+        madePurchase
+      };
+    });
+
+    // Calculate user journey metrics
+    const userJourneys = Object.entries(sessions).map(([sessionId, events]) => {
+      // Sort events by timestamp
+      events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+      // Extract journey steps
+      const journey = events.map(event => ({
+        eventType: event.eventType,
+        timestamp: event.timestamp,
+        pageName: event.eventData?.pageName,
+        productId: event.eventData?.productId,
+        productName: event.eventData?.productName
+      }));
+
+      return {
+        sessionId,
+        userId: events[0].userId,
+        journey
+      };
+    });
+
+    // Calculate funnel conversion rates
+    const funnelSteps = [
+      'page_view',
+      'product_view',
+      'add_to_cart',
+      'begin_checkout',
+      'purchase'
+    ];
+
+    const funnelAnalysis = funnelSteps.map((step, index) => {
+      const sessionsReachingStep = Object.values(sessions).filter(events => {
+        return events.some(e => e.eventType === step);
+      }).length;
+
+      const conversionRate = index > 0 ?
+        (sessionsReachingStep / Object.keys(sessions).length) * 100 :
+        100; // First step is always 100%
+
+      const dropOffRate = index > 0 ?
+        ((1 - (sessionsReachingStep / Object.values(sessions).filter(events => {
+          return events.some(e => e.eventType === funnelSteps[index - 1]);
+        }).length)) * 100) :
+        0; // No drop-off for first step
+
+      return {
+        step,
+        sessionsReachingStep,
+        conversionRate,
+        dropOffRate
+      };
+    });
+
+    res.json({
+      totalSessions: Object.keys(sessions).length,
+      sessionMetrics: sessionMetrics.slice(0, 100), // Limit to 100 sessions
+      userJourneys: userJourneys.slice(0, 20), // Limit to 20 journeys
+      funnelAnalysis
+    });
+  } catch (error) {
+    console.error('Error generating user behavior data:', error);
+    res.status(500).json({ error: 'Failed to generate user behavior data' });
+  }
+});
+
+// Sales Analytics
+app.get('/api/analytics/sales', validateAdmin, (req, res) => {
+  try {
+    const data = readDataFile('analytics.json');
+    const usersData = readDataFile('users.json');
+    const productsData = readDataFile('products.json');
+
+    // Get all purchase events
+    const purchaseEvents = data.events.filter(e => e.eventType === 'purchase');
+
+    // Get all orders from users data
+    const allOrders = [];
+    usersData.users.forEach(user => {
+      if (user.orders) {
+        user.orders.forEach(order => {
+          allOrders.push({
+            ...order,
+            userId: user.id,
+            userName: `${user.firstName} ${user.lastName}`
+          });
+        });
+      }
+    });
+
+    // Calculate sales by time period
+    const salesByDay = {};
+    const salesByMonth = {};
+    const salesByCategory = {};
+
+    allOrders.forEach(order => {
+      const orderDate = new Date(order.date);
+      const day = orderDate.toISOString().split('T')[0];
+      const month = day.substring(0, 7); // YYYY-MM format
+
+      // Sales by day
+      salesByDay[day] = (salesByDay[day] || 0) + order.total;
+
+      // Sales by month
+      salesByMonth[month] = (salesByMonth[month] || 0) + order.total;
+
+      // Sales by category
+      order.items.forEach(item => {
+        const product = productsData.products.find(p => p.id === item.product.id);
+        if (product) {
+          const category = product.category;
+          salesByCategory[category] = (salesByCategory[category] || 0) + (item.price * item.quantity);
+        }
+      });
+    });
+
+    // Calculate top selling products
+    const productSales = {};
+    allOrders.forEach(order => {
+      order.items.forEach(item => {
+        const productId = item.product.id;
+        if (!productSales[productId]) {
+          productSales[productId] = {
+            id: productId,
+            name: item.product.name,
+            category: item.product.category,
+            unitsSold: 0,
+            revenue: 0
+          };
+        }
+
+        productSales[productId].unitsSold += item.quantity;
+        productSales[productId].revenue += (item.price * item.quantity);
+      });
+    });
+
+    // Convert to array and sort by revenue
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 10); // Top 10 products
+
+    // Calculate sales growth
+    const calculateGrowth = (current, previous) => {
+      return previous > 0 ? ((current - previous) / previous) * 100 : 0;
+    };
+
+    // Get current and previous month
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const previousMonthDate = new Date(now);
+    previousMonthDate.setMonth(now.getMonth() - 1);
+    const previousMonth = `${previousMonthDate.getFullYear()}-${String(previousMonthDate.getMonth() + 1).padStart(2, '0')}`;
+
+    const currentMonthSales = salesByMonth[currentMonth] || 0;
+    const previousMonthSales = salesByMonth[previousMonth] || 0;
+    const monthlyGrowth = calculateGrowth(currentMonthSales, previousMonthSales);
+
+    // Return sales analytics data
+    res.json({
+      summary: {
+        totalSales: allOrders.reduce((sum, order) => sum + order.total, 0),
+        totalOrders: allOrders.length,
+        averageOrderValue: allOrders.length > 0 ?
+          allOrders.reduce((sum, order) => sum + order.total, 0) / allOrders.length : 0,
+        monthlyGrowth
+      },
+      salesByDay,
+      salesByMonth,
+      salesByCategory,
+      topProducts
+    });
+  } catch (error) {
+    console.error('Error generating sales analytics data:', error);
+    res.status(500).json({ error: 'Failed to generate sales analytics data' });
+  }
+});
+
+// Export Analytics Data
+app.get('/api/analytics/export', validateAdmin, (req, res) => {
+  try {
+    const reportType = req.query.reportType || 'sales';
+    const data = readDataFile('analytics.json');
+    const usersData = readDataFile('users.json');
+    const productsData = readDataFile('products.json');
+
+    let csvData = '';
+
+    if (reportType === 'sales') {
+      // Get all orders from users data
+      const allOrders = [];
+      usersData.users.forEach(user => {
+        if (user.orders) {
+          user.orders.forEach(order => {
+            allOrders.push({
+              ...order,
+              userId: user.id,
+              userName: `${user.firstName} ${user.lastName}`
+            });
+          });
+        }
+      });
+
+      // Create CSV header
+      csvData = 'Order ID,Date,Customer,Total,Items,Status\n';
+
+      // Add order data
+      allOrders.forEach(order => {
+        const itemsText = order.items.map(item =>
+          `${item.quantity}x ${item.product.name}`
+        ).join('; ');
+
+        csvData += `${order.id},${order.date},${order.userName},${order.total},"${itemsText}",${order.status}\n`;
+      });
+    } else if (reportType === 'user-behavior') {
+      // Get all sessions
+      const sessions = {};
+      data.events.forEach(event => {
+        if (event.sessionId) {
+          if (!sessions[event.sessionId]) {
+            sessions[event.sessionId] = [];
+          }
+          sessions[event.sessionId].push(event);
+        }
+      });
+
+      // Create CSV header
+      csvData = 'Session ID,User ID,Device Type,Start Time,Duration (sec),Page Views,Total Events,Made Purchase\n';
+
+      // Add session data
+      Object.entries(sessions).forEach(([sessionId, events]) => {
+        // Sort events by timestamp
+        events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        const firstEvent = events[0];
+        const lastEvent = events[events.length - 1];
+
+        // Calculate session duration in seconds
+        const startTime = new Date(firstEvent.timestamp);
+        const endTime = new Date(lastEvent.timestamp);
+        const durationSeconds = (endTime - startTime) / 1000;
+
+        // Count page views in this session
+        const pageViews = events.filter(e => e.eventType === 'page_view').length;
+
+        // Check if user made a purchase
+        const madePurchase = events.some(e => e.eventType === 'purchase');
+
+        // Get user info
+        const userId = firstEvent.userId || 'guest';
+        const deviceType = firstEvent.deviceType || 'unknown';
+
+        csvData += `${sessionId},${userId},${deviceType},${startTime.toISOString()},${durationSeconds},${pageViews},${events.length},${madePurchase}\n`;
+      });
+    }
+
+    // Set headers for CSV download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=${reportType}-report.csv`);
+
+    res.send(csvData);
+  } catch (error) {
+    console.error('Error exporting analytics data:', error);
+    res.status(500).json({ error: 'Failed to export analytics data' });
+  }
+});
+
 // Admin Dashboard Stats
 app.get('/api/admin/stats', validateAdmin, (req, res) => {
   try {

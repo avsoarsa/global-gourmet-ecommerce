@@ -11,6 +11,7 @@ import { RecentlyViewedProvider } from './context/RecentlyViewedContext';
 import { LoyaltyProvider } from './context/LoyaltyContext';
 import { SubscriptionProvider } from './context/SubscriptionContext';
 import { AccessibilityProvider } from './context/AccessibilityContext';
+import { AnalyticsProvider } from './context/AnalyticsContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import DebugPage from './pages/DebugPage';
 // import CartNotification from './components/cart/CartNotification';
@@ -75,7 +76,8 @@ function App() {
       <Router>
         <AccessibilityProvider>
           <RegionProvider>
-            <ErrorBoundary>
+            <AnalyticsProvider>
+              <ErrorBoundary>
             <AuthProvider>
               <ErrorBoundary>
                 <NotificationProvider>
@@ -176,6 +178,7 @@ function App() {
               </ErrorBoundary>
             </AuthProvider>
           </ErrorBoundary>
+            </AnalyticsProvider>
           </RegionProvider>
         </AccessibilityProvider>
       </Router>
