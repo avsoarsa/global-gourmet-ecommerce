@@ -80,7 +80,16 @@
     "writeReview": "Write a Review",
     "shareProduct": "Share This Product",
     "origin": "Origin",
-    "nutrition": "Nutrition"
+    "nutrition": "Nutrition",
+    "subscriptionOption": "Subscribe & Save",
+    "subscriptionInfo": "Subscribe to receive this product regularly and save up to 15% on each order. You can pause, modify, or cancel at any time.",
+    "subscribeAndSave": "Subscribe & Save {{discount}}%",
+    "deliveryFrequency": "Delivery Frequency",
+    "off": "off",
+    "subscriptionBenefits": "Subscription Benefits",
+    "subscriptionBenefit1": "Save up to 15% on every order",
+    "subscriptionBenefit2": "Convenient automatic deliveries",
+    "subscriptionBenefit3": "Easily pause, skip, or cancel anytime"
   },
   "cart": {
     "title": "Your Cart",
@@ -251,5 +260,44 @@
     "tierUpgraded": "Tier Upgraded",
     "congratulations": "Congratulations!",
     "upgradedTo": "You've been upgraded to {{tier}} tier"
+  },
+  "subscription": {
+    "mySubscriptions": "My Subscriptions",
+    "manageSubscriptionsDesc": "Manage your recurring deliveries and save with subscription discounts.",
+    "newSubscription": "New Subscription",
+    "startSubscription": "Start a Subscription",
+    "noSubscriptions": "No Subscriptions Yet",
+    "noSubscriptionsDesc": "Subscribe to your favorite products and save with regular deliveries.",
+    "browseProducts": "Browse Products",
+    "activeSubscriptions": "Active Subscriptions",
+    "inactiveSubscriptions": "Inactive Subscriptions",
+    "frequency": "Delivery Frequency",
+    "nextDelivery": "Next Delivery",
+    "pausedOn": "Paused On",
+    "cancelledOn": "Cancelled On",
+    "price": "Subscription Price",
+    "quantity": "Quantity",
+    "pause": "Pause",
+    "resume": "Resume",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "viewProduct": "View Product",
+    "editSubscription": "Edit Subscription",
+    "confirmPauseTitle": "Pause Subscription",
+    "confirmPauseMessage": "Are you sure you want to pause this subscription? You can resume it at any time.",
+    "confirmCancelTitle": "Cancel Subscription",
+    "confirmCancelMessage": "Are you sure you want to cancel this subscription? This action cannot be undone.",
+    "aboutSubscriptions": "About Subscriptions",
+    "aboutSubscriptionsDesc": "Subscriptions automatically deliver your favorite products on your schedule. You can pause, modify, or cancel at any time.",
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "cancelled": "Cancelled",
+      "pending": "Pending"
+    },
+    "weekly": "Weekly",
+    "biweekly": "Bi-Weekly",
+    "monthly": "Monthly",
+    "bimonthly": "Bi-Monthly"
   }
 }

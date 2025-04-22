@@ -69,7 +69,7 @@ const AccountPage = () => {
       case 'rewards':
         return <LoyaltyPoints />;
       case 'subscriptions':
-        return <Subscriptions user={currentUser} />;
+        return <Subscriptions />;
       case 'recommendations':
         return <PersonalizedRecommendations user={currentUser} orderHistory={currentUser.orders} />;
       default:

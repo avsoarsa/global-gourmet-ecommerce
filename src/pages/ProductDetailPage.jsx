@@ -13,6 +13,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
+import { useSubscription } from '../context/SubscriptionContext';
 import { products } from '../data/products';
 import { getProductReviews, getProductAverageRating, addReview, markReviewAsHelpful } from '../data/reviews';
 import ProductCard from '../components/common/ProductCard';
@@ -23,6 +24,7 @@ import SocialShare from '../components/common/SocialShare';
 import RecipeSection from '../components/product/RecipeSection';
 import WeightSelector from '../components/product/WeightSelector';
 import ProductBreadcrumb from '../components/product/ProductBreadcrumb';
+import SubscriptionOption from '../components/product/SubscriptionOption';
 import SEO from '../components/common/SEO';
 import LazyImage from '../components/common/LazyImage';
 import FrequentlyBoughtTogether from '../components/products/FrequentlyBoughtTogether';
@@ -47,6 +49,8 @@ const ProductDetailPage = () => {
   const { currentUser } = useAuth();
   const { convertPriceSync, currencySymbol } = useRegion();
   const { addToRecentlyViewed } = useRecentlyViewed();
+  const { isProductSubscriptionEligible, subscribeToProduct } = useSubscription();
+  const [subscriptionData, setSubscriptionData] = useState(null);
 
   useEffect(() => {
     // Find the product by ID
@@ -146,19 +150,60 @@ const ProductDetailPage = () => {
     setSelectedWeightOption(option);
   };
 
+  const handleSubscriptionChange = (subscriptionOptions) => {
+    setSubscriptionData(subscriptionOptions);
+  };
+
   const handleAddToCart = () => {
-    // If product has weight options, add the selected weight option
-    if (product.weightOptions && product.weightOptions.length > 0 && selectedWeightOption) {
-      const productWithWeight = {
+    // If subscription is selected, handle subscription
+    if (subscriptionData && subscriptionData.isSubscription) {
+      // Create subscription with selected options
+      const productToSubscribe = {
         ...product,
-        price: selectedWeightOption.price,
+        price: selectedWeightOption ? selectedWeightOption.price : product.price,
         selectedWeight: selectedWeight,
         weightOption: selectedWeightOption
       };
-      addToCart(productWithWeight, quantity);
+
+      // Subscribe to product
+      subscribeToProduct(productToSubscribe, {
+        frequency: subscriptionData.frequency,
+        weight: selectedWeight,
+        quantity: quantity,
+        // In a real implementation, these would be selected by the user
+        paymentMethod: {
+          id: 'pm_001',
+          last4: '4242',
+          brand: 'Visa',
+          expiryMonth: 12,
+          expiryYear: 2025
+        },
+        shippingAddress: {
+          id: 'addr_001',
+          name: 'John Doe',
+          line1: '123 Main St',
+          line2: 'Apt 4B',
+          city: 'New York',
+          state: 'NY',
+          postalCode: '10001',
+          country: 'United States'
+        }
+      });
     } else {
-      // Otherwise, add the product as is
-      addToCart(product, quantity);
+      // Regular add to cart
+      // If product has weight options, add the selected weight option
+      if (product.weightOptions && product.weightOptions.length > 0 && selectedWeightOption) {
+        const productWithWeight = {
+          ...product,
+          price: selectedWeightOption.price,
+          selectedWeight: selectedWeight,
+          weightOption: selectedWeightOption
+        };
+        addToCart(productWithWeight, quantity);
+      } else {
+        // Otherwise, add the product as is
+        addToCart(product, quantity);
+      }
     }
   };
 
@@ -263,30 +308,60 @@ const ProductDetailPage = () => {
           </div>
 
           <div className="mb-6">
-            <p className="text-2xl font-bold text-green-700">
-              {selectedWeightOption ? (
-                <>
+            <div className="flex items-center">
+              <p className="text-2xl font-bold text-green-700">
+                {selectedWeightOption ? (
+                  <>
+                    {currencySymbol}
+                    {(() => {
+                      const price = convertPriceSync(selectedWeightOption.price);
+                      return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                    })()}
+                  </>
+                ) : (
+                  <>
+                    {currencySymbol}
+                    {(() => {
+                      const price = convertPriceSync(product.price);
+                      return typeof price === 'number' ? price.toFixed(2) : '0.00';
+                    })()}
+                  </>
+                )}
+              </p>
+
+              {/* Original Price (MRP) */}
+              {selectedWeightOption && selectedWeightOption.originalPrice ? (
+                <p className="ml-3 text-lg text-gray-500 line-through">
                   {currencySymbol}
                   {(() => {
-                    const price = convertPriceSync(selectedWeightOption.price);
+                    const price = convertPriceSync(selectedWeightOption.originalPrice);
                     return typeof price === 'number' ? price.toFixed(2) : '0.00';
                   })()}
-                </>
-              ) : (
-                <>
+                </p>
+              ) : product.originalPrice ? (
+                <p className="ml-3 text-lg text-gray-500 line-through">
                   {currencySymbol}
                   {(() => {
-                    const price = convertPriceSync(product.price);
+                    const price = convertPriceSync(product.originalPrice);
                     return typeof price === 'number' ? price.toFixed(2) : '0.00';
                   })()}
-                </>
+                </p>
+              ) : null}
+
+              {/* Discount Badge */}
+              {product.discount && (
+                <span className="ml-3 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                  {product.discount}% OFF
+                </span>
               )}
-              <span className="text-sm text-gray-500 ml-2">
-                {selectedWeightOption ? `per ${selectedWeight}` : ''}
-              </span>
+            </div>
+
+            <p className="text-sm text-gray-500 mt-1">
+              {selectedWeightOption ? `per ${selectedWeight}` : ''}
             </p>
+
             {quantity > 1 && (
-              <p className="text-lg text-gray-600 mt-1">
+              <p className="text-lg text-gray-600 mt-2">
                 Total: {currencySymbol}
                 {(() => {
                   const basePrice = selectedWeightOption ?
@@ -327,6 +402,13 @@ const ProductDetailPage = () => {
                 />
               </div>
             )}
+
+            {/* Subscription Option */}
+            <SubscriptionOption
+              product={product}
+              selectedWeight={selectedWeight}
+              onSubscribe={handleSubscriptionChange}
+            />
 
             <div className="flex items-center mb-4">
               <span className="font-medium text-gray-700 mr-4">Quantity:</span>

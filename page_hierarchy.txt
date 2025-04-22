@@ -44,6 +44,10 @@
 - Weight selection options (250g, 500g, 1kg, 5kg)
 - Add to cart button
 - Quantity selector
+- Subscription options
+  - Frequency selection (weekly, bi-weekly, monthly, bi-monthly)
+  - Subscription pricing with discount
+  - Subscription benefits information
 - Related products
 - Customer reviews and ratings
 - Recipes using this product (displayed as cards)
@@ -88,7 +92,17 @@
   - Saved addresses management
   - Account settings
   - Subscription management
+    - Active subscriptions list
+    - Subscription details with delivery schedule
+    - Pause/resume/cancel subscription options
+    - Edit subscription (frequency, quantity) functionality
+    - Subscription history
   - Loyalty points and rewards
+    - Points overview with current tier status
+    - Points history with transaction details
+    - Available rewards for redemption
+    - Tier benefits information
+    - Points earning opportunities
   - Reorder functionality
 - Wishlist
   - Content: Saved products for future purchase
@@ -109,6 +123,11 @@
   - Step 2: Payment information
   - Step 3: Order review
   - Step 4: Order confirmation
+    - Order summary
+    - Loyalty points earned
+    - Shipping information
+    - Payment information
+    - Order tracking details
 - Address book integration
 - Order summary with tax and shipping calculation
 - Coupon/discount code application
@@ -205,6 +224,17 @@
 - Coupon/discount code management
 - Email campaign creation
 - Banner/promotion management
+- Loyalty program management
+  - Tier configuration
+  - Rewards management
+  - Points adjustment
+  - Loyalty analytics
+- Subscription management
+  - Subscription plans configuration
+  - Frequency options management
+  - Discount rates configuration
+  - Customer subscriptions overview
+  - Subscription analytics
 
 ### 13. Settings
 - General store settings
