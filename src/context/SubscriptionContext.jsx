@@ -49,6 +49,7 @@ export const SubscriptionProvider = ({ children }) => {
 
   // Check if a product is eligible for subscription
   const isProductSubscriptionEligible = (product) => {
+    if (!product || !product.category) return false;
     return SUBSCRIPTION_ELIGIBLE_CATEGORIES.includes(product.category);
   };
 
