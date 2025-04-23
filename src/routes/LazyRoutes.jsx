@@ -37,7 +37,7 @@ const SearchResultsPage = lazyWithPreload(() => import(/* webpackChunkName: "sea
 // Preload critical pages for faster navigation
 const preloadCriticalPages = () => {
   // Preload home and products pages which are most commonly accessed
-  PersonalizedHomePage.preload();
+  HomePage.preload();
   ProductsPage.preload();
 
   // Preload other pages based on user behavior or after initial load
@@ -107,7 +107,7 @@ const RouteErrorBoundary = ({ children }) => {
 export const LazyHomePage = () => (
   <RouteErrorBoundary>
     <Suspense fallback={<ProductPageLoader />}>
-      <PersonalizedHomePage />
+      <HomePage />
     </Suspense>
   </RouteErrorBoundary>
 );
