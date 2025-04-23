@@ -134,13 +134,13 @@ const ProductsPage = () => {
           Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
         </p>
 
-        <div className="flex items-center">
-          <label htmlFor="desktop-sort" className="mr-2 text-gray-700">Sort by:</label>
+        <div className="flex items-center space-x-2">
+          <label htmlFor="desktop-sort" className="text-gray-700 whitespace-nowrap">Sort by:</label>
           <select
             id="desktop-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="form-select border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="form-select border border-gray-300 rounded-md py-1 px-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
           >
             <option value="featured">Featured</option>
             <option value="price-low">Price: Low to High</option>
@@ -148,6 +148,31 @@ const ProductsPage = () => {
             <option value="newest">Newest First</option>
             <option value="rating">Customer Rating</option>
           </select>
+        </div>
+      </div>
+
+      {/* Mobile Product Count and Sort */}
+      <div className="flex justify-between items-center mb-4 md:hidden">
+        <p className="text-gray-600 text-sm">
+          Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+        </p>
+
+        <div className="inline-flex items-center">
+          <label htmlFor="mobile-sort" className="text-gray-700 text-sm whitespace-nowrap mr-2">Sort by:</label>
+          <div className="inline-block">
+            <select
+              id="mobile-sort"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="form-select border border-gray-300 rounded-md text-sm py-1 px-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="featured">Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="newest">Newest First</option>
+              <option value="rating">Customer Rating</option>
+            </select>
+          </div>
         </div>
       </div>
 
