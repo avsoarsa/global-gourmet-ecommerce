@@ -8,10 +8,12 @@ const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
 
   const toggleForm = () => {
@@ -22,50 +24,45 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    if (isLogin) {
-      // Login logic
-      setLoading(true);
-      try {
-        const success = login(email, password);
-        if (success) {
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        // Login logic
+        const result = await login(email, password);
+
+        if (result.success) {
           navigate('/');
         } else {
-          setError('Invalid email or password');
+          setError(result.error || 'Invalid email or password');
         }
-      } catch (err) {
-        setError('Failed to log in. Please try again.');
-        console.error(err);
-      }
-      setLoading(false);
-    } else {
-      // Registration logic
-      setLoading(true);
-      try {
+      } else {
+        // Registration logic
         if (password !== confirmPassword) {
+          setLoading(false);
           return setError('Passwords do not match');
         }
-        
-        // In a real app, this would call an API to register the user
-        // For this demo, we'll just simulate success
-        setTimeout(() => {
+
+        const result = await register(email, password, firstName, lastName);
+
+        if (result.success) {
           setIsLogin(true);
           setError('');
-          setLoading(false);
           alert('Registration successful! Please log in with your credentials.');
-        }, 1000);
-      } catch (err) {
-        setError('Failed to create an account. Please try again.');
-        console.error(err);
-        setLoading(false);
+          // Clear registration fields
+          setFirstName('');
+          setLastName('');
+          setConfirmPassword('');
+        } else {
+          setError(result.error || 'Failed to create an account. Please try again.');
+        }
       }
+    } catch (err) {
+      setError(isLogin ? 'Failed to log in. Please try again.' : 'Failed to create an account. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  // For demo purposes, provide a hint about the dummy user credentials
-  const handleDemoLogin = () => {
-    setEmail('user@example.com');
-    setPassword('password123');
   };
 
   return (
@@ -85,15 +82,59 @@ const LoginPage = () => {
             </button>
           </p>
         </div>
-        
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
             <span className="block sm:inline">{error}</span>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
+            {!isLogin && (
+              <>
+                <div className="mb-4">
+                  <label htmlFor="first-name" className="sr-only">First Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faUser} className="text-gray-400" />
+                    </div>
+                    <input
+                      id="first-name"
+                      name="first-name"
+                      type="text"
+                      autoComplete="given-name"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                      placeholder="First Name"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label htmlFor="last-name" className="sr-only">Last Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faUser} className="text-gray-400" />
+                    </div>
+                    <input
+                      id="last-name"
+                      name="last-name"
+                      type="text"
+                      autoComplete="family-name"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                      placeholder="Last Name"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="mb-4">
               <label htmlFor="email-address" className="sr-only">Email address</label>
               <div className="relative">
@@ -113,7 +154,7 @@ const LoginPage = () => {
                 />
               </div>
             </div>
-            
+
             <div className="mb-4">
               <label htmlFor="password" className="sr-only">Password</label>
               <div className="relative">
@@ -124,7 +165,7 @@ const LoginPage = () => {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete={isLogin ? "current-password" : "new-password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -133,7 +174,7 @@ const LoginPage = () => {
                 />
               </div>
             </div>
-            
+
             {!isLogin && (
               <div>
                 <label htmlFor="confirm-password" className="sr-only">Confirm Password</label>
@@ -145,6 +186,7 @@ const LoginPage = () => {
                     id="confirm-password"
                     name="confirm-password"
                     type="password"
+                    autoComplete="new-password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -192,18 +234,6 @@ const LoginPage = () => {
               {isLogin ? 'Sign in' : 'Sign up'}
             </button>
           </div>
-          
-          {isLogin && (
-            <div className="text-center text-sm">
-              <button
-                type="button"
-                onClick={handleDemoLogin}
-                className="font-medium text-green-600 hover:text-green-500"
-              >
-                Use demo account (user@example.com / password123)
-              </button>
-            </div>
-          )}
         </form>
       </div>
     </div>
