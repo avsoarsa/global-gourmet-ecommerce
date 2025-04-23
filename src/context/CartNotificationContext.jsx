@@ -1,4 +1,5 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
+import CartNotificationService, { EVENTS } from '../services/CartNotificationService';
 
 // Create context
 const CartNotificationContext = createContext();
@@ -14,30 +15,64 @@ export const CartNotificationProvider = ({ children }) => {
     quantity: 0
   });
 
+  // Subscribe to cart notification events
+  useEffect(() => {
+    // Handle show notification event
+    const showUnsubscribe = CartNotificationService.subscribe(
+      EVENTS.SHOW_NOTIFICATION,
+      ({ product, quantity }) => {
+        setNotification({
+          isVisible: true,
+          product,
+          quantity
+        });
+      }
+    );
+
+    // Handle hide notification event
+    const hideUnsubscribe = CartNotificationService.subscribe(
+      EVENTS.HIDE_NOTIFICATION,
+      () => {
+        setNotification(prev => ({
+          ...prev,
+          isVisible: false
+        }));
+      }
+    );
+
+    // Handle reset notification event
+    const resetUnsubscribe = CartNotificationService.subscribe(
+      EVENTS.RESET_NOTIFICATION,
+      () => {
+        setNotification({
+          isVisible: false,
+          product: null,
+          quantity: 0
+        });
+      }
+    );
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      showUnsubscribe();
+      hideUnsubscribe();
+      resetUnsubscribe();
+    };
+  }, []);
+
   // Show notification
   const showNotification = (product, quantity = 1) => {
-    setNotification({
-      isVisible: true,
-      product,
-      quantity
-    });
+    CartNotificationService.showNotification(product, quantity);
   };
 
   // Hide notification
   const hideNotification = () => {
-    setNotification(prev => ({
-      ...prev,
-      isVisible: false
-    }));
+    CartNotificationService.hideNotification();
   };
 
   // Reset notification completely
   const resetNotification = () => {
-    setNotification({
-      isVisible: false,
-      product: null,
-      quantity: 0
-    });
+    CartNotificationService.resetNotification();
   };
 
   // Context value

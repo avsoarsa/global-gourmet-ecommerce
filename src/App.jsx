@@ -85,91 +85,93 @@ function App() {
                     <LoyaltyProvider>
                       <ErrorBoundary>
                         <SubscriptionProvider>
-                          <CartNotificationProvider>
-                            <ErrorBoundary>
-                              <CartProvider>
-                                <ErrorBoundary>
-                                  <RecentlyViewedProvider>
-                                    <WishlistProvider>
-                                      {/* Cart Notification */}
-                                      <CartNotificationContainer />
+                          <ErrorBoundary>
+                            <CartNotificationProvider>
+                              <ErrorBoundary>
+                                <CartProvider>
+                                  <ErrorBoundary>
+                                    <RecentlyViewedProvider>
+                                      <WishlistProvider>
+                                        {/* Cart Notification */}
+                                        <CartNotificationContainer />
 
-                                      {/* Activity Notification */}
-                                      <ActivityNotification interval={15000} duration={7000} position="bottom-right" className="z-50" />
+                                        {/* Activity Notification */}
+                                        <ActivityNotification interval={15000} duration={7000} position="bottom-right" className="z-50" />
 
-                                      {/* Fallback loading state that will show if contexts take too long */}
-                                      {!isAppReady && (
-                                        <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
-                                          <div className="text-center">
-                                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
-                                            <p className="text-gray-600">Loading Global Gourmet...</p>
+                                        {/* Fallback loading state that will show if contexts take too long */}
+                                        {!isAppReady && (
+                                          <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+                                            <div className="text-center">
+                                              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
+                                              <p className="text-gray-600">Loading Global Gourmet...</p>
+                                            </div>
                                           </div>
-                                        </div>
-                                      )}
-                                      <Routes>
-                                        {/* Main Layout with Footer */}
-                                        <Route path="/" element={<Layout />}>
-                                          <Route index element={<LazyHomePage />} />
-                                          <Route path="about" element={<LazyAboutPage />} />
-                                          <Route path="wishlist" element={<LazyWishlistPage />} />
-                                        </Route>
+                                        )}
+                                        <Routes>
+                                          {/* Main Layout with Footer */}
+                                          <Route path="/" element={<Layout />}>
+                                            <Route index element={<LazyHomePage />} />
+                                            <Route path="about" element={<LazyAboutPage />} />
+                                            <Route path="wishlist" element={<LazyWishlistPage />} />
+                                          </Route>
 
-                                        {/* Pages with no footer */}
-                                        <Route path="/" element={<ProductLayout />}>
-                                          <Route path="products" element={<LazyProductsPage />} />
-                                          <Route path="category/:categorySlug" element={<LazyProductsPage />} />
-                                          <Route path="gift-boxes" element={<LazyGiftBoxesPage />} />
-                                          <Route path="bulk-orders" element={<LazyBulkOrdersPage />} />
-                                          <Route path="product/:productId" element={<LazyProductDetailPage />} />
-                                          <Route path="create-gift-box" element={<LazyCreateGiftBoxPage />} />
-                                          <Route path="account" element={<LazyAccountPage />} />
-                                          <Route path="search" element={<LazySearchResultsPage />} />
-                                        </Route>
+                                          {/* Pages with no footer */}
+                                          <Route path="/" element={<ProductLayout />}>
+                                            <Route path="products" element={<LazyProductsPage />} />
+                                            <Route path="category/:categorySlug" element={<LazyProductsPage />} />
+                                            <Route path="gift-boxes" element={<LazyGiftBoxesPage />} />
+                                            <Route path="bulk-orders" element={<LazyBulkOrdersPage />} />
+                                            <Route path="product/:productId" element={<LazyProductDetailPage />} />
+                                            <Route path="create-gift-box" element={<LazyCreateGiftBoxPage />} />
+                                            <Route path="account" element={<LazyAccountPage />} />
+                                            <Route path="search" element={<LazySearchResultsPage />} />
+                                          </Route>
 
-                                        {/* Conversion Layout - No Footer */}
-                                        <Route path="/" element={<ConversionLayout />}>
-                                          <Route path="cart" element={<LazyCartPage />} />
-                                          <Route path="checkout" element={<LazyCheckoutPage />} />
-                                        </Route>
+                                          {/* Conversion Layout - No Footer */}
+                                          <Route path="/" element={<ConversionLayout />}>
+                                            <Route path="cart" element={<LazyCartPage />} />
+                                            <Route path="checkout" element={<LazyCheckoutPage />} />
+                                          </Route>
 
-                                        {/* Login Layout - Minimal */}
-                                        <Route path="/" element={<LoginLayout />}>
-                                          <Route path="login" element={<LazyLoginPage />} />
-                                        </Route>
-                                        <Route path="debug" element={<DebugPage />} />
+                                          {/* Login Layout - Minimal */}
+                                          <Route path="/" element={<LoginLayout />}>
+                                            <Route path="login" element={<LazyLoginPage />} />
+                                          </Route>
+                                          <Route path="debug" element={<DebugPage />} />
 
-                                        {/* Admin Routes with AdminProvider */}
-                                        <Route path="admin/*" element={
-                                          <AdminProvider>
-                                            <Routes>
-                                              <Route path="login" element={<AdminLoginPage />} />
-                                              <Route path="*" element={<AdminLayout />}>
-                                                <Route index element={<AdminDashboardPage />} />
-                                                <Route path="products" element={<ProductsPage />} />
-                                                <Route path="products/new" element={<ProductFormPage />} />
-                                                <Route path="products/:id/edit" element={<ProductFormPage />} />
-                                                <Route path="orders" element={<OrdersPage />} />
-                                                <Route path="orders/:id" element={<OrderDetailPage />} />
-                                                <Route path="customers" element={<CustomersPage />} />
-                                                <Route path="customers/:id" element={<CustomerDetailPage />} />
-                                                <Route path="inventory" element={<InventoryPage />} />
-                                                <Route path="recipes" element={<RecipesPage />} />
-                                                <Route path="recipes/new" element={<RecipeFormPage />} />
-                                                <Route path="recipes/:id/edit" element={<RecipeFormPage />} />
-                                                <Route path="analytics" element={<AnalyticsPage />} />
-                                                <Route path="notifications" element={<NotificationsPage />} />
-                                                <Route path="settings" element={<SettingsPage />} />
-                                              </Route>
-                                            </Routes>
-                                          </AdminProvider>
-                                        } />
-                                      </Routes>
-                                    </WishlistProvider>
-                                  </RecentlyViewedProvider>
-                                </ErrorBoundary>
-                              </CartProvider>
-                            </ErrorBoundary>
-                          </CartNotificationProvider>
+                                          {/* Admin Routes with AdminProvider */}
+                                          <Route path="admin/*" element={
+                                            <AdminProvider>
+                                              <Routes>
+                                                <Route path="login" element={<AdminLoginPage />} />
+                                                <Route path="*" element={<AdminLayout />}>
+                                                  <Route index element={<AdminDashboardPage />} />
+                                                  <Route path="products" element={<ProductsPage />} />
+                                                  <Route path="products/new" element={<ProductFormPage />} />
+                                                  <Route path="products/:id/edit" element={<ProductFormPage />} />
+                                                  <Route path="orders" element={<OrdersPage />} />
+                                                  <Route path="orders/:id" element={<OrderDetailPage />} />
+                                                  <Route path="customers" element={<CustomersPage />} />
+                                                  <Route path="customers/:id" element={<CustomerDetailPage />} />
+                                                  <Route path="inventory" element={<InventoryPage />} />
+                                                  <Route path="recipes" element={<RecipesPage />} />
+                                                  <Route path="recipes/new" element={<RecipeFormPage />} />
+                                                  <Route path="recipes/:id/edit" element={<RecipeFormPage />} />
+                                                  <Route path="analytics" element={<AnalyticsPage />} />
+                                                  <Route path="notifications" element={<NotificationsPage />} />
+                                                  <Route path="settings" element={<SettingsPage />} />
+                                                </Route>
+                                              </Routes>
+                                            </AdminProvider>
+                                          } />
+                                        </Routes>
+                                      </WishlistProvider>
+                                    </RecentlyViewedProvider>
+                                  </ErrorBoundary>
+                                </CartProvider>
+                              </ErrorBoundary>
+                            </CartNotificationProvider>
+                          </ErrorBoundary>
                         </SubscriptionProvider>
                       </ErrorBoundary>
                     </LoyaltyProvider>
