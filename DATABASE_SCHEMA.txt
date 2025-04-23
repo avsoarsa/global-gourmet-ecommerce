@@ -1,0 +1,1052 @@
+DATABASE SCHEMA FOR GLOBAL GOURMET E-COMMERCE
+==============================================
+
+This document outlines the complete database schema for the Global Gourmet E-commerce platform,
+including all tables required for both the customer-facing application and the admin panel.
+
+## CORE USER TABLES
+------------------
+
+### users
+```
+id: uuid (PK)
+email: string (unique)
+password_hash: string
+first_name: string
+last_name: string
+phone: string
+created_at: timestamp
+updated_at: timestamp
+last_login: timestamp
+role: enum (customer, admin, super_admin)
+is_verified: boolean
+marketing_consent: boolean
+reset_password_token: string (nullable)
+reset_password_expires: timestamp (nullable)
+verification_token: string (nullable)
+```
+
+### user_profiles
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+profile_picture: string (URL)
+bio: text
+date_of_birth: date (nullable)
+gender: enum (male, female, other, prefer_not_to_say)
+preferences: jsonb
+notification_settings: jsonb
+created_at: timestamp
+updated_at: timestamp
+```
+
+### addresses
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+address_type: enum (shipping, billing, both)
+is_default: boolean
+first_name: string
+last_name: string
+company: string (nullable)
+address_line1: string
+address_line2: string (nullable)
+city: string
+state: string
+postal_code: string
+country: string
+phone: string
+delivery_instructions: text (nullable)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### sessions
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+token: string (unique)
+device_info: jsonb
+ip_address: string
+expires_at: timestamp
+created_at: timestamp
+last_active_at: timestamp
+```
+
+## PRODUCT CATALOG TABLES
+------------------------
+
+### product_categories
+```
+id: uuid (PK)
+name: string
+slug: string (unique)
+description: text
+parent_id: uuid (FK -> product_categories.id, nullable, for hierarchical categories)
+image: string (URL)
+is_active: boolean
+display_order: integer
+meta_title: string (nullable)
+meta_description: string (nullable)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### products
+```
+id: uuid (PK)
+name: string
+slug: string (unique)
+description: text
+short_description: text
+price: decimal
+compare_at_price: decimal (original price for discounts, nullable)
+cost_price: decimal (nullable)
+sku: string (unique)
+barcode: string (nullable)
+weight: decimal
+weight_unit: enum (g, kg, lb, oz)
+stock_quantity: integer
+low_stock_threshold: integer
+category_id: uuid (FK -> product_categories.id)
+is_featured: boolean
+is_active: boolean
+is_organic: boolean
+is_bestseller: boolean
+meta_title: string (nullable)
+meta_description: string (nullable)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### product_images
+```
+id: uuid (PK)
+product_id: uuid (FK -> products.id)
+image_url: string
+alt_text: string
+is_primary: boolean
+display_order: integer
+created_at: timestamp
+updated_at: timestamp
+```
+
+### product_variants
+```
+id: uuid (PK)
+product_id: uuid (FK -> products.id)
+name: string (e.g., "250g", "500g", "1kg")
+sku: string (unique)
+price: decimal
+stock_quantity: integer
+weight: decimal
+weight_unit: enum (g, kg, lb, oz)
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### product_tags
+```
+id: uuid (PK)
+name: string
+slug: string (unique)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### product_tag_relationships
+```
+id: uuid (PK)
+product_id: uuid (FK -> products.id)
+tag_id: uuid (FK -> product_tags.id)
+created_at: timestamp
+```
+
+### product_attributes
+```
+id: uuid (PK)
+name: string (e.g., "Origin", "Flavor Profile", "Nutritional Benefits")
+display_name: string
+type: enum (text, number, boolean, select)
+is_filterable: boolean
+is_visible: boolean
+display_order: integer
+created_at: timestamp
+updated_at: timestamp
+```
+
+### product_attribute_values
+```
+id: uuid (PK)
+product_id: uuid (FK -> products.id)
+attribute_id: uuid (FK -> product_attributes.id)
+value: text
+created_at: timestamp
+updated_at: timestamp
+```
+
+### related_products
+```
+id: uuid (PK)
+product_id: uuid (FK -> products.id)
+related_product_id: uuid (FK -> products.id)
+relationship_type: enum (related, upsell, cross_sell, frequently_bought_together)
+display_order: integer
+created_at: timestamp
+updated_at: timestamp
+```
+
+## SHOPPING EXPERIENCE TABLES
+---------------------------
+
+### carts
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id, nullable for guest carts)
+session_id: string (for guest users)
+currency: string
+subtotal: decimal
+total: decimal
+item_count: integer
+created_at: timestamp
+updated_at: timestamp
+last_active: timestamp
+```
+
+### cart_items
+```
+id: uuid (PK)
+cart_id: uuid (FK -> carts.id)
+product_id: uuid (FK -> products.id)
+product_variant_id: uuid (FK -> product_variants.id, nullable)
+quantity: integer
+price_at_addition: decimal
+created_at: timestamp
+updated_at: timestamp
+```
+
+### wishlists
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+name: string
+is_public: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### wishlist_items
+```
+id: uuid (PK)
+wishlist_id: uuid (FK -> wishlists.id)
+product_id: uuid (FK -> products.id)
+product_variant_id: uuid (FK -> product_variants.id, nullable)
+added_at: timestamp
+```
+
+### recently_viewed
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id, nullable)
+session_id: string (nullable, for guest users)
+product_id: uuid (FK -> products.id)
+viewed_at: timestamp
+```
+
+## CHECKOUT AND ORDER TABLES
+--------------------------
+
+### orders
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id, nullable for guest checkout)
+order_number: string (unique)
+status: enum (pending, processing, shipped, delivered, cancelled, refunded)
+subtotal: decimal
+shipping_cost: decimal
+tax_amount: decimal
+discount_amount: decimal
+total_amount: decimal
+currency: string
+shipping_address_id: uuid (FK -> addresses.id)
+billing_address_id: uuid (FK -> addresses.id)
+payment_method: string
+payment_status: enum (pending, paid, failed, refunded)
+shipping_method: string
+tracking_number: string (nullable)
+notes: text (nullable)
+gift_message: text (nullable)
+is_gift: boolean
+created_at: timestamp
+updated_at: timestamp
+completed_at: timestamp (nullable)
+cancelled_at: timestamp (nullable)
+```
+
+### order_items
+```
+id: uuid (PK)
+order_id: uuid (FK -> orders.id)
+product_id: uuid (FK -> products.id)
+product_variant_id: uuid (FK -> product_variants.id, nullable)
+quantity: integer
+unit_price: decimal
+subtotal: decimal
+discount_amount: decimal
+tax_amount: decimal
+total_amount: decimal
+sku: string
+product_name: string
+variant_name: string (nullable)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### order_status_history
+```
+id: uuid (PK)
+order_id: uuid (FK -> orders.id)
+status: enum (pending, processing, shipped, delivered, cancelled, refunded)
+comment: text (nullable)
+created_by: uuid (FK -> users.id, nullable)
+created_at: timestamp
+```
+
+### payments
+```
+id: uuid (PK)
+order_id: uuid (FK -> orders.id)
+payment_method: string
+payment_provider: string
+transaction_id: string
+amount: decimal
+currency: string
+status: enum (pending, completed, failed, refunded)
+payment_details: jsonb
+created_at: timestamp
+updated_at: timestamp
+```
+
+### shipping_methods
+```
+id: uuid (PK)
+name: string
+description: text
+price: decimal
+estimated_delivery_days: integer
+is_active: boolean
+display_order: integer
+created_at: timestamp
+updated_at: timestamp
+```
+
+### tax_rates
+```
+id: uuid (PK)
+country: string
+state: string (nullable)
+zip_code: string (nullable)
+rate: decimal
+tax_name: string
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### coupons
+```
+id: uuid (PK)
+code: string (unique)
+description: string
+discount_type: enum (percentage, fixed_amount, free_shipping)
+discount_value: decimal
+minimum_order_amount: decimal (nullable)
+maximum_discount_amount: decimal (nullable)
+is_active: boolean
+usage_limit: integer (nullable)
+usage_count: integer
+start_date: timestamp
+end_date: timestamp (nullable)
+applies_to: enum (all, categories, products)
+applicable_ids: jsonb (array of category or product IDs)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### coupon_usage
+```
+id: uuid (PK)
+coupon_id: uuid (FK -> coupons.id)
+user_id: uuid (FK -> users.id)
+order_id: uuid (FK -> orders.id)
+discount_amount: decimal
+created_at: timestamp
+```
+
+### abandoned_carts
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id, nullable)
+session_id: string (nullable)
+email: string (nullable)
+cart_data: jsonb
+recovery_email_sent: boolean
+recovered: boolean
+created_at: timestamp
+updated_at: timestamp
+recovered_at: timestamp (nullable)
+```
+
+## CUSTOMER ENGAGEMENT TABLES
+---------------------------
+
+### reviews
+```
+id: uuid (PK)
+product_id: uuid (FK -> products.id)
+user_id: uuid (FK -> users.id)
+rating: integer (1-5)
+title: string
+content: text
+status: enum (pending, approved, rejected)
+is_verified_purchase: boolean
+helpful_votes: integer
+report_count: integer
+created_at: timestamp
+updated_at: timestamp
+```
+
+### review_images
+```
+id: uuid (PK)
+review_id: uuid (FK -> reviews.id)
+image_url: string
+created_at: timestamp
+```
+
+### review_helpful_votes
+```
+id: uuid (PK)
+review_id: uuid (FK -> reviews.id)
+user_id: uuid (FK -> users.id)
+is_helpful: boolean
+created_at: timestamp
+```
+
+### review_reports
+```
+id: uuid (PK)
+review_id: uuid (FK -> reviews.id)
+user_id: uuid (FK -> users.id)
+reason: string
+created_at: timestamp
+```
+
+### customer_questions
+```
+id: uuid (PK)
+product_id: uuid (FK -> products.id)
+user_id: uuid (FK -> users.id)
+question: text
+status: enum (pending, published, rejected)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### customer_answers
+```
+id: uuid (PK)
+question_id: uuid (FK -> customer_questions.id)
+user_id: uuid (FK -> users.id)
+answer: text
+is_from_seller: boolean
+status: enum (pending, published, rejected)
+helpful_votes: integer
+created_at: timestamp
+updated_at: timestamp
+```
+
+## LOYALTY AND REWARDS TABLES
+---------------------------
+
+### loyalty_points
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+points_balance: integer
+lifetime_points: integer
+tier: enum (bronze, silver, gold, platinum)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### loyalty_transactions
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+order_id: uuid (FK -> orders.id, nullable)
+points: integer (positive for earned, negative for spent)
+transaction_type: enum (purchase, redemption, referral, bonus, expiration)
+description: string
+created_at: timestamp
+```
+
+### loyalty_tiers
+```
+id: uuid (PK)
+name: string
+minimum_points: integer
+benefits: jsonb
+created_at: timestamp
+updated_at: timestamp
+```
+
+### loyalty_rewards
+```
+id: uuid (PK)
+name: string
+description: text
+points_required: integer
+reward_type: enum (discount, free_product, free_shipping, gift)
+reward_value: jsonb
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### referrals
+```
+id: uuid (PK)
+referrer_id: uuid (FK -> users.id)
+referral_code: string (unique)
+referral_url: string
+created_at: timestamp
+updated_at: timestamp
+```
+
+### referral_conversions
+```
+id: uuid (PK)
+referral_id: uuid (FK -> referrals.id)
+referred_user_id: uuid (FK -> users.id)
+status: enum (signed_up, made_purchase)
+order_id: uuid (FK -> orders.id, nullable)
+points_awarded: integer
+created_at: timestamp
+updated_at: timestamp
+```
+
+## SUBSCRIPTION SYSTEM TABLES
+---------------------------
+
+### subscription_plans
+```
+id: uuid (PK)
+name: string
+description: text
+frequency: enum (weekly, biweekly, monthly, bimonthly, quarterly)
+discount_percentage: decimal
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### subscriptions
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+subscription_plan_id: uuid (FK -> subscription_plans.id)
+status: enum (active, paused, cancelled)
+next_billing_date: timestamp
+last_billing_date: timestamp (nullable)
+shipping_address_id: uuid (FK -> addresses.id)
+payment_method_id: string
+created_at: timestamp
+updated_at: timestamp
+paused_at: timestamp (nullable)
+cancelled_at: timestamp (nullable)
+```
+
+### subscription_items
+```
+id: uuid (PK)
+subscription_id: uuid (FK -> subscriptions.id)
+product_id: uuid (FK -> products.id)
+product_variant_id: uuid (FK -> product_variants.id, nullable)
+quantity: integer
+price: decimal
+created_at: timestamp
+updated_at: timestamp
+```
+
+### subscription_orders
+```
+id: uuid (PK)
+subscription_id: uuid (FK -> subscriptions.id)
+order_id: uuid (FK -> orders.id)
+created_at: timestamp
+```
+
+### subscription_history
+```
+id: uuid (PK)
+subscription_id: uuid (FK -> subscriptions.id)
+action: enum (created, updated, paused, resumed, cancelled)
+details: jsonb
+created_at: timestamp
+```
+
+## GIFT BOX SYSTEM TABLES
+-----------------------
+
+### gift_box_templates
+```
+id: uuid (PK)
+name: string
+description: text
+image_url: string
+base_price: decimal
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### gift_boxes
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id, nullable)
+session_id: string (nullable, for guest users)
+template_id: uuid (FK -> gift_box_templates.id)
+name: string
+message: text (nullable)
+total_price: decimal
+created_at: timestamp
+updated_at: timestamp
+```
+
+### gift_box_items
+```
+id: uuid (PK)
+gift_box_id: uuid (FK -> gift_boxes.id)
+product_id: uuid (FK -> products.id)
+product_variant_id: uuid (FK -> product_variants.id, nullable)
+quantity: integer
+price: decimal
+created_at: timestamp
+updated_at: timestamp
+```
+
+## CONTENT MANAGEMENT TABLES
+--------------------------
+
+### recipes
+```
+id: uuid (PK)
+title: string
+slug: string (unique)
+description: text
+ingredients: jsonb
+instructions: jsonb
+prep_time: integer (minutes)
+cook_time: integer (minutes)
+servings: integer
+difficulty: enum (easy, medium, hard)
+image_url: string
+is_featured: boolean
+created_by: uuid (FK -> users.id)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### recipe_product_relationships
+```
+id: uuid (PK)
+recipe_id: uuid (FK -> recipes.id)
+product_id: uuid (FK -> products.id)
+created_at: timestamp
+```
+
+### blog_posts
+```
+id: uuid (PK)
+title: string
+slug: string (unique)
+content: text
+excerpt: text
+featured_image: string
+status: enum (draft, published)
+author_id: uuid (FK -> users.id)
+published_at: timestamp (nullable)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### blog_categories
+```
+id: uuid (PK)
+name: string
+slug: string (unique)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### blog_post_categories
+```
+id: uuid (PK)
+post_id: uuid (FK -> blog_posts.id)
+category_id: uuid (FK -> blog_categories.id)
+created_at: timestamp
+```
+
+### pages
+```
+id: uuid (PK)
+title: string
+slug: string (unique)
+content: text
+meta_title: string (nullable)
+meta_description: string (nullable)
+status: enum (draft, published)
+created_at: timestamp
+updated_at: timestamp
+published_at: timestamp (nullable)
+```
+
+## ADMIN PANEL TABLES
+-------------------
+
+### admin_activities
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+activity_type: string
+description: text
+ip_address: string
+created_at: timestamp
+```
+
+### admin_notifications
+```
+id: uuid (PK)
+title: string
+message: text
+type: enum (info, warning, error, success)
+is_read: boolean
+user_id: uuid (FK -> users.id, nullable)
+link: string (nullable)
+created_at: timestamp
+read_at: timestamp (nullable)
+```
+
+### analytics_data
+```
+id: uuid (PK)
+date: date
+total_sales: decimal
+total_orders: integer
+average_order_value: decimal
+conversion_rate: decimal
+top_products: jsonb
+traffic_sources: jsonb
+created_at: timestamp
+updated_at: timestamp
+```
+
+### inventory_transactions
+```
+id: uuid (PK)
+product_id: uuid (FK -> products.id)
+product_variant_id: uuid (FK -> product_variants.id, nullable)
+quantity_change: integer
+transaction_type: enum (purchase, adjustment, return, loss)
+reference_id: string (nullable)
+notes: text (nullable)
+created_by: uuid (FK -> users.id)
+created_at: timestamp
+```
+
+### system_settings
+```
+id: uuid (PK)
+setting_key: string (unique)
+setting_value: jsonb
+setting_group: string
+created_at: timestamp
+updated_at: timestamp
+```
+
+### email_templates
+```
+id: uuid (PK)
+name: string
+subject: string
+body: text
+variables: jsonb
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### scheduled_tasks
+```
+id: uuid (PK)
+task_name: string
+task_type: string
+frequency: string
+last_run: timestamp (nullable)
+next_run: timestamp
+parameters: jsonb
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+## INTERNATIONALIZATION TABLES
+----------------------------
+
+### currencies
+```
+id: uuid (PK)
+code: string (unique)
+name: string
+symbol: string
+exchange_rate: decimal
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### languages
+```
+id: uuid (PK)
+code: string (unique)
+name: string
+is_active: boolean
+is_default: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### translations
+```
+id: uuid (PK)
+language_id: uuid (FK -> languages.id)
+translation_key: string
+translation_value: text
+entity_type: string (nullable, e.g., "product", "category")
+entity_id: uuid (nullable)
+created_at: timestamp
+updated_at: timestamp
+```
+
+### regions
+```
+id: uuid (PK)
+name: string
+countries: jsonb
+currency_id: uuid (FK -> currencies.id)
+language_id: uuid (FK -> languages.id)
+tax_settings: jsonb
+shipping_settings: jsonb
+is_active: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+## ANALYTICS AND TRACKING TABLES
+------------------------------
+
+### user_sessions
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id, nullable)
+session_id: string
+ip_address: string
+user_agent: string
+referrer: string (nullable)
+landing_page: string
+device_type: string
+browser: string
+os: string
+country: string
+region: string (nullable)
+city: string (nullable)
+started_at: timestamp
+ended_at: timestamp (nullable)
+duration: integer (nullable, in seconds)
+```
+
+### page_views
+```
+id: uuid (PK)
+session_id: uuid (FK -> user_sessions.id)
+page_url: string
+page_title: string
+time_spent: integer (in seconds)
+created_at: timestamp
+```
+
+### product_views
+```
+id: uuid (PK)
+session_id: uuid (FK -> user_sessions.id)
+user_id: uuid (FK -> users.id, nullable)
+product_id: uuid (FK -> products.id)
+source: string (nullable)
+created_at: timestamp
+```
+
+### search_queries
+```
+id: uuid (PK)
+session_id: uuid (FK -> user_sessions.id)
+user_id: uuid (FK -> users.id, nullable)
+query: string
+results_count: integer
+created_at: timestamp
+```
+
+### conversion_events
+```
+id: uuid (PK)
+session_id: uuid (FK -> user_sessions.id)
+user_id: uuid (FK -> users.id, nullable)
+event_type: enum (add_to_cart, add_to_wishlist, begin_checkout, purchase)
+entity_id: uuid (nullable)
+entity_type: string (nullable)
+value: decimal (nullable)
+created_at: timestamp
+```
+
+## SECURITY AND COMPLIANCE TABLES
+-------------------------------
+
+### audit_logs
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id, nullable)
+action: string
+entity_type: string
+entity_id: uuid (nullable)
+old_values: jsonb (nullable)
+new_values: jsonb (nullable)
+ip_address: string
+user_agent: string
+created_at: timestamp
+```
+
+### data_export_requests
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+status: enum (pending, processing, completed, failed)
+export_data: jsonb (nullable)
+requested_at: timestamp
+completed_at: timestamp (nullable)
+download_url: string (nullable)
+expires_at: timestamp (nullable)
+```
+
+### data_deletion_requests
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+status: enum (pending, processing, completed, cancelled)
+reason: text (nullable)
+requested_at: timestamp
+completed_at: timestamp (nullable)
+notes: text (nullable)
+```
+
+### api_keys
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+name: string
+key: string
+permissions: jsonb
+last_used_at: timestamp (nullable)
+expires_at: timestamp (nullable)
+created_at: timestamp
+updated_at: timestamp
+```
+
+## NOTIFICATION SYSTEM TABLES
+---------------------------
+
+### notifications
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+type: string
+title: string
+message: text
+is_read: boolean
+data: jsonb (nullable)
+created_at: timestamp
+read_at: timestamp (nullable)
+```
+
+### notification_preferences
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+notification_type: string
+email: boolean
+push: boolean
+sms: boolean
+in_app: boolean
+created_at: timestamp
+updated_at: timestamp
+```
+
+### push_subscriptions
+```
+id: uuid (PK)
+user_id: uuid (FK -> users.id)
+endpoint: string
+p256dh: string
+auth: string
+user_agent: string
+created_at: timestamp
+updated_at: timestamp
+```
+
+## INDEXES AND CONSTRAINTS
+------------------------
+
+This section outlines key indexes and constraints that should be created for optimal performance:
+
+1. Indexes on all foreign keys
+2. Composite indexes for frequently queried combinations
+3. Full-text search indexes on product name, description, and other searchable fields
+4. Unique constraints on email, order_number, product SKUs, etc.
+5. Check constraints for numeric fields (prices, quantities)
+
+## DATABASE RELATIONSHIPS
+-----------------------
+
+The schema includes various relationship types:
+
+1. One-to-One: User to UserProfile
+2. One-to-Many: User to Orders, Product to ProductImages
+3. Many-to-Many: Products to Tags (via junction table)
+4. Self-referential: Categories hierarchy
+
+## NOTES ON IMPLEMENTATION
+------------------------
+
+1. All timestamp fields should use UTC time
+2. Consider using database triggers for:
+   - Updating updated_at timestamps
+   - Maintaining inventory counts
+   - Recording audit logs
+3. Implement row-level security policies in Supabase for data protection
+4. Use database functions for complex operations like loyalty points calculations
+5. Consider partitioning large tables (orders, analytics) by date for performance
+6. Implement proper cascading deletes/updates where appropriate
+7. Use database views for commonly accessed data combinations
+
+This schema is designed to be comprehensive while maintaining flexibility for future expansion.
+It supports all features outlined in the implementation roadmap including the admin panel functionality.

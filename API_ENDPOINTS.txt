@@ -1,0 +1,783 @@
+API ENDPOINTS FOR GLOBAL GOURMET E-COMMERCE
+===========================================
+
+This document outlines all the API endpoints required for the Global Gourmet E-commerce platform,
+organized by functional area. Each endpoint includes the HTTP method, path, brief description,
+and authentication requirements.
+
+## AUTHENTICATION & USER MANAGEMENT
+---------------------------------
+
+### Authentication
+```
+POST   /api/auth/register                 - Register a new user
+POST   /api/auth/login                    - User login
+POST   /api/auth/logout                   - User logout
+POST   /api/auth/refresh-token            - Refresh authentication token
+POST   /api/auth/forgot-password          - Request password reset
+POST   /api/auth/reset-password           - Reset password with token
+POST   /api/auth/verify-email             - Verify email address
+GET    /api/auth/me                       - Get current user information
+POST   /api/auth/social-login/:provider   - Login with social provider (Google, Facebook)
+```
+
+### User Profile
+```
+GET    /api/users/profile                 - Get user profile
+PUT    /api/users/profile                 - Update user profile
+PUT    /api/users/password                - Change password
+GET    /api/users/orders                  - Get user order history
+GET    /api/users/subscriptions           - Get user subscriptions
+GET    /api/users/loyalty                 - Get user loyalty information
+DELETE /api/users/account                 - Request account deletion
+```
+
+### Addresses
+```
+GET    /api/addresses                     - Get all user addresses
+POST   /api/addresses                     - Add a new address
+GET    /api/addresses/:id                 - Get address by ID
+PUT    /api/addresses/:id                 - Update address
+DELETE /api/addresses/:id                 - Delete address
+PUT    /api/addresses/:id/default         - Set address as default
+```
+
+## PRODUCT CATALOG
+----------------
+
+### Categories
+```
+GET    /api/categories                    - Get all categories
+GET    /api/categories/:id                - Get category by ID
+GET    /api/categories/:slug              - Get category by slug
+GET    /api/categories/:id/products       - Get products in category
+```
+
+### Products
+```
+GET    /api/products                      - Get all products with filtering and pagination
+GET    /api/products/featured             - Get featured products
+GET    /api/products/bestsellers          - Get bestseller products
+GET    /api/products/new-arrivals         - Get new arrival products
+GET    /api/products/:id                  - Get product by ID
+GET    /api/products/:slug                - Get product by slug
+GET    /api/products/:id/related          - Get related products
+GET    /api/products/:id/frequently-bought-together - Get frequently bought together products
+GET    /api/products/:id/reviews          - Get product reviews
+GET    /api/products/:id/questions        - Get product questions
+```
+
+### Search
+```
+GET    /api/search                        - Search products
+GET    /api/search/suggestions            - Get search suggestions
+GET    /api/search/filters                - Get available search filters
+```
+
+## SHOPPING EXPERIENCE
+-------------------
+
+### Cart
+```
+GET    /api/cart                          - Get current cart
+POST   /api/cart/items                    - Add item to cart
+PUT    /api/cart/items/:id                - Update cart item
+DELETE /api/cart/items/:id                - Remove item from cart
+DELETE /api/cart/items                    - Clear cart
+POST   /api/cart/apply-coupon             - Apply coupon to cart
+DELETE /api/cart/remove-coupon            - Remove coupon from cart
+GET    /api/cart/shipping-methods         - Get available shipping methods
+POST   /api/cart/select-shipping          - Select shipping method
+```
+
+### Wishlist
+```
+GET    /api/wishlist                      - Get user wishlist
+POST   /api/wishlist/items                - Add item to wishlist
+DELETE /api/wishlist/items/:id            - Remove item from wishlist
+POST   /api/wishlist/move-to-cart/:id     - Move wishlist item to cart
+```
+
+### Reviews
+```
+POST   /api/products/:id/reviews          - Create product review
+PUT    /api/reviews/:id                   - Update review
+DELETE /api/reviews/:id                   - Delete review
+POST   /api/reviews/:id/helpful           - Mark review as helpful
+POST   /api/reviews/:id/report            - Report review
+```
+
+### Questions & Answers
+```
+POST   /api/products/:id/questions        - Ask product question
+GET    /api/questions/:id                 - Get question details
+POST   /api/questions/:id/answers         - Answer a question
+PUT    /api/answers/:id                   - Update answer
+DELETE /api/answers/:id                   - Delete answer
+POST   /api/answers/:id/helpful           - Mark answer as helpful
+```
+
+## CHECKOUT & ORDERS
+-----------------
+
+### Checkout
+```
+POST   /api/checkout/guest                - Initialize guest checkout
+POST   /api/checkout/validate-address     - Validate shipping address
+GET    /api/checkout/shipping-methods     - Get shipping methods with rates
+POST   /api/checkout/calculate-taxes      - Calculate taxes
+POST   /api/checkout/payment-intent       - Create payment intent
+POST   /api/checkout/complete             - Complete checkout
+```
+
+### Orders
+```
+GET    /api/orders                        - Get user orders
+GET    /api/orders/:id                    - Get order details
+POST   /api/orders/:id/cancel             - Cancel order
+GET    /api/orders/:id/tracking           - Get order tracking information
+POST   /api/orders/:id/return             - Request order return
+GET    /api/orders/:id/invoice            - Get order invoice
+POST   /api/orders/reorder/:id            - Reorder previous order
+```
+
+## LOYALTY & REWARDS
+-----------------
+
+### Loyalty Program
+```
+GET    /api/loyalty                       - Get loyalty program details
+GET    /api/loyalty/points                - Get user points balance
+GET    /api/loyalty/history               - Get points transaction history
+GET    /api/loyalty/rewards               - Get available rewards
+POST   /api/loyalty/redeem                - Redeem points for reward
+GET    /api/loyalty/tiers                 - Get loyalty tier information
+```
+
+### Referrals
+```
+GET    /api/referrals                     - Get user referral information
+POST   /api/referrals/generate            - Generate referral link
+GET    /api/referrals/history             - Get referral history
+```
+
+## SUBSCRIPTIONS
+-------------
+
+### Subscription Management
+```
+GET    /api/subscriptions                 - Get user subscriptions
+POST   /api/subscriptions                 - Create new subscription
+GET    /api/subscriptions/:id             - Get subscription details
+PUT    /api/subscriptions/:id             - Update subscription
+DELETE /api/subscriptions/:id             - Cancel subscription
+POST   /api/subscriptions/:id/pause       - Pause subscription
+POST   /api/subscriptions/:id/resume      - Resume subscription
+PUT    /api/subscriptions/:id/address     - Update subscription address
+PUT    /api/subscriptions/:id/payment     - Update subscription payment method
+GET    /api/subscriptions/:id/history     - Get subscription order history
+GET    /api/subscription-plans            - Get available subscription plans
+```
+
+## GIFT BOXES
+----------
+
+### Gift Box Management
+```
+GET    /api/gift-boxes/templates          - Get gift box templates
+POST   /api/gift-boxes                    - Create custom gift box
+GET    /api/gift-boxes/:id                - Get gift box details
+PUT    /api/gift-boxes/:id                - Update gift box
+DELETE /api/gift-boxes/:id                - Delete gift box
+POST   /api/gift-boxes/:id/items          - Add item to gift box
+PUT    /api/gift-boxes/:id/items/:itemId  - Update gift box item
+DELETE /api/gift-boxes/:id/items/:itemId  - Remove item from gift box
+POST   /api/gift-boxes/:id/add-to-cart    - Add gift box to cart
+```
+
+## CONTENT
+--------
+
+### Recipes
+```
+GET    /api/recipes                       - Get all recipes
+GET    /api/recipes/featured              - Get featured recipes
+GET    /api/recipes/:id                   - Get recipe by ID
+GET    /api/recipes/:slug                 - Get recipe by slug
+GET    /api/recipes/by-product/:productId - Get recipes for product
+```
+
+### Blog
+```
+GET    /api/blog/posts                    - Get blog posts
+GET    /api/blog/posts/:id                - Get blog post by ID
+GET    /api/blog/posts/:slug              - Get blog post by slug
+GET    /api/blog/categories               - Get blog categories
+GET    /api/blog/categories/:id/posts     - Get posts by category
+```
+
+### Pages
+```
+GET    /api/pages/:slug                   - Get page content by slug
+```
+
+## INTERNATIONALIZATION
+--------------------
+
+### Localization
+```
+GET    /api/localization/languages        - Get available languages
+GET    /api/localization/translations/:lang - Get translations for language
+GET    /api/localization/currencies       - Get available currencies
+GET    /api/localization/exchange-rates   - Get current exchange rates
+GET    /api/localization/regions          - Get available regions
+GET    /api/localization/countries        - Get countries list
+```
+
+## ADMIN API ENDPOINTS
+-------------------
+
+### Authentication & Users
+```
+POST   /api/admin/auth/login             - Admin login
+POST   /api/admin/auth/logout            - Admin logout
+GET    /api/admin/users                  - Get all users
+GET    /api/admin/users/:id              - Get user details
+PUT    /api/admin/users/:id              - Update user
+DELETE /api/admin/users/:id              - Delete user
+PUT    /api/admin/users/:id/role         - Change user role
+GET    /api/admin/activity-log           - Get admin activity log
+```
+
+### Product Management
+```
+POST   /api/admin/categories             - Create category
+PUT    /api/admin/categories/:id         - Update category
+DELETE /api/admin/categories/:id         - Delete category
+POST   /api/admin/products               - Create product
+PUT    /api/admin/products/:id           - Update product
+DELETE /api/admin/products/:id           - Delete product
+POST   /api/admin/products/:id/images    - Upload product images
+DELETE /api/admin/products/images/:id    - Delete product image
+PUT    /api/admin/products/images/order  - Reorder product images
+POST   /api/admin/products/bulk-action   - Perform bulk action on products
+POST   /api/admin/products/import        - Import products
+GET    /api/admin/products/export        - Export products
+```
+
+### Inventory Management
+```
+GET    /api/admin/inventory              - Get inventory status
+PUT    /api/admin/inventory/:productId   - Update product inventory
+POST   /api/admin/inventory/adjustment   - Record inventory adjustment
+GET    /api/admin/inventory/history      - Get inventory history
+GET    /api/admin/inventory/low-stock    - Get low stock products
+```
+
+### Order Management
+```
+GET    /api/admin/orders                 - Get all orders
+GET    /api/admin/orders/:id             - Get order details
+PUT    /api/admin/orders/:id/status      - Update order status
+POST   /api/admin/orders/:id/refund      - Process refund
+POST   /api/admin/orders/:id/note        - Add order note
+GET    /api/admin/orders/export          - Export orders
+```
+
+### Customer Management
+```
+GET    /api/admin/customers              - Get all customers
+GET    /api/admin/customers/:id          - Get customer details
+GET    /api/admin/customers/:id/orders   - Get customer orders
+POST   /api/admin/customers/:id/note     - Add customer note
+```
+
+### Review Management
+```
+GET    /api/admin/reviews                - Get all reviews
+PUT    /api/admin/reviews/:id/status     - Update review status
+DELETE /api/admin/reviews/:id            - Delete review
+GET    /api/admin/questions              - Get all questions
+PUT    /api/admin/questions/:id/status   - Update question status
+DELETE /api/admin/questions/:id          - Delete question
+```
+
+### Coupon Management
+```
+GET    /api/admin/coupons                - Get all coupons
+POST   /api/admin/coupons                - Create coupon
+GET    /api/admin/coupons/:id            - Get coupon details
+PUT    /api/admin/coupons/:id            - Update coupon
+DELETE /api/admin/coupons/:id            - Delete coupon
+GET    /api/admin/coupons/:id/usage      - Get coupon usage statistics
+```
+
+### Content Management
+```
+GET    /api/admin/recipes                - Get all recipes
+POST   /api/admin/recipes                - Create recipe
+PUT    /api/admin/recipes/:id            - Update recipe
+DELETE /api/admin/recipes/:id            - Delete recipe
+GET    /api/admin/blog/posts             - Get all blog posts
+POST   /api/admin/blog/posts             - Create blog post
+PUT    /api/admin/blog/posts/:id         - Update blog post
+DELETE /api/admin/blog/posts/:id         - Delete blog post
+GET    /api/admin/pages                  - Get all pages
+POST   /api/admin/pages                  - Create page
+PUT    /api/admin/pages/:id              - Update page
+DELETE /api/admin/pages/:id              - Delete page
+```
+
+### Analytics & Reporting
+```
+GET    /api/admin/analytics/dashboard    - Get dashboard analytics
+GET    /api/admin/analytics/sales        - Get sales analytics
+GET    /api/admin/analytics/products     - Get product performance analytics
+GET    /api/admin/analytics/customers    - Get customer analytics
+GET    /api/admin/analytics/inventory    - Get inventory analytics
+GET    /api/admin/reports/sales          - Generate sales report
+GET    /api/admin/reports/products       - Generate products report
+GET    /api/admin/reports/customers      - Generate customers report
+GET    /api/admin/reports/inventory      - Generate inventory report
+```
+
+### Settings
+```
+GET    /api/admin/settings               - Get all settings
+PUT    /api/admin/settings               - Update settings
+GET    /api/admin/settings/shipping      - Get shipping settings
+PUT    /api/admin/settings/shipping      - Update shipping settings
+GET    /api/admin/settings/payment       - Get payment settings
+PUT    /api/admin/settings/payment       - Update payment settings
+GET    /api/admin/settings/tax           - Get tax settings
+PUT    /api/admin/settings/tax           - Update tax settings
+GET    /api/admin/settings/email         - Get email settings
+PUT    /api/admin/settings/email         - Update email settings
+```
+
+### Email Templates
+```
+GET    /api/admin/email-templates        - Get all email templates
+GET    /api/admin/email-templates/:id    - Get email template
+PUT    /api/admin/email-templates/:id    - Update email template
+POST   /api/admin/email-templates/test   - Send test email
+```
+
+### Loyalty & Rewards Management
+```
+GET    /api/admin/loyalty/users          - Get users loyalty information
+PUT    /api/admin/loyalty/users/:id      - Adjust user points
+GET    /api/admin/loyalty/tiers          - Get loyalty tiers
+POST   /api/admin/loyalty/tiers          - Create loyalty tier
+PUT    /api/admin/loyalty/tiers/:id      - Update loyalty tier
+DELETE /api/admin/loyalty/tiers/:id      - Delete loyalty tier
+GET    /api/admin/loyalty/rewards        - Get loyalty rewards
+POST   /api/admin/loyalty/rewards        - Create loyalty reward
+PUT    /api/admin/loyalty/rewards/:id    - Update loyalty reward
+DELETE /api/admin/loyalty/rewards/:id    - Delete loyalty reward
+```
+
+### Subscription Management
+```
+GET    /api/admin/subscriptions          - Get all subscriptions
+GET    /api/admin/subscriptions/:id      - Get subscription details
+PUT    /api/admin/subscriptions/:id      - Update subscription
+GET    /api/admin/subscription-plans     - Get subscription plans
+POST   /api/admin/subscription-plans     - Create subscription plan
+PUT    /api/admin/subscription-plans/:id - Update subscription plan
+DELETE /api/admin/subscription-plans/:id - Delete subscription plan
+```
+
+### System Management
+```
+GET    /api/admin/system/health          - Get system health status
+GET    /api/admin/system/logs            - Get system logs
+POST   /api/admin/system/backup          - Create database backup
+GET    /api/admin/system/backups         - Get available backups
+POST   /api/admin/system/restore/:id     - Restore from backup
+GET    /api/admin/system/scheduled-tasks - Get scheduled tasks
+PUT    /api/admin/system/scheduled-tasks/:id - Update scheduled task
+```
+
+## WEBHOOKS
+---------
+
+### External Service Webhooks
+```
+POST   /api/webhooks/stripe              - Stripe payment webhook
+POST   /api/webhooks/paypal              - PayPal payment webhook
+POST   /api/webhooks/shipping            - Shipping provider webhook
+```
+
+## API VERSIONING & DOCUMENTATION
+------------------------------
+
+All endpoints should be versioned to allow for future changes:
+```
+/api/v1/products
+/api/v2/products
+```
+
+Documentation endpoints:
+```
+GET    /api/docs                         - API documentation
+GET    /api/status                       - API status and version information
+```
+
+## AUTHENTICATION & SECURITY
+-------------------------
+
+### Authentication Methods
+- JWT (JSON Web Tokens) for stateless authentication
+- API Keys for third-party integrations
+- OAuth 2.0 for social logins
+
+### Security Measures
+- Rate limiting on all endpoints
+- CORS configuration
+- Input validation and sanitization
+- Request logging for security auditing
+
+## RESPONSE FORMATS
+----------------
+
+All API responses should follow a consistent format:
+
+Success Response:
+```json
+{
+  "success": true,
+  "data": { ... },
+  "meta": {
+    "pagination": { ... }  // If applicable
+  }
+}
+```
+
+Error Response:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable error message",
+    "details": { ... }  // Optional additional error details
+  }
+}
+```
+
+## IMPLEMENTATION NOTES
+--------------------
+
+1. All endpoints should support proper HTTP status codes
+2. Implement consistent error handling across all endpoints
+3. Use query parameters for filtering, sorting, and pagination
+4. Consider implementing GraphQL alongside REST for complex data requirements
+5. Implement proper caching headers for improved performance
+6. Use compression for response payloads
+7. Consider implementing a request ID system for tracking requests across services
+8. Implement proper logging for all API requests and responses
+9. Use environment-specific configuration for development, staging, and production
+10. Implement proper API documentation using OpenAPI/Swagger
+
+This API design provides a comprehensive foundation for the Global Gourmet E-commerce platform,
+covering all required functionality for both customer-facing features and admin operations.
+
+## EXTERNAL APIS INTEGRATION
+-------------------------
+
+This section outlines all the external APIs that will be integrated with the Global Gourmet E-commerce platform.
+
+### 1. Payment Processing APIs
+
+#### Stripe API
+- **Purpose**: Primary payment processing
+- **Key Features**:
+  * Payment processing (credit/debit cards)
+  * Subscription billing
+  * Saved payment methods
+  * Payment intents for complex checkout flows
+  * Webhooks for payment events
+- **Integration Points**:
+  * Checkout process
+  * Subscription management
+  * Admin dashboard for payment reporting
+- **Documentation**: https://stripe.com/docs/api
+
+#### PayPal API
+- **Purpose**: Alternative payment method
+- **Key Features**:
+  * Express checkout
+  * PayPal payments
+  * Refund processing
+- **Integration Points**:
+  * Checkout process
+  * Order management
+- **Documentation**: https://developer.paypal.com/docs/api/overview/
+
+### 2. Shipping & Logistics APIs
+
+#### Shippo API
+- **Purpose**: Shipping rate calculation and label generation
+- **Key Features**:
+  * Multi-carrier shipping rates
+  * Label generation
+  * Tracking information
+  * International shipping support
+- **Integration Points**:
+  * Checkout process
+  * Order fulfillment in admin panel
+  * Tracking information for customers
+- **Documentation**: https://goshippo.com/docs/api
+
+#### Address Validation API (Google Places API)
+- **Purpose**: Validate and standardize shipping addresses
+- **Key Features**:
+  * Address autocomplete
+  * Address validation
+  * Geocoding
+- **Integration Points**:
+  * Checkout address entry
+  * Customer address management
+- **Documentation**: https://developers.google.com/maps/documentation/places/web-service/overview
+
+### 3. Email & Communications APIs
+
+#### SendGrid API
+- **Purpose**: Transactional and marketing emails
+- **Key Features**:
+  * Transactional email sending
+  * Email templates
+  * Email analytics
+  * Marketing campaigns
+- **Integration Points**:
+  * Order confirmations
+  * Shipping notifications
+  * Password resets
+  * Marketing newsletters
+  * Abandoned cart emails
+- **Documentation**: https://docs.sendgrid.com/api-reference
+
+#### Twilio API
+- **Purpose**: SMS notifications (optional)
+- **Key Features**:
+  * SMS sending
+  * Delivery status tracking
+- **Integration Points**:
+  * Order status updates
+  * Delivery notifications
+  * Marketing messages (with consent)
+- **Documentation**: https://www.twilio.com/docs/api
+
+### 4. Currency & Taxes APIs
+
+#### Open Exchange Rates API
+- **Purpose**: Real-time currency conversion
+- **Key Features**:
+  * Current exchange rates
+  * Historical exchange rates
+  * Currency conversion
+- **Integration Points**:
+  * Product pricing
+  * Checkout process
+  * Order management
+- **Documentation**: https://docs.openexchangerates.org/
+
+#### TaxJar API
+- **Purpose**: Sales tax calculation
+- **Key Features**:
+  * Sales tax calculation
+  * Tax reporting
+  * Nexus determination
+- **Integration Points**:
+  * Checkout process
+  * Order management
+  * Financial reporting
+- **Documentation**: https://developers.taxjar.com/api/reference/
+
+### 5. Analytics & Marketing APIs
+
+#### Google Analytics API
+- **Purpose**: Website analytics and user behavior tracking
+- **Key Features**:
+  * Page view tracking
+  * Event tracking
+  * E-commerce tracking
+  * Custom reporting
+- **Integration Points**:
+  * Frontend tracking
+  * Admin dashboard reporting
+- **Documentation**: https://developers.google.com/analytics/devguides/reporting/data/v1
+
+#### Facebook Pixel API
+- **Purpose**: Conversion tracking and ad optimization
+- **Key Features**:
+  * Conversion tracking
+  * Custom audiences
+  * Dynamic ads
+- **Integration Points**:
+  * Frontend tracking
+  * Checkout completion
+  * Product views
+- **Documentation**: https://developers.facebook.com/docs/meta-pixel/api
+
+#### Segment API
+- **Purpose**: Unified analytics and customer data platform
+- **Key Features**:
+  * Event tracking
+  * User identification
+  * Data integration with multiple platforms
+- **Integration Points**:
+  * Frontend tracking
+  * User actions
+  * E-commerce events
+- **Documentation**: https://segment.com/docs/api/
+
+### 6. Search & Content APIs
+
+#### Algolia API
+- **Purpose**: Advanced product search
+- **Key Features**:
+  * Fast, typo-tolerant search
+  * Faceted filtering
+  * Relevance ranking
+  * Analytics
+- **Integration Points**:
+  * Product search
+  * Category browsing
+  * Search suggestions
+- **Documentation**: https://www.algolia.com/doc/api-reference/
+
+#### Cloudinary API
+- **Purpose**: Image and media management
+- **Key Features**:
+  * Image optimization
+  * Image transformations
+  * CDN delivery
+  * Video processing
+- **Integration Points**:
+  * Product images
+  * Content images
+  * User-generated content
+- **Documentation**: https://cloudinary.com/documentation/api_reference
+
+### 7. Geolocation & Personalization APIs
+
+#### IP Geolocation API (ipstack)
+- **Purpose**: Detect user location for regionalization
+- **Key Features**:
+  * IP-based location detection
+  * Country, region, city information
+  * Currency and language detection
+- **Integration Points**:
+  * Initial site visit
+  * Region-specific content
+  * Currency selection
+- **Documentation**: https://ipstack.com/documentation
+
+#### Weather API (optional)
+- **Purpose**: Personalized product recommendations based on local weather
+- **Key Features**:
+  * Current weather conditions
+  * Weather forecasts
+  * Location-based weather
+- **Integration Points**:
+  * Homepage personalization
+  * Marketing emails
+  * Seasonal promotions
+- **Documentation**: https://openweathermap.org/api
+
+### 8. Social Media APIs
+
+#### Instagram Graph API
+- **Purpose**: Social media integration and user-generated content
+- **Key Features**:
+  * Instagram feed integration
+  * User-generated content
+  * Social sharing
+- **Integration Points**:
+  * Product pages
+  * Homepage social proof
+  * Marketing campaigns
+- **Documentation**: https://developers.facebook.com/docs/instagram-api/
+
+#### Twitter API
+- **Purpose**: Social sharing and monitoring
+- **Key Features**:
+  * Tweet integration
+  * Social sharing
+  * Hashtag monitoring
+- **Integration Points**:
+  * Product sharing
+  * Social proof
+  * Customer service monitoring
+- **Documentation**: https://developer.twitter.com/en/docs/twitter-api
+
+### 9. Customer Support APIs
+
+#### Zendesk API
+- **Purpose**: Customer support and ticketing
+- **Key Features**:
+  * Ticket creation and management
+  * Customer communication
+  * Support history
+- **Integration Points**:
+  * Customer account
+  * Order issues
+  * Product questions
+- **Documentation**: https://developer.zendesk.com/api-reference/
+
+### 10. Security & Compliance APIs
+
+#### reCAPTCHA API
+- **Purpose**: Bot protection and form security
+- **Key Features**:
+  * Bot detection
+  * Form protection
+  * Invisible verification
+- **Integration Points**:
+  * Registration forms
+  * Login forms
+  * Checkout forms
+- **Documentation**: https://developers.google.com/recaptcha/docs/verify
+
+#### Fraud Prevention API (Sift)
+- **Purpose**: Fraud detection and prevention
+- **Key Features**:
+  * Real-time fraud scoring
+  * User behavior analysis
+  * Payment fraud detection
+- **Integration Points**:
+  * User registration
+  * Checkout process
+  * Account changes
+- **Documentation**: https://sift.com/developers/docs/curl/apis-overview
+
+## IMPLEMENTATION STRATEGY FOR EXTERNAL APIS
+-----------------------------------------
+
+1. **Phased Integration Approach**:
+   - Phase 1: Essential APIs (Payment, Shipping, Email)
+   - Phase 2: Enhancement APIs (Search, Analytics, Currency)
+   - Phase 3: Advanced APIs (Personalization, Fraud Prevention)
+
+2. **API Abstraction Layer**:
+   - Implement service adapters for each external API
+   - Create fallback mechanisms for API failures
+   - Standardize error handling across all integrations
+
+3. **Testing Strategy**:
+   - Use sandbox/test environments for all APIs during development
+   - Implement comprehensive integration tests
+   - Monitor API performance and reliability in staging
+
+4. **Security Considerations**:
+   - Store all API keys and secrets in environment variables
+   - Implement proper authentication for all API calls
+   - Regular security audits of API integrations
+   - Rate limiting and throttling to prevent abuse
+
+5. **Maintenance Plan**:
+   - Regular monitoring of API deprecation notices
+   - Version tracking for all integrated APIs
+   - Scheduled reviews of API performance and costs
