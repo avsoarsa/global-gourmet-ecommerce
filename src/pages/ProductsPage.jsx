@@ -3,34 +3,66 @@ import { Link, useParams } from 'react-router-dom';
 import { trackPageView } from '../utils/personalizationUtils';
 import ProductCard from '../components/common/ProductCard';
 import MobileFilterSort from '../components/mobile/MobileFilterSort';
-import { products, categories } from '../data/products';
 
 const ProductsPage = () => {
   const { categorySlug } = useParams();
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('featured');
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const productsPerPage = 12; // Show 12 products per page for mobile-friendly grid
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        const data = await response.json();
+
+        if (data.success) {
+          // Add "All Products" category
+          const allCategories = [
+            { id: 'all', name: 'All Products', slug: 'all-products' },
+            ...data.data.map(category => ({
+              id: category.id,
+              name: category.name,
+              slug: category.slug
+            }))
+          ];
+
+          setCategories(allCategories);
+        } else {
+          console.error('Error fetching categories:', data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Initialize selected category based on URL
   useEffect(() => {
-    if (categorySlug) {
-      // Convert slug back to category name
-      const categoryName = categorySlug
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-        .replace('And', '&');
+    if (categorySlug && categories.length > 0) {
+      // Find category by slug
+      const category = categories.find(cat => cat.slug === categorySlug);
 
-      setSelectedCategory(categoryName);
+      if (category) {
+        setSelectedCategory(category.name);
 
-      // Track category view for personalization
-      trackPageView(
-        `/category/${categorySlug}`,
-        'category',
-        { category: categoryName }
-      );
+        // Track category view for personalization
+        trackPageView(
+          `/category/${categorySlug}`,
+          'category',
+          { category: category.name }
+        );
+      } else {
+        setSelectedCategory('All Products');
+      }
     } else {
       setSelectedCategory('All Products');
 
@@ -41,45 +73,77 @@ const ProductsPage = () => {
         { category: 'All Products' }
       );
     }
-  }, [categorySlug]);
+  }, [categorySlug, categories]);
 
-  // Filter and sort products
+  // Fetch products based on category and sort
   useEffect(() => {
-    let result = [...products];
+    const fetchProducts = async () => {
+      setLoading(true);
 
-    // Filter by category
-    if (selectedCategory !== 'All Products') {
-      result = result.filter(product => product.category === selectedCategory);
+      try {
+        // Build query parameters
+        const params = new URLSearchParams();
+        params.append('page', currentPage);
+        params.append('limit', productsPerPage);
+
+        // Add category filter if not "All Products"
+        if (selectedCategory !== 'All Products' && categories.length > 0) {
+          const category = categories.find(cat => cat.name === selectedCategory);
+          if (category && category.slug !== 'all-products') {
+            params.append('category', category.slug);
+          }
+        }
+
+        // Add sort parameter
+        switch (sortBy) {
+          case 'price-low':
+            params.append('sort', 'price');
+            params.append('order', 'asc');
+            break;
+          case 'price-high':
+            params.append('sort', 'price');
+            params.append('order', 'desc');
+            break;
+          case 'newest':
+            params.append('sort', 'created_at');
+            params.append('order', 'desc');
+            break;
+          case 'rating':
+            params.append('sort', 'rating');
+            params.append('order', 'desc');
+            break;
+          default: // featured
+            params.append('featured', 'true');
+            break;
+        }
+
+        const response = await fetch(`/api/products?${params.toString()}`);
+        const data = await response.json();
+
+        if (data.success) {
+          setFilteredProducts(data.data);
+          setTotalCount(data.meta.pagination.total);
+        } else {
+          console.error('Error fetching products:', data.error);
+          setFilteredProducts([]);
+          setTotalCount(0);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setFilteredProducts([]);
+        setTotalCount(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (categories.length > 0) {
+      fetchProducts();
     }
-
-    // Sort products
-    switch (sortBy) {
-      case 'price-low':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'newest':
-        result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-        break;
-      case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      default: // featured
-        result.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-        break;
-    }
-
-    setFilteredProducts(result);
-    setCurrentPage(1);
-  }, [selectedCategory, sortBy]);
+  }, [selectedCategory, sortBy, currentPage, categories, productsPerPage]);
 
   // Calculate pagination
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const totalPages = Math.ceil(totalCount / productsPerPage);
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -131,7 +195,7 @@ const ProductsPage = () => {
       {/* Product Count and Sort (Desktop) */}
       <div className="flex justify-between items-center mb-6 hidden md:flex">
         <p className="text-gray-600">
-          Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+          Showing {filteredProducts.length} of {totalCount} {totalCount === 1 ? 'product' : 'products'}
         </p>
 
         <div className="flex items-center space-x-2">
@@ -154,7 +218,7 @@ const ProductsPage = () => {
       {/* Mobile Product Count and Sort */}
       <div className="flex justify-between items-center mb-4 md:hidden">
         <p className="text-gray-600 text-sm">
-          Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+          Showing {filteredProducts.length} of {totalCount} {totalCount === 1 ? 'product' : 'products'}
         </p>
 
         <div className="inline-flex items-center">
@@ -177,11 +241,32 @@ const ProductsPage = () => {
       </div>
 
       {/* Products */}
-      {currentProducts.length > 0 ? (
+      {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 product-grid">
-          {currentProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
+          {[...Array(productsPerPage)].map((_, index) => (
+            <div key={index} className="bg-gray-100 animate-pulse rounded-lg p-4 h-64"></div>
           ))}
+        </div>
+      ) : filteredProducts.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 product-grid">
+          {filteredProducts.map(product => {
+            // Transform API product format to match the expected format for ProductCard
+            const transformedProduct = {
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              price: product.price,
+              compareAtPrice: product.compare_at_price,
+              image: product.product_images?.find(img => img.is_primary)?.image_url || '/images/placeholder.jpg',
+              category: product.product_categories?.name || '',
+              rating: product.rating || 4.5,
+              isBestseller: product.is_bestseller,
+              isOrganic: product.is_organic,
+              description: product.short_description
+            };
+
+            return <ProductCard key={product.id} product={transformedProduct} />;
+          })}
         </div>
       ) : (
         <div className="text-center py-12">
