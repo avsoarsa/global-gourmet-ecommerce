@@ -48,26 +48,37 @@ export const AuthProvider = ({ children }) => {
   // Register a new user
   const register = async (email, password, firstName, lastName) => {
     try {
-      const response = await fetch('/api/auth?action=register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          first_name: firstName,
-          last_name: lastName,
-        }),
+      console.log('Registering user:', { email, firstName, lastName });
+
+      // Use direct Supabase auth instead of API endpoint
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName
+          }
+        }
       });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error.message);
+      if (authError) {
+        console.error('Supabase auth error:', authError);
+        throw new Error(authError.message);
       }
 
-      return { success: true, data: data.data };
+      console.log('Registration successful:', authData);
+
+      // Create user profile in database if needed
+      // This would typically be handled by a database trigger or backend function
+
+      return {
+        success: true,
+        data: {
+          user: authData.user,
+          session: authData.session
+        }
+      };
     } catch (error) {
       console.error('Registration error:', error);
       return { success: false, error: error.message };
@@ -77,24 +88,28 @@ export const AuthProvider = ({ children }) => {
   // Login a user
   const login = async (email, password) => {
     try {
-      const response = await fetch('/api/auth?action=login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+      console.log('Logging in user:', { email });
+
+      // Use direct Supabase auth instead of API endpoint
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error.message);
+      if (authError) {
+        console.error('Supabase auth error:', authError);
+        throw new Error(authError.message);
       }
 
-      return { success: true, data: data.data };
+      console.log('Login successful:', authData);
+
+      return {
+        success: true,
+        data: {
+          user: authData.user,
+          session: authData.session
+        }
+      };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: error.message };
@@ -104,15 +119,17 @@ export const AuthProvider = ({ children }) => {
   // Logout a user
   const logout = async () => {
     try {
-      const response = await fetch('/api/auth?action=logout', {
-        method: 'POST',
-      });
+      console.log('Logging out user');
 
-      const data = await response.json();
+      // Use direct Supabase auth instead of API endpoint
+      const { error } = await supabase.auth.signOut();
 
-      if (!data.success) {
-        throw new Error(data.error.message);
+      if (error) {
+        console.error('Supabase auth error:', error);
+        throw new Error(error.message);
       }
+
+      console.log('Logout successful');
 
       return { success: true };
     } catch (error) {
@@ -124,21 +141,19 @@ export const AuthProvider = ({ children }) => {
   // Request password reset
   const forgotPassword = async (email) => {
     try {
-      const response = await fetch('/api/auth?action=forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-        }),
+      console.log('Requesting password reset for:', email);
+
+      // Use direct Supabase auth instead of API endpoint
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
       });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error.message);
+      if (error) {
+        console.error('Supabase auth error:', error);
+        throw new Error(error.message);
       }
+
+      console.log('Password reset email sent');
 
       return { success: true };
     } catch (error) {
@@ -168,17 +183,44 @@ export const AuthProvider = ({ children }) => {
   // Get user profile
   const getUserProfile = async () => {
     try {
-      const response = await fetch('/api/auth?action=me', {
-        method: 'GET',
-      });
+      console.log('Getting user profile');
 
-      const data = await response.json();
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-      if (!data.success) {
-        throw new Error(data.error.message);
+      if (userError) {
+        console.error('Supabase auth error:', userError);
+        throw new Error(userError.message);
       }
 
-      return { success: true, data: data.data };
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Get user profile from database
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select(`
+          *,
+          user_profiles (*)
+        `)
+        .eq('id', user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') { // PGRST116 is "not found" error
+        console.error('Supabase profile error:', profileError);
+        throw new Error(profileError.message);
+      }
+
+      console.log('User profile retrieved:', { user, profile });
+
+      return {
+        success: true,
+        data: {
+          user,
+          profile: profile || { id: user.id, email: user.email }
+        }
+      };
     } catch (error) {
       console.error('Get user profile error:', error);
       return { success: false, error: error.message };
