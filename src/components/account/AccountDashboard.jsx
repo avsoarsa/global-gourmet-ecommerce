@@ -58,7 +58,9 @@ const AccountDashboard = ({ user }) => {
     <div className="space-y-8">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-green-600 to-green-500 text-white p-6 rounded-lg">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, {user.firstName}!</h1>
+        <h1 className="text-2xl font-bold mb-2">
+          Welcome back, {user.firstName || user.user?.user_metadata?.first_name || 'Guest'}!
+        </h1>
         <p className="opacity-90">Here's an overview of your account and recent activity.</p>
       </div>
 

@@ -4,12 +4,19 @@ import { faSave, faEdit } from '@fortawesome/free-solid-svg-icons';
 
 const ProfileSection = ({ user }) => {
   const [isEditing, setIsEditing] = useState(false);
+  // Extract user data from either the old format or the Supabase format
+  const firstName = user.firstName || user.user?.user_metadata?.first_name || '';
+  const lastName = user.lastName || user.user?.user_metadata?.last_name || '';
+  const email = user.email || user.user?.email || '';
+  const phone = user.phone || user.user?.phone || '';
+  const birthdate = user.birthdate || user.user?.user_metadata?.birthdate || '';
+
   const [formData, setFormData] = useState({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    phone: user.phone || '',
-    birthdate: user.birthdate || '',
+    firstName,
+    lastName,
+    email,
+    phone,
+    birthdate,
     preferences: {
       emailNotifications: user.preferences?.emailNotifications || true,
       smsNotifications: user.preferences?.smsNotifications || false,
@@ -19,7 +26,7 @@ const ProfileSection = ({ user }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name.includes('.')) {
       // Handle nested properties (preferences)
       const [parent, child] = name.split('.');
@@ -39,14 +46,39 @@ const ProfileSection = ({ user }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would send the updated profile to the server
-    console.log('Updated profile:', formData);
-    setIsEditing(false);
-    
-    // For demo purposes, we'll just show a success message
-    alert('Profile updated successfully!');
+
+    try {
+      // In a real implementation, we would update the user profile in Supabase
+      console.log('Updated profile:', formData);
+
+      // For now, we'll just simulate a successful update
+      setIsEditing(false);
+
+      // Show success message
+      alert('Profile updated successfully!');
+
+      // In a real implementation, we would do something like:
+      /*
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone,
+          birthdate: formData.birthdate,
+          preferences: formData.preferences
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+      */
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
   return (
@@ -54,7 +86,7 @@ const ProfileSection = ({ user }) => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="heading-3">Profile Information</h2>
         {!isEditing && (
-          <button 
+          <button
             onClick={() => setIsEditing(true)}
             className="btn-outline"
           >
@@ -79,7 +111,7 @@ const ProfileSection = ({ user }) => {
               required
             />
           </div>
-          
+
           <div>
             <label htmlFor="lastName" className="form-label">Last Name</label>
             <input
@@ -93,7 +125,7 @@ const ProfileSection = ({ user }) => {
               required
             />
           </div>
-          
+
           <div>
             <label htmlFor="email" className="form-label">Email Address</label>
             <input
@@ -107,7 +139,7 @@ const ProfileSection = ({ user }) => {
               required
             />
           </div>
-          
+
           <div>
             <label htmlFor="phone" className="form-label">Phone Number</label>
             <input
@@ -121,7 +153,7 @@ const ProfileSection = ({ user }) => {
               placeholder="(123) 456-7890"
             />
           </div>
-          
+
           <div>
             <label htmlFor="birthdate" className="form-label">Date of Birth</label>
             <input
@@ -135,7 +167,7 @@ const ProfileSection = ({ user }) => {
             />
           </div>
         </div>
-        
+
         <div className="mb-8">
           <h3 className="heading-4 mb-4">Communication Preferences</h3>
           <div className="space-y-3">
@@ -153,7 +185,7 @@ const ProfileSection = ({ user }) => {
                 Receive email notifications about orders and promotions
               </label>
             </div>
-            
+
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -168,7 +200,7 @@ const ProfileSection = ({ user }) => {
                 Receive SMS notifications about orders and promotions
               </label>
             </div>
-            
+
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -185,17 +217,17 @@ const ProfileSection = ({ user }) => {
             </div>
           </div>
         </div>
-        
+
         {isEditing && (
           <div className="flex justify-end space-x-4">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setIsEditing(false)}
               className="btn-outline"
             >
               Cancel
             </button>
-            <button 
+            <button
               type="submit"
               className="btn-primary"
             >

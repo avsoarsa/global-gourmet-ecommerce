@@ -55,15 +55,19 @@ const AccountPage = () => {
   }
 
   const renderTabContent = () => {
+    // Ensure we have the necessary data
+    const orders = currentUser.orders || [];
+    const addresses = currentUser.addresses || [];
+
     switch (activeTab) {
       case 'dashboard':
         return <AccountDashboard user={currentUser} />;
       case 'profile':
         return <ProfileSection user={currentUser} />;
       case 'orders':
-        return <OrdersSection orders={currentUser.orders} />;
+        return <OrdersSection orders={orders} />;
       case 'addresses':
-        return <AddressesSection addresses={currentUser.addresses} />;
+        return <AddressesSection addresses={addresses} />;
       case 'payment-methods':
         return <SavedPaymentMethods />;
       case 'rewards':
@@ -71,7 +75,7 @@ const AccountPage = () => {
       case 'subscriptions':
         return <Subscriptions />;
       case 'recommendations':
-        return <PersonalizedRecommendations user={currentUser} orderHistory={currentUser.orders} />;
+        return <PersonalizedRecommendations user={currentUser} orderHistory={orders} />;
       default:
         return <AccountDashboard user={currentUser} />;
     }
@@ -112,11 +116,15 @@ const AccountPage = () => {
             <div className="p-6 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-                  {currentUser.firstName.charAt(0)}{currentUser.lastName.charAt(0)}
+                  {(currentUser.firstName || currentUser.user?.user_metadata?.first_name || '?').charAt(0)}
+                  {(currentUser.lastName || currentUser.user?.user_metadata?.last_name || '').charAt(0)}
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold">{currentUser.firstName} {currentUser.lastName}</h2>
-                  <p className="text-white/80">{currentUser.email}</p>
+                  <h2 className="text-xl font-semibold">
+                    {currentUser.firstName || currentUser.user?.user_metadata?.first_name || ''}{' '}
+                    {currentUser.lastName || currentUser.user?.user_metadata?.last_name || ''}
+                  </h2>
+                  <p className="text-white/80">{currentUser.email || currentUser.user?.email || ''}</p>
                 </div>
               </div>
             </div>
