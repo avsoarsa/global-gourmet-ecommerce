@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import authService from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -170,55 +171,18 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Registering user:', { email, firstName, lastName, phone });
 
-      // Use direct Supabase auth instead of API endpoint
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            phone: phone
-          }
-        }
-      });
+      // Use authService instead of direct Supabase calls
+      const result = await authService.signUp(email, password, firstName, lastName, phone);
 
-      if (authError) {
-        console.error('Supabase auth error:', authError);
-        throw new Error(authError.message);
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
-      console.log('Registration successful:', authData);
-
-      // Create user profile in database if needed
-      if (authData.user) {
-        try {
-          // Create or update user profile with phone number
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .upsert({
-              user_id: authData.user.id,
-              phone: phone,
-              created_at: new Date(),
-              updated_at: new Date()
-            });
-
-          if (profileError) {
-            console.error('Error creating user profile:', profileError);
-            // We don't throw here because the user was created successfully
-          }
-        } catch (profileError) {
-          console.error('Error creating user profile:', profileError);
-          // We don't throw here because the user was created successfully
-        }
-      }
+      console.log('Registration successful:', result.data);
 
       return {
         success: true,
-        data: {
-          user: authData.user,
-          session: authData.session
-        }
+        data: result.data
       };
     } catch (error) {
       console.error('Registration error:', error);
@@ -231,19 +195,14 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Signing in with Google');
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
+      // Use authService instead of direct Supabase calls
+      const result = await authService.signInWithGoogle();
 
-      if (error) {
-        console.error('Google sign-in error:', error);
-        throw new Error(error.message);
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
-      console.log('Google sign-in initiated:', data);
+      console.log('Google sign-in initiated:', result.data);
 
       return { success: true };
     } catch (error) {
@@ -257,25 +216,18 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Logging in user:', { email });
 
-      // Use direct Supabase auth instead of API endpoint
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      // Use authService instead of direct Supabase calls
+      const result = await authService.signIn(email, password);
 
-      if (authError) {
-        console.error('Supabase auth error:', authError);
-        throw new Error(authError.message);
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
-      console.log('Login successful:', authData);
+      console.log('Login successful:', result.data);
 
       return {
         success: true,
-        data: {
-          user: authData.user,
-          session: authData.session
-        }
+        data: result.data
       };
     } catch (error) {
       console.error('Login error:', error);
@@ -288,12 +240,11 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Logging out user');
 
-      // Use direct Supabase auth instead of API endpoint
-      const { error } = await supabase.auth.signOut();
+      // Use authService instead of direct Supabase calls
+      const result = await authService.signOut();
 
-      if (error) {
-        console.error('Supabase auth error:', error);
-        throw new Error(error.message);
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
       console.log('Logout successful');
@@ -310,14 +261,11 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Requesting password reset for:', email);
 
-      // Use direct Supabase auth instead of API endpoint
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/reset-password',
-      });
+      // Use authService instead of direct Supabase calls
+      const result = await authService.resetPassword(email);
 
-      if (error) {
-        console.error('Supabase auth error:', error);
-        throw new Error(error.message);
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
       console.log('Password reset email sent');
@@ -332,12 +280,11 @@ export const AuthProvider = ({ children }) => {
   // Reset password with token
   const resetPassword = async (password) => {
     try {
-      const { error } = await supabase.auth.updateUser({
-        password,
-      });
+      // Use authService instead of direct Supabase calls
+      const result = await authService.updatePassword(password);
 
-      if (error) {
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
       return { success: true };
@@ -352,33 +299,18 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Getting user profile');
 
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      // Use authService instead of direct Supabase calls
+      const result = await authService.getProfile();
 
-      if (userError) {
-        console.error('Supabase auth error:', userError);
-        throw new Error(userError.message);
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Use the fetchUserProfile function to get the profile
-      const { success, data, error } = await fetchUserProfile(user);
-
-      if (!success) {
-        throw new Error(error || 'Failed to fetch user profile');
-      }
-
-      console.log('User profile retrieved:', data);
+      console.log('User profile retrieved:', result.data);
 
       return {
         success: true,
-        data: {
-          user,
-          profile: data
-        }
+        data: result.data
       };
     } catch (error) {
       console.error('Get user profile error:', error);
@@ -391,17 +323,23 @@ export const AuthProvider = ({ children }) => {
     if (!currentUser) return { success: false, error: 'Not authenticated' };
 
     try {
-      // In a real app, this would call an API
-      // For now, we'll update the user metadata
-      const { error } = await supabase.auth.updateUser({
-        data: userData
-      });
+      // Use authService instead of direct Supabase calls
+      const result = await authService.updateProfile(userData);
 
-      if (error) {
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
-      return { success: true };
+      // Update current user state with the new profile data
+      setCurrentUser(prevUser => ({
+        ...prevUser,
+        ...result.data
+      }));
+
+      return {
+        success: true,
+        data: result.data
+      };
     } catch (error) {
       console.error('Error updating user profile:', error);
       return { success: false, error: error.message };

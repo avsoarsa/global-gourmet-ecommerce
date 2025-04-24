@@ -4,23 +4,25 @@
  */
 
 import { supabase } from '../utils/supabaseClient';
+import { memoize, paginate, selectFields } from '../utils/performanceUtils';
+import { handleApiError, validateRequiredFields } from '../utils/errorHandler';
 
 /**
  * Get all products
  * @param {Object} options - Query options
  * @param {number} options.limit - Number of products to return
- * @param {number} options.offset - Offset for pagination
+ * @param {number} options.page - Page number (1-based)
  * @param {string} options.category - Category filter
  * @param {string} options.search - Search term
  * @param {string} options.sort - Sort field
  * @param {string} options.order - Sort order (asc/desc)
- * @returns {Promise<Array>} - Array of products
+ * @returns {Promise<{success: boolean, data?: Object, error?: string}>} - Products response
  */
 export const getProducts = async (options = {}) => {
   try {
     const {
       limit = 12,
-      offset = 0,
+      page = 1,
       category,
       search,
       sort = 'created_at',
@@ -30,16 +32,24 @@ export const getProducts = async (options = {}) => {
       organic
     } = options;
 
+    // Calculate offset from page
+    const offset = (page - 1) * limit;
+
+    // Start building query with optimized field selection
     let query = supabase
       .from('products')
       .select(`
-        *,
-        product_images (*),
-        product_variants (*),
-        product_categories!inner (*)
-      `)
-      .order(sort, { ascending: order === 'asc' })
-      .range(offset, offset + limit - 1);
+        id, name, slug, description, short_description, price, compare_at_price,
+        discount_percentage, hs_code, origin, nutritional_info, rating,
+        review_count, stock_quantity, is_featured, is_bestseller, is_organic,
+        product_images (id, image_url, is_primary),
+        product_variants (id, weight, price, compare_at_price, stock_quantity),
+        product_categories!inner (id, name, slug)
+      `, { count: 'exact' })
+      .order(sort, { ascending: order === 'asc' });
+
+    // Apply pagination using our utility
+    query = paginate(query, page, limit);
 
     // Apply filters
     if (category && category !== 'all') {
@@ -65,7 +75,6 @@ export const getProducts = async (options = {}) => {
     const { data, error, count } = await query;
 
     if (error) {
-      console.error('Error fetching products:', error);
       throw error;
     }
 
@@ -80,7 +89,8 @@ export const getProducts = async (options = {}) => {
       originalPrice: product.compare_at_price,
       discount: product.discount_percentage,
       hsCode: product.hs_code,
-      image: product.product_images[0]?.image_url || '',
+      image: product.product_images.find(img => img.is_primary)?.image_url ||
+             product.product_images[0]?.image_url || '',
       origin: product.origin,
       nutritionalInfo: product.nutritional_info,
       rating: product.rating,
@@ -100,40 +110,61 @@ export const getProducts = async (options = {}) => {
     }));
 
     return {
-      products: formattedProducts,
-      total: count
+      success: true,
+      data: {
+        products: formattedProducts,
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit)
+      }
     };
   } catch (error) {
-    console.error('Error in getProducts:', error);
-    throw error;
+    return handleApiError(error, 'getProducts');
   }
 };
 
 /**
  * Get a product by slug
  * @param {string} slug - Product slug
- * @returns {Promise<Object>} - Product object
+ * @returns {Promise<{success: boolean, data?: Object, error?: string}>} - Product response
  */
-export const getProductBySlug = async (slug) => {
+export const getProductBySlug = memoize(async (slug) => {
   try {
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { slug },
+      ['slug']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Use optimized field selection
     const { data, error } = await supabase
       .from('products')
       .select(`
-        *,
-        product_images (*),
-        product_variants (*),
-        product_categories!inner (*)
+        id, name, slug, description, short_description, price, compare_at_price,
+        discount_percentage, hs_code, origin, nutritional_info, rating,
+        review_count, stock_quantity, is_featured, is_bestseller, is_organic,
+        product_images (id, image_url, is_primary),
+        product_variants (id, weight, price, compare_at_price, stock_quantity),
+        product_categories!inner (id, name, slug)
       `)
       .eq('slug', slug)
       .single();
 
     if (error) {
-      console.error('Error fetching product by slug:', error);
       throw error;
     }
 
     if (!data) {
-      throw new Error(`Product with slug ${slug} not found`);
+      return {
+        success: false,
+        error: `Product with slug ${slug} not found`,
+        status: 404
+      };
     }
 
     // Format the response to match the expected structure
@@ -147,7 +178,13 @@ export const getProductBySlug = async (slug) => {
       originalPrice: data.compare_at_price,
       discount: data.discount_percentage,
       hsCode: data.hs_code,
-      image: data.product_images[0]?.image_url || '',
+      image: data.product_images.find(img => img.is_primary)?.image_url ||
+             data.product_images[0]?.image_url || '',
+      images: data.product_images.map(img => ({
+        id: img.id,
+        url: img.image_url,
+        isPrimary: img.is_primary
+      })),
       origin: data.origin,
       nutritionalInfo: data.nutritional_info,
       rating: data.rating,
@@ -159,6 +196,7 @@ export const getProductBySlug = async (slug) => {
       category: data.product_categories.name,
       categorySlug: data.product_categories.slug,
       weightOptions: data.product_variants.map(variant => ({
+        id: variant.id,
         weight: variant.weight,
         price: variant.price,
         originalPrice: variant.compare_at_price,
@@ -166,26 +204,30 @@ export const getProductBySlug = async (slug) => {
       }))
     };
 
-    return formattedProduct;
+    return {
+      success: true,
+      data: formattedProduct
+    };
   } catch (error) {
-    console.error('Error in getProductBySlug:', error);
-    throw error;
+    return handleApiError(error, 'getProductBySlug');
   }
-};
+}, slug => slug); // Memoize by slug
 
 /**
  * Get all categories
- * @returns {Promise<Array>} - Array of categories
+ * @returns {Promise<{success: boolean, data?: Object[], error?: string}>} - Categories response
  */
-export const getCategories = async () => {
+export const getCategories = memoize(async () => {
   try {
-    const { data, error } = await supabase
-      .from('product_categories')
-      .select('*')
-      .order('display_order', { ascending: true });
+    // Use optimized field selection
+    const { data, error } = await selectFields(
+      supabase
+        .from('product_categories')
+        .order('display_order', { ascending: true }),
+      ['id', 'name', 'slug', 'image', 'display_order']
+    );
 
     if (error) {
-      console.error('Error fetching categories:', error);
       throw error;
     }
 
@@ -194,40 +236,60 @@ export const getCategories = async () => {
       id: category.id,
       name: category.name,
       slug: category.slug,
-      image: category.image
+      image: category.image,
+      displayOrder: category.display_order
     }));
 
-    return formattedCategories;
+    return {
+      success: true,
+      data: formattedCategories
+    };
   } catch (error) {
-    console.error('Error in getCategories:', error);
-    throw error;
+    return handleApiError(error, 'getCategories');
   }
-};
+});
 
 /**
  * Get product reviews
  * @param {string} productId - Product ID
  * @param {Object} options - Query options
- * @param {number} options.limit - Number of reviews to return
- * @param {number} options.offset - Offset for pagination
- * @returns {Promise<Array>} - Array of reviews
+ * @param {number} options.page - Page number (1-based)
+ * @param {number} options.pageSize - Page size
+ * @returns {Promise<{success: boolean, data?: Object, error?: string}>} - Reviews response
  */
 export const getProductReviews = async (productId, options = {}) => {
   try {
-    const { limit = 10, offset = 0 } = options;
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { productId },
+      ['productId']
+    );
 
-    const { data, error, count } = await supabase
-      .from('product_reviews')
-      .select(`
-        *,
-        review_images (*)
-      `, { count: 'exact' })
-      .eq('product_id', productId)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    if (validationError) {
+      return validationError;
+    }
+
+    const { page = 1, pageSize = 10 } = options;
+
+    // Use optimized field selection and pagination
+    let query = selectFields(
+      supabase
+        .from('product_reviews')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false }),
+      ['id', 'product_id', 'user_id', 'user_name', 'user_avatar', 'rating',
+       'title', 'content', 'created_at', 'helpful_count', 'is_verified']
+    );
+
+    // Add count for pagination
+    query = query.select('review_images (id, image_url)', { count: 'exact' });
+
+    // Apply pagination
+    query = paginate(query, page, pageSize);
+
+    const { data, error, count } = await query;
 
     if (error) {
-      console.error('Error fetching product reviews:', error);
       throw error;
     }
 
@@ -248,27 +310,84 @@ export const getProductReviews = async (productId, options = {}) => {
     }));
 
     return {
-      reviews: formattedReviews,
-      total: count
+      success: true,
+      data: {
+        reviews: formattedReviews,
+        total: count,
+        page,
+        pageSize,
+        totalPages: Math.ceil(count / pageSize)
+      }
     };
   } catch (error) {
-    console.error('Error in getProductReviews:', error);
-    throw error;
+    return handleApiError(error, 'getProductReviews');
   }
 };
 
 /**
  * Add a product review
  * @param {Object} review - Review object
- * @returns {Promise<Object>} - Added review
+ * @returns {Promise<{success: boolean, data?: Object, error?: string}>} - Added review response
  */
 export const addProductReview = async (review) => {
   try {
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      {
+        productId: review.productId,
+        rating: review.rating,
+        title: review.title,
+        content: review.content
+      },
+      ['productId', 'rating', 'title', 'content']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Validate rating
+    if (review.rating < 1 || review.rating > 5) {
+      return {
+        success: false,
+        error: 'Rating must be between 1 and 5',
+        status: 400
+      };
+    }
+
     // Get the current user
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError) {
+      throw userError;
+    }
+
     if (!user) {
-      throw new Error('You must be logged in to add a review');
+      return {
+        success: false,
+        error: 'You must be logged in to add a review',
+        status: 401
+      };
+    }
+
+    // Check if user has already reviewed this product
+    const { data: existingReview, error: existingError } = await supabase
+      .from('product_reviews')
+      .select('id')
+      .eq('product_id', review.productId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (existingError && existingError.code !== 'PGRST116') { // PGRST116 is "not found" error
+      throw existingError;
+    }
+
+    if (existingReview) {
+      return {
+        success: false,
+        error: 'You have already reviewed this product',
+        status: 400
+      };
     }
 
     // Add the review
@@ -277,18 +396,18 @@ export const addProductReview = async (review) => {
       .insert({
         product_id: review.productId,
         user_id: user.id,
-        user_name: review.userName,
+        user_name: review.userName || user.user_metadata?.full_name || user.email.split('@')[0],
         user_avatar: review.userAvatar,
         rating: review.rating,
         title: review.title,
         content: review.content,
-        is_verified: true
+        is_verified: true,
+        created_at: new Date().toISOString()
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error adding product review:', error);
       throw error;
     }
 
@@ -311,22 +430,24 @@ export const addProductReview = async (review) => {
     await updateProductRating(review.productId);
 
     return {
-      id: data.id,
-      productId: data.product_id,
-      userId: data.user_id,
-      userName: data.user_name,
-      userAvatar: data.user_avatar,
-      rating: data.rating,
-      title: data.title,
-      content: data.content,
-      date: data.created_at,
-      helpfulCount: data.helpful_count,
-      verified: data.is_verified,
-      images: review.images || []
+      success: true,
+      data: {
+        id: data.id,
+        productId: data.product_id,
+        userId: data.user_id,
+        userName: data.user_name,
+        userAvatar: data.user_avatar,
+        rating: data.rating,
+        title: data.title,
+        content: data.content,
+        date: data.created_at,
+        helpfulCount: data.helpful_count,
+        verified: data.is_verified,
+        images: review.images || []
+      }
     };
   } catch (error) {
-    console.error('Error in addProductReview:', error);
-    throw error;
+    return handleApiError(error, 'addProductReview');
   }
 };
 
@@ -337,81 +458,100 @@ export const addProductReview = async (review) => {
  */
 const updateProductRating = async (productId) => {
   try {
-    // Get all reviews for the product
-    const { data, error } = await supabase
-      .from('product_reviews')
-      .select('rating')
-      .eq('product_id', productId);
+    if (!productId) {
+      console.error('Product ID is required for updating rating');
+      return;
+    }
+
+    // Get all reviews for the product with optimized query
+    const { data, error } = await selectFields(
+      supabase
+        .from('product_reviews')
+        .eq('product_id', productId),
+      ['rating']
+    );
 
     if (error) {
       console.error('Error fetching product reviews for rating update:', error);
-      throw error;
+      return;
     }
 
     // Calculate the average rating
     const totalRating = data.reduce((sum, review) => sum + review.rating, 0);
-    const averageRating = data.length > 0 ? totalRating / data.length : 0;
+    const averageRating = data.length > 0 ? parseFloat((totalRating / data.length).toFixed(1)) : 0;
 
     // Update the product
-    const { error: updateError } = await supabase
+    await supabase
       .from('products')
       .update({
         rating: averageRating,
-        review_count: data.length
+        review_count: data.length,
+        updated_at: new Date().toISOString()
       })
       .eq('id', productId);
-
-    if (updateError) {
-      console.error('Error updating product rating:', updateError);
-      throw updateError;
-    }
   } catch (error) {
     console.error('Error in updateProductRating:', error);
-    throw error;
+    // Don't throw here as this is a background operation
+    // and shouldn't affect the main review submission flow
   }
 };
 
 /**
  * Mark a review as helpful
  * @param {string} reviewId - Review ID
- * @returns {Promise<Object>} - Updated review
+ * @returns {Promise<{success: boolean, data?: Object, error?: string}>} - Updated review response
  */
 export const markReviewAsHelpful = async (reviewId) => {
   try {
-    // Get the current helpful count
-    const { data: currentReview, error: fetchError } = await supabase
-      .from('product_reviews')
-      .select('helpful_count')
-      .eq('id', reviewId)
-      .single();
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { reviewId },
+      ['reviewId']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Get the current helpful count with optimized query
+    const { data: currentReview, error: fetchError } = await selectFields(
+      supabase
+        .from('product_reviews')
+        .eq('id', reviewId)
+        .single(),
+      ['id', 'helpful_count']
+    );
 
     if (fetchError) {
-      console.error('Error fetching review helpful count:', fetchError);
       throw fetchError;
     }
 
     // Increment the helpful count
-    const { data, error } = await supabase
-      .from('product_reviews')
-      .update({
-        helpful_count: (currentReview.helpful_count || 0) + 1
-      })
-      .eq('id', reviewId)
-      .select()
-      .single();
+    const { data, error } = await selectFields(
+      supabase
+        .from('product_reviews')
+        .update({
+          helpful_count: (currentReview.helpful_count || 0) + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', reviewId)
+        .single(),
+      ['id', 'helpful_count']
+    );
 
     if (error) {
-      console.error('Error marking review as helpful:', error);
       throw error;
     }
 
     return {
-      id: data.id,
-      helpfulCount: data.helpful_count
+      success: true,
+      data: {
+        id: data.id,
+        helpfulCount: data.helpful_count
+      }
     };
   } catch (error) {
-    console.error('Error in markReviewAsHelpful:', error);
-    throw error;
+    return handleApiError(error, 'markReviewAsHelpful');
   }
 };
 
@@ -420,24 +560,37 @@ export const markReviewAsHelpful = async (reviewId) => {
  * @param {string} productId - Product ID
  * @param {string} categoryId - Category ID
  * @param {number} limit - Number of products to return
- * @returns {Promise<Array>} - Array of related products
+ * @returns {Promise<{success: boolean, data?: Object[], error?: string}>} - Related products response
  */
 export const getRelatedProducts = async (productId, categoryId, limit = 4) => {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`
-        *,
-        product_images (*),
-        product_variants (*),
-        product_categories!inner (*)
-      `)
-      .eq('category_id', categoryId)
-      .neq('id', productId)
-      .limit(limit);
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { productId, categoryId },
+      ['productId', 'categoryId']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Use optimized field selection
+    const { data, error } = await selectFields(
+      supabase
+        .from('products')
+        .eq('product_categories.category_id', categoryId)
+        .neq('id', productId)
+        .limit(limit),
+      [
+        'id', 'name', 'slug', 'description', 'short_description', 'price',
+        'compare_at_price', 'discount_percentage', 'rating', 'review_count',
+        'stock_quantity', 'is_featured', 'is_bestseller', 'is_organic',
+        'product_images (id, image_url, is_primary)',
+        'product_categories!inner (id, name, slug)'
+      ]
+    );
 
     if (error) {
-      console.error('Error fetching related products:', error);
       throw error;
     }
 
@@ -451,7 +604,8 @@ export const getRelatedProducts = async (productId, categoryId, limit = 4) => {
       price: product.price,
       originalPrice: product.compare_at_price,
       discount: product.discount_percentage,
-      image: product.product_images[0]?.image_url || '',
+      image: product.product_images.find(img => img.is_primary)?.image_url ||
+             product.product_images[0]?.image_url || '',
       rating: product.rating,
       reviews: product.review_count,
       inStock: product.stock_quantity > 0,
@@ -462,10 +616,73 @@ export const getRelatedProducts = async (productId, categoryId, limit = 4) => {
       categorySlug: product.product_categories.slug
     }));
 
-    return formattedProducts;
+    return {
+      success: true,
+      data: formattedProducts
+    };
   } catch (error) {
-    console.error('Error in getRelatedProducts:', error);
-    throw error;
+    return handleApiError(error, 'getRelatedProducts');
+  }
+};
+
+/**
+ * Search products
+ * @param {string} query - Search query
+ * @param {number} limit - Number of results to return
+ * @returns {Promise<{success: boolean, data?: Object[], error?: string}>} - Search results
+ */
+export const searchProducts = async (query, limit = 10) => {
+  try {
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { query },
+      ['query']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    if (query.length < 2) {
+      return {
+        success: true,
+        data: []
+      };
+    }
+
+    // Use optimized field selection
+    const { data, error } = await selectFields(
+      supabase
+        .from('products')
+        .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+        .limit(limit),
+      [
+        'id', 'name', 'slug', 'price', 'compare_at_price',
+        'product_images (id, image_url, is_primary)'
+      ]
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    // Format the response
+    const formattedProducts = data.map(product => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      originalPrice: product.compare_at_price,
+      image: product.product_images.find(img => img.is_primary)?.image_url ||
+             product.product_images[0]?.image_url || ''
+    }));
+
+    return {
+      success: true,
+      data: formattedProducts
+    };
+  } catch (error) {
+    return handleApiError(error, 'searchProducts');
   }
 };
 
@@ -476,5 +693,6 @@ export default {
   getProductReviews,
   addProductReview,
   markReviewAsHelpful,
-  getRelatedProducts
+  getRelatedProducts,
+  searchProducts
 };

@@ -2,6 +2,7 @@ import { createContext, useState, useContext, useEffect } from 'react';
 import { useRegion } from './RegionContext';
 import { useCartNotification } from './CartNotificationContext';
 import { useAuth } from './AuthContext';
+import cartService from '../services/cartService';
 
 const CartContext = createContext();
 
@@ -20,35 +21,14 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        // Get session ID from localStorage if it exists
-        const storedSessionId = localStorage.getItem('cartSessionId');
-        if (storedSessionId) {
-          setSessionId(storedSessionId);
-        }
+        // Use cartService instead of direct API calls
+        const result = await cartService.getCart();
 
-        const headers = {};
-        if (storedSessionId) {
-          headers['x-session-id'] = storedSessionId;
-        }
-
-        const response = await fetch('/api/cart', {
-          method: 'GET',
-          headers
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          setCartItems(data.data.items || []);
-          setCartId(data.data.id);
-
-          // Save session ID to localStorage
-          if (data.meta?.session_id) {
-            setSessionId(data.meta.session_id);
-            localStorage.setItem('cartSessionId', data.meta.session_id);
-          }
+        if (result.success) {
+          setCartItems(result.data.items || []);
+          setCartId(result.data.id);
         } else {
-          console.error('Error fetching cart:', data.error);
+          console.error('Error fetching cart:', result.error);
         }
       } catch (error) {
         console.error('Error fetching cart:', error);
@@ -62,44 +42,22 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product, quantity = 1, variantId = null) => {
     try {
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-
-      if (sessionId) {
-        headers['x-session-id'] = sessionId;
-      }
-
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          product_id: product.id,
-          product_variant_id: variantId,
-          quantity
-        })
+      // Use cartService instead of direct API calls
+      const result = await cartService.addToCart({
+        product_id: product.id,
+        variant_id: variantId,
+        quantity
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        // Refresh cart items
-        const cartResponse = await fetch('/api/cart', {
-          method: 'GET',
-          headers: sessionId ? { 'x-session-id': sessionId } : {}
-        });
-
-        const cartData = await cartResponse.json();
-
-        if (cartData.success) {
-          setCartItems(cartData.data.items || []);
-          setCartId(cartData.data.id);
-        }
+      if (result.success) {
+        // Update cart items from the result
+        setCartItems(result.data.items || []);
+        setCartId(result.data.id);
 
         // Show notification with the product and quantity
         showNotification(product, quantity);
       } else {
-        console.error('Error adding to cart:', data.error);
+        console.error('Error adding to cart:', result.error);
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -108,32 +66,15 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (itemId) => {
     try {
-      const headers = {};
-      if (sessionId) {
-        headers['x-session-id'] = sessionId;
-      }
+      // Use cartService instead of direct API calls
+      const result = await cartService.removeCartItem(itemId);
 
-      const response = await fetch(`/api/cart?item_id=${itemId}`, {
-        method: 'DELETE',
-        headers
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Refresh cart items
-        const cartResponse = await fetch('/api/cart', {
-          method: 'GET',
-          headers: sessionId ? { 'x-session-id': sessionId } : {}
-        });
-
-        const cartData = await cartResponse.json();
-
-        if (cartData.success) {
-          setCartItems(cartData.data.items || []);
-        }
+      if (result.success) {
+        // Update cart items from the result
+        setCartItems(result.data.items || []);
+        setCartId(result.data.id);
       } else {
-        console.error('Error removing from cart:', data.error);
+        console.error('Error removing from cart:', result.error);
       }
     } catch (error) {
       console.error('Error removing from cart:', error);
@@ -147,38 +88,15 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      const headers = {
-        'Content-Type': 'application/json'
-      };
+      // Use cartService instead of direct API calls
+      const result = await cartService.updateCartItem(itemId, quantity);
 
-      if (sessionId) {
-        headers['x-session-id'] = sessionId;
-      }
-
-      const response = await fetch(`/api/cart?item_id=${itemId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({
-          quantity
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Refresh cart items
-        const cartResponse = await fetch('/api/cart', {
-          method: 'GET',
-          headers: sessionId ? { 'x-session-id': sessionId } : {}
-        });
-
-        const cartData = await cartResponse.json();
-
-        if (cartData.success) {
-          setCartItems(cartData.data.items || []);
-        }
+      if (result.success) {
+        // Update cart items from the result
+        setCartItems(result.data.items || []);
+        setCartId(result.data.id);
       } else {
-        console.error('Error updating cart:', data.error);
+        console.error('Error updating cart:', result.error);
       }
     } catch (error) {
       console.error('Error updating cart:', error);
@@ -186,9 +104,18 @@ export const CartProvider = ({ children }) => {
   };
 
   const clearCart = async () => {
-    // For now, we'll just remove each item individually
-    for (const item of cartItems) {
-      await removeFromCart(item.id);
+    try {
+      // Use cartService instead of direct API calls
+      const result = await cartService.clearCart();
+
+      if (result.success) {
+        // Update cart items to empty array
+        setCartItems([]);
+      } else {
+        console.error('Error clearing cart:', result.error);
+      }
+    } catch (error) {
+      console.error('Error clearing cart:', error);
     }
   };
 

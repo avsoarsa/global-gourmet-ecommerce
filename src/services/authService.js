@@ -1,4 +1,11 @@
 import { supabase } from '../utils/supabaseClient';
+import {
+  handleApiError,
+  validateRequiredFields,
+  isValidEmail,
+  isValidPhone,
+  validatePassword
+} from '../utils/errorHandler';
 
 /**
  * Sign up a new user
@@ -11,9 +18,42 @@ import { supabase } from '../utils/supabaseClient';
  */
 export const signUp = async (email, password, firstName, lastName, phone) => {
   try {
-    // Validate inputs
-    if (!email || !password || !firstName || !lastName) {
-      throw new Error('Email, password, first name, and last name are required');
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { email, password, firstName, lastName },
+      ['email', 'password', 'firstName', 'lastName']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return {
+        success: false,
+        error: 'Invalid email format',
+        status: 400
+      };
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return {
+        success: false,
+        error: passwordValidation.message,
+        status: 400
+      };
+    }
+
+    // Validate phone number if provided
+    if (phone && !isValidPhone(phone)) {
+      return {
+        success: false,
+        error: 'Invalid phone number format',
+        status: 400
+      };
     }
 
     // Sign up the user with Supabase Auth
@@ -57,11 +97,7 @@ export const signUp = async (email, password, firstName, lastName, phone) => {
       data: authData
     };
   } catch (error) {
-    console.error('Sign up error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'signUp');
   }
 };
 
@@ -73,9 +109,23 @@ export const signUp = async (email, password, firstName, lastName, phone) => {
  */
 export const signIn = async (email, password) => {
   try {
-    // Validate inputs
-    if (!email || !password) {
-      throw new Error('Email and password are required');
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { email, password },
+      ['email', 'password']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return {
+        success: false,
+        error: 'Invalid email format',
+        status: 400
+      };
     }
 
     // Sign in the user with Supabase Auth
@@ -93,11 +143,7 @@ export const signIn = async (email, password) => {
       data
     };
   } catch (error) {
-    console.error('Sign in error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'signIn');
   }
 };
 
@@ -123,11 +169,7 @@ export const signInWithGoogle = async () => {
       data
     };
   } catch (error) {
-    console.error('Google sign in error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'signInWithGoogle');
   }
 };
 
@@ -147,11 +189,7 @@ export const signOut = async () => {
       success: true
     };
   } catch (error) {
-    console.error('Sign out error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'signOut');
   }
 };
 
@@ -162,9 +200,23 @@ export const signOut = async () => {
  */
 export const resetPassword = async (email) => {
   try {
-    // Validate input
-    if (!email) {
-      throw new Error('Email is required');
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { email },
+      ['email']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return {
+        success: false,
+        error: 'Invalid email format',
+        status: 400
+      };
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -179,11 +231,7 @@ export const resetPassword = async (email) => {
       success: true
     };
   } catch (error) {
-    console.error('Password reset error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'resetPassword');
   }
 };
 
@@ -194,9 +242,24 @@ export const resetPassword = async (email) => {
  */
 export const updatePassword = async (newPassword) => {
   try {
-    // Validate input
-    if (!newPassword) {
-      throw new Error('New password is required');
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { newPassword },
+      ['newPassword']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      return {
+        success: false,
+        error: passwordValidation.message,
+        status: 400
+      };
     }
 
     const { error } = await supabase.auth.updateUser({
@@ -211,11 +274,7 @@ export const updatePassword = async (newPassword) => {
       success: true
     };
   } catch (error) {
-    console.error('Update password error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'updatePassword');
   }
 };
 
@@ -236,11 +295,7 @@ export const getCurrentSession = async () => {
       data
     };
   } catch (error) {
-    console.error('Get session error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'getCurrentSession');
   }
 };
 
@@ -261,11 +316,7 @@ export const getCurrentUser = async () => {
       data: data.user
     };
   } catch (error) {
-    console.error('Get user error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'getCurrentUser');
   }
 };
 
@@ -276,6 +327,25 @@ export const getCurrentUser = async () => {
  */
 export const updateProfile = async (profile) => {
   try {
+    // Validate required fields
+    const validationError = validateRequiredFields(
+      { firstName: profile.firstName, lastName: profile.lastName },
+      ['firstName', 'lastName']
+    );
+
+    if (validationError) {
+      return validationError;
+    }
+
+    // Validate phone number if provided
+    if (profile.phone && !isValidPhone(profile.phone)) {
+      return {
+        success: false,
+        error: 'Invalid phone number format',
+        status: 400
+      };
+    }
+
     // Get current user
     const { data: userData, error: userError } = await supabase.auth.getUser();
 
@@ -324,11 +394,7 @@ export const updateProfile = async (profile) => {
       data: profileData
     };
   } catch (error) {
-    console.error('Update profile error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'updateProfile');
   }
 };
 
@@ -392,11 +458,7 @@ export const getProfile = async (userId) => {
       data: combinedProfile
     };
   } catch (error) {
-    console.error('Get profile error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    return handleApiError(error, 'getProfile');
   }
 };
 
