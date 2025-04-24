@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faEnvelope, faPhone, faGoogle } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faLock, faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
