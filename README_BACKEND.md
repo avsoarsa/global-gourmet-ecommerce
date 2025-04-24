@@ -49,7 +49,22 @@ This document provides instructions for setting up the backend for the Global Go
    - `product-images`: For storing product images
    - `review-images`: For storing review images
    - `user-avatars`: For storing user avatars
-3. Set the bucket permissions to allow public read access but restrict write access to authenticated users
+   - `gift-box-images`: For storing gift box template images
+   - `recipe-images`: For storing recipe photos
+   - `category-images`: For category banner images
+   - `banner-images`: For homepage banners and promotional content
+   - `blog-images`: For blog posts and articles
+   - `about-images`: For about us page content
+3. Set up bucket permissions by running the SQL script:
+   - Navigate to the SQL Editor
+   - Copy the contents of `sql/setup_storage_buckets.sql`
+   - Paste it into the SQL Editor and click "Run"
+   - This will create the buckets if they don't exist and set up appropriate Row Level Security (RLS) policies
+
+4. Test the storage setup:
+   - Navigate to the Storage section in the Supabase dashboard
+   - Try uploading a test image to each bucket
+   - Verify that you can view the uploaded images
 
 ## Frontend Integration
 
