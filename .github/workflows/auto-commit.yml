@@ -1,0 +1,29 @@
+name: Auto Commit Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_message:
+        description: 'Commit message'
+        required: true
+        default: 'Auto commit by GitHub Actions'
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "${{ github.event.inputs.commit_message }}"
+          git push

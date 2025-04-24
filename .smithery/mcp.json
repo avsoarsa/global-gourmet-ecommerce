@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "provider": "github",
+  "repository": "avsoarsa/global-gourmet-ecommerce",
+  "branch": "main",
+  "autoCommit": true,
+  "autoPush": true,
+  "commitMessageTemplate": "[MCP] {{message}}",
+  "pullRequestTemplate": {
+    "title": "[MCP] {{title}}",
+    "body": "{{body}}\n\nAutomatically created by Smithery MCP"
+  }
+}

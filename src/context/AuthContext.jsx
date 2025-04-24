@@ -10,6 +10,51 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Get user profile - defined outside useEffect to avoid circular dependency
+  const fetchUserProfile = async (user) => {
+    try {
+      if (!user) {
+        return { success: false, error: 'No user provided' };
+      }
+
+      // Get user profile from user_profiles table
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') { // PGRST116 is "not found" error
+        console.error('Supabase profile error:', profileError);
+        throw new Error(profileError.message);
+      }
+
+      // Combine user data with profile data
+      const combinedProfile = {
+        ...user,
+        firstName: user.user_metadata?.first_name || '',
+        lastName: user.user_metadata?.last_name || '',
+        email: user.email,
+        phone: userProfile?.phone || '',
+        birthdate: userProfile?.birthdate || '',
+        preferences: userProfile?.preferences || {
+          emailNotifications: true,
+          smsNotifications: false,
+          newsletterSubscription: true
+        },
+        profileData: userProfile || null
+      };
+
+      return {
+        success: true,
+        data: combinedProfile
+      };
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   useEffect(() => {
     // Check for active session on mount
     const checkSession = async () => {
@@ -21,9 +66,26 @@ export const AuthProvider = ({ children }) => {
         }
 
         setSession(session);
-        setCurrentUser(session?.user || null);
+
+        if (session?.user) {
+          // Load full user profile
+          const { success, data } = await fetchUserProfile(session.user);
+          if (success) {
+            // Set the combined user profile data
+            setCurrentUser({
+              ...session.user,
+              ...data
+            });
+          } else {
+            // Fallback to just the session user if profile fetch fails
+            setCurrentUser(session.user);
+          }
+        } else {
+          setCurrentUser(null);
+        }
       } catch (error) {
         console.error('Error checking session:', error);
+        setCurrentUser(null);
       } finally {
         setLoading(false);
       }
@@ -34,8 +96,28 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event);
         setSession(session);
-        setCurrentUser(session?.user || null);
+
+        if (session?.user) {
+          if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+            // Load full user profile
+            const { success, data } = await fetchUserProfile(session.user);
+            if (success) {
+              // Set the combined user profile data
+              setCurrentUser({
+                ...session.user,
+                ...data
+              });
+            } else {
+              // Fallback to just the session user if profile fetch fails
+              setCurrentUser(session.user);
+            }
+          }
+        } else {
+          setCurrentUser(null);
+        }
+
         setLoading(false);
       }
     );
@@ -197,28 +279,20 @@ export const AuthProvider = ({ children }) => {
         throw new Error('User not authenticated');
       }
 
-      // Get user profile from database
-      const { data: profile, error: profileError } = await supabase
-        .from('users')
-        .select(`
-          *,
-          user_profiles (*)
-        `)
-        .eq('id', user.id)
-        .single();
+      // Use the fetchUserProfile function to get the profile
+      const { success, data, error } = await fetchUserProfile(user);
 
-      if (profileError && profileError.code !== 'PGRST116') { // PGRST116 is "not found" error
-        console.error('Supabase profile error:', profileError);
-        throw new Error(profileError.message);
+      if (!success) {
+        throw new Error(error || 'Failed to fetch user profile');
       }
 
-      console.log('User profile retrieved:', { user, profile });
+      console.log('User profile retrieved:', data);
 
       return {
         success: true,
         data: {
           user,
-          profile: profile || { id: user.id, email: user.email }
+          profile: data
         }
       };
     } catch (error) {
