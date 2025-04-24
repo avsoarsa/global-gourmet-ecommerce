@@ -21,6 +21,27 @@ This document provides instructions for setting up the backend for the Global Go
    - Enable Email/Password sign-in
    - Configure email templates for confirmation, invitation, and password reset
 
+3. Set up Google OAuth:
+   - Navigate to Authentication > Providers
+   - Enable Google provider
+   - Create a Google OAuth application in the Google Cloud Console:
+     - Go to https://console.cloud.google.com/
+     - Create a new project or select an existing one
+     - Navigate to APIs & Services > Credentials
+     - Click "Create Credentials" and select "OAuth client ID"
+     - Select "Web application" as the application type
+     - Add your Supabase authentication callback URL: `https://lxljeehmdzrvxwaqlmhf.supabase.co/auth/v1/callback`
+     - Add your local development URL and production URL to the authorized JavaScript origins
+     - Copy the Client ID and Client Secret
+   - Enter the Client ID and Client Secret in the Supabase dashboard
+   - Save the configuration
+
+4. Set up database trigger for new users:
+   - Navigate to the SQL Editor
+   - Copy the contents of `sql/create_auth_trigger.sql`
+   - Paste it into the SQL Editor and click "Run"
+   - This will create a trigger that automatically creates a user profile when a new user signs up
+
 ### Step 3: Set Up Storage
 
 1. In the Supabase dashboard, navigate to Storage
@@ -63,10 +84,12 @@ Import and use these services in your components to interact with the backend.
 
 ### Step 1: Test Authentication
 
-1. Test user registration
-2. Test user login
-3. Test password reset
-4. Test profile update
+1. Test user registration with email, password, and phone number
+2. Test user login with email and password
+3. Test Google sign-in
+4. Test password reset
+5. Test profile update
+6. Verify that phone number is stored correctly in user_profiles table
 
 ### Step 2: Test Product Browsing
 

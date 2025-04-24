@@ -29,20 +29,58 @@ export const AuthProvider = ({ children }) => {
         throw new Error(profileError.message);
       }
 
+      // If user signed in with Google, we need to handle the profile differently
+      const isGoogleUser = user.app_metadata?.provider === 'google';
+      let firstName = '';
+      let lastName = '';
+
+      if (isGoogleUser) {
+        // For Google users, the name is in the user_metadata.full_name
+        const fullName = user.user_metadata?.full_name || '';
+        const nameParts = fullName.split(' ');
+        firstName = nameParts[0] || '';
+        lastName = nameParts.slice(1).join(' ') || '';
+
+        // Create user profile if it doesn't exist for Google users
+        if (!userProfile) {
+          try {
+            const { error: createProfileError } = await supabase
+              .from('user_profiles')
+              .upsert({
+                user_id: user.id,
+                phone: user.user_metadata?.phone || '',
+                created_at: new Date(),
+                updated_at: new Date()
+              });
+
+            if (createProfileError) {
+              console.error('Error creating profile for Google user:', createProfileError);
+            }
+          } catch (err) {
+            console.error('Error creating profile for Google user:', err);
+          }
+        }
+      } else {
+        // For email users, the name is in the user_metadata.first_name and user_metadata.last_name
+        firstName = user.user_metadata?.first_name || '';
+        lastName = user.user_metadata?.last_name || '';
+      }
+
       // Combine user data with profile data
       const combinedProfile = {
         ...user,
-        firstName: user.user_metadata?.first_name || '',
-        lastName: user.user_metadata?.last_name || '',
+        firstName,
+        lastName,
         email: user.email,
-        phone: userProfile?.phone || '',
+        phone: userProfile?.phone || user.user_metadata?.phone || '',
         birthdate: userProfile?.birthdate || '',
         preferences: userProfile?.preferences || {
           emailNotifications: true,
           smsNotifications: false,
           newsletterSubscription: true
         },
-        profileData: userProfile || null
+        profileData: userProfile || null,
+        isGoogleUser
       };
 
       return {
@@ -128,9 +166,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Register a new user
-  const register = async (email, password, firstName, lastName) => {
+  const register = async (email, password, firstName, lastName, phone) => {
     try {
-      console.log('Registering user:', { email, firstName, lastName });
+      console.log('Registering user:', { email, firstName, lastName, phone });
 
       // Use direct Supabase auth instead of API endpoint
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -139,7 +177,8 @@ export const AuthProvider = ({ children }) => {
         options: {
           data: {
             first_name: firstName,
-            last_name: lastName
+            last_name: lastName,
+            phone: phone
           }
         }
       });
@@ -152,7 +191,27 @@ export const AuthProvider = ({ children }) => {
       console.log('Registration successful:', authData);
 
       // Create user profile in database if needed
-      // This would typically be handled by a database trigger or backend function
+      if (authData.user) {
+        try {
+          // Create or update user profile with phone number
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .upsert({
+              user_id: authData.user.id,
+              phone: phone,
+              created_at: new Date(),
+              updated_at: new Date()
+            });
+
+          if (profileError) {
+            console.error('Error creating user profile:', profileError);
+            // We don't throw here because the user was created successfully
+          }
+        } catch (profileError) {
+          console.error('Error creating user profile:', profileError);
+          // We don't throw here because the user was created successfully
+        }
+      }
 
       return {
         success: true,
@@ -163,6 +222,32 @@ export const AuthProvider = ({ children }) => {
       };
     } catch (error) {
       console.error('Registration error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Sign in with Google
+  const signInWithGoogle = async () => {
+    try {
+      console.log('Signing in with Google');
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+
+      if (error) {
+        console.error('Google sign-in error:', error);
+        throw new Error(error.message);
+      }
+
+      console.log('Google sign-in initiated:', data);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Google sign-in error:', error);
       return { success: false, error: error.message };
     }
   };
@@ -333,7 +418,8 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     getUserProfile,
-    updateUserProfile
+    updateUserProfile,
+    signInWithGoogle
   };
 
   return (
