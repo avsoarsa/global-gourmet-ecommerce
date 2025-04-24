@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../utils/supabaseClient';
 
 const ProfileSection = ({ user }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const { updateUserProfile } = useAuth();
   // Extract user data from either the old format or the Supabase format
   const firstName = user.firstName || user.user?.user_metadata?.first_name || '';
   const lastName = user.lastName || user.user?.user_metadata?.last_name || '';
@@ -48,36 +54,75 @@ const ProfileSection = ({ user }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
 
     try {
-      // In a real implementation, we would update the user profile in Supabase
-      console.log('Updated profile:', formData);
+      console.log('Updating profile:', formData);
 
-      // For now, we'll just simulate a successful update
-      setIsEditing(false);
-
-      // Show success message
-      alert('Profile updated successfully!');
-
-      // In a real implementation, we would do something like:
-      /*
-      const { error } = await supabase.auth.updateUser({
-        data: {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          phone: formData.phone,
-          birthdate: formData.birthdate,
-          preferences: formData.preferences
-        }
+      // Update user metadata in Supabase Auth
+      const { success, error } = await updateUserProfile({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formData.phone,
+        birthdate: formData.birthdate,
+        preferences: formData.preferences
       });
 
-      if (error) {
-        throw error;
+      if (!success) {
+        throw new Error(error || 'Failed to update profile');
       }
-      */
+
+      // Also update the profile in the profiles table if it exists
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        // Check if user profile exists
+        const { data: existingProfile } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (existingProfile) {
+          // Update existing profile
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .update({
+              phone: formData.phone,
+              birthdate: formData.birthdate,
+              preferences: formData.preferences
+            })
+            .eq('user_id', user.id);
+
+          if (profileError) {
+            console.error('Error updating profile in database:', profileError);
+          }
+        } else {
+          // Create new profile
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              user_id: user.id,
+              phone: formData.phone,
+              birthdate: formData.birthdate,
+              preferences: formData.preferences
+            });
+
+          if (profileError) {
+            console.error('Error creating profile in database:', profileError);
+          }
+        }
+      }
+
+      setIsEditing(false);
+      setSuccess('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Failed to update profile. Please try again.');
+      setError(error.message || 'Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,6 +140,18 @@ const ProfileSection = ({ user }) => {
           </button>
         )}
       </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6">
+          <span className="block sm:inline">{success}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -222,17 +279,35 @@ const ProfileSection = ({ user }) => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => setIsEditing(false)}
+              onClick={() => {
+                setIsEditing(false);
+                setError('');
+                setSuccess('');
+              }}
               className="btn-outline"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              className={`btn-primary ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              disabled={loading}
             >
-              <FontAwesomeIcon icon={faSave} className="mr-2" />
-              Save Changes
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faSave} className="mr-2" />
+                  Save Changes
+                </>
+              )}
             </button>
           </div>
         )}
