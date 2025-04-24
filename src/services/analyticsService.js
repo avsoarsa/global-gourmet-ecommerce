@@ -3,7 +3,10 @@
  * Handles tracking user behavior and analytics data
  */
 
-const API_URL = 'http://localhost:5000/api';
+// Use relative URL for API endpoints in production
+const API_URL = process.env.NODE_ENV === 'production'
+  ? '/api'
+  : 'http://localhost:5000/api';
 
 // Event types for tracking
 export const ANALYTICS_EVENTS = {
@@ -57,25 +60,25 @@ const generateSessionId = () => {
 const getSessionId = () => {
   let sessionId = sessionStorage.getItem(SESSION_ID_KEY);
   const sessionStart = sessionStorage.getItem(SESSION_START_KEY);
-  
+
   // Check if session exists and is still valid
   if (sessionId && sessionStart) {
     const now = Date.now();
     const sessionStartTime = parseInt(sessionStart, 10);
-    
+
     // If session has expired, create a new one
     if (now - sessionStartTime > SESSION_TIMEOUT) {
       sessionId = null;
     }
   }
-  
+
   // If no session ID or expired, create a new one
   if (!sessionId) {
     sessionId = generateSessionId();
     sessionStorage.setItem(SESSION_ID_KEY, sessionId);
     sessionStorage.setItem(SESSION_START_KEY, Date.now().toString());
   }
-  
+
   return sessionId;
 };
 
@@ -94,7 +97,7 @@ const getUserInfo = () => {
   } catch (error) {
     console.error('Error getting user from localStorage:', error);
   }
-  
+
   return {
     userId: user ? user.id : null,
     isLoggedIn: !!user,
@@ -113,15 +116,15 @@ const getDeviceInfo = () => {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const devicePixelRatio = window.devicePixelRatio || 1;
-  
+
   // Determine device type
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
   const isTablet = /(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(userAgent.toLowerCase());
-  
+
   let deviceType = 'desktop';
   if (isMobile) deviceType = 'mobile';
   if (isTablet) deviceType = 'tablet';
-  
+
   return {
     userAgent,
     screenWidth,
@@ -149,7 +152,7 @@ export const trackEvent = async (eventType, eventData = {}) => {
     const timestamp = new Date().toISOString();
     const url = window.location.href;
     const referrer = document.referrer;
-    
+
     const analyticsData = {
       eventType,
       eventData,
@@ -160,12 +163,19 @@ export const trackEvent = async (eventType, eventData = {}) => {
       ...userInfo,
       ...deviceInfo
     };
-    
-    // In development, log to console
+
+    // Always log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.log('Analytics Event:', analyticsData);
     }
-    
+
+    // In production, we might not have a backend API yet
+    // So we'll just log to console and return a success response
+    if (process.env.NODE_ENV === 'production' && !window.ANALYTICS_API_ENABLED) {
+      console.log('Analytics Event (production):', analyticsData);
+      return { success: true, eventId: Date.now(), simulated: true };
+    }
+
     // Send to API
     const response = await fetch(`${API_URL}/analytics/events`, {
       method: 'POST',
@@ -176,18 +186,18 @@ export const trackEvent = async (eventType, eventData = {}) => {
       // Use keepalive to ensure the request completes even if the page is unloading
       keepalive: true
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to track analytics event');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error tracking analytics event:', error);
-    
+
     // Store failed events in localStorage for retry
     storeFailedEvent(eventType, eventData);
-    
+
     return null;
   }
 };
@@ -200,18 +210,18 @@ export const trackEvent = async (eventType, eventData = {}) => {
 const storeFailedEvent = (eventType, eventData) => {
   try {
     const failedEvents = JSON.parse(localStorage.getItem('failedAnalyticsEvents') || '[]');
-    
+
     failedEvents.push({
       eventType,
       eventData,
       timestamp: new Date().toISOString()
     });
-    
+
     // Limit to 100 events to prevent localStorage overflow
     if (failedEvents.length > 100) {
       failedEvents.shift();
     }
-    
+
     localStorage.setItem('failedAnalyticsEvents', JSON.stringify(failedEvents));
   } catch (error) {
     console.error('Error storing failed analytics event:', error);
@@ -225,22 +235,22 @@ const storeFailedEvent = (eventType, eventData) => {
 export const retryFailedEvents = async () => {
   try {
     const failedEvents = JSON.parse(localStorage.getItem('failedAnalyticsEvents') || '[]');
-    
+
     if (failedEvents.length === 0) {
       return { success: true, retried: 0 };
     }
-    
+
     const results = await Promise.allSettled(
       failedEvents.map(event => trackEvent(event.eventType, event.eventData))
     );
-    
+
     // Filter out successful retries
     const newFailedEvents = failedEvents.filter((_, index) => {
       return results[index].status === 'rejected';
     });
-    
+
     localStorage.setItem('failedAnalyticsEvents', JSON.stringify(newFailedEvents));
-    
+
     return {
       success: true,
       retried: failedEvents.length,
@@ -366,11 +376,11 @@ export const getAnalyticsData = async (timeRange = 'monthly') => {
         'Content-Type': 'application/json'
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch analytics data');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching analytics data:', error);
@@ -386,23 +396,23 @@ export const getAnalyticsData = async (timeRange = 'monthly') => {
 export const getUserBehaviorData = async (filters = {}) => {
   try {
     const queryParams = new URLSearchParams();
-    
+
     // Add filters to query params
     Object.entries(filters).forEach(([key, value]) => {
       queryParams.append(key, value);
     });
-    
+
     const response = await fetch(`${API_URL}/analytics/user-behavior?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch user behavior data');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching user behavior data:', error);
@@ -418,23 +428,23 @@ export const getUserBehaviorData = async (filters = {}) => {
 export const getSalesAnalyticsData = async (filters = {}) => {
   try {
     const queryParams = new URLSearchParams();
-    
+
     // Add filters to query params
     Object.entries(filters).forEach(([key, value]) => {
       queryParams.append(key, value);
     });
-    
+
     const response = await fetch(`${API_URL}/analytics/sales?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch sales analytics data');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching sales analytics data:', error);
@@ -452,23 +462,23 @@ export const exportAnalyticsData = async (reportType, filters = {}) => {
   try {
     const queryParams = new URLSearchParams();
     queryParams.append('reportType', reportType);
-    
+
     // Add filters to query params
     Object.entries(filters).forEach(([key, value]) => {
       queryParams.append(key, value);
     });
-    
+
     const response = await fetch(`${API_URL}/analytics/export?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to export analytics data');
     }
-    
+
     return await response.blob();
   } catch (error) {
     console.error('Error exporting analytics data:', error);
