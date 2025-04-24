@@ -258,28 +258,28 @@ CREATE TABLE IF NOT EXISTS subscription_items (
 -- Product Categories
 ALTER TABLE product_categories ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON product_categories FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access" ON product_categories USING (
+CREATE POLICY "Allow admin full access" ON product_categories FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- Products
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON products FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access" ON products USING (
+CREATE POLICY "Allow admin full access" ON products FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- Product Images
 ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON product_images FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access" ON product_images USING (
+CREATE POLICY "Allow admin full access" ON product_images FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- Product Variants
 ALTER TABLE product_variants ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON product_variants FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access" ON product_variants USING (
+CREATE POLICY "Allow admin full access" ON product_variants FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -292,7 +292,7 @@ CREATE POLICY "Allow users to create their own reviews" ON product_reviews FOR I
 CREATE POLICY "Allow users to update their own reviews" ON product_reviews FOR UPDATE USING (
   auth.uid() IS NOT NULL AND user_id = auth.uid()
 );
-CREATE POLICY "Allow admin full access" ON product_reviews USING (
+CREATE POLICY "Allow admin full access" ON product_reviews FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -304,7 +304,7 @@ CREATE POLICY "Allow users to add images to their own reviews" ON review_images 
     SELECT user_id FROM product_reviews WHERE id = review_id
   ) = auth.uid()
 );
-CREATE POLICY "Allow admin full access" ON review_images USING (
+CREATE POLICY "Allow admin full access" ON review_images FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -319,7 +319,7 @@ CREATE POLICY "Allow users to update their own profile" ON user_profiles FOR UPD
 CREATE POLICY "Allow users to insert their own profile" ON user_profiles FOR INSERT WITH CHECK (
   auth.uid() = user_id
 );
-CREATE POLICY "Allow admin full access" ON user_profiles USING (
+CREATE POLICY "Allow admin full access" ON user_profiles FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -334,7 +334,7 @@ CREATE POLICY "Allow users to update their own addresses" ON addresses FOR UPDAT
 CREATE POLICY "Allow users to insert their own addresses" ON addresses FOR INSERT WITH CHECK (
   auth.uid() = user_id
 );
-CREATE POLICY "Allow admin full access" ON addresses USING (
+CREATE POLICY "Allow admin full access" ON addresses FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -346,7 +346,7 @@ CREATE POLICY "Allow users to view their own orders" ON orders FOR SELECT USING 
 CREATE POLICY "Allow users to insert their own orders" ON orders FOR INSERT WITH CHECK (
   auth.uid() = user_id
 );
-CREATE POLICY "Allow admin full access" ON orders USING (
+CREATE POLICY "Allow admin full access" ON orders FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -362,7 +362,7 @@ CREATE POLICY "Allow users to insert their own order items" ON order_items FOR I
     SELECT user_id FROM orders WHERE id = order_id
   ) = auth.uid()
 );
-CREATE POLICY "Allow admin full access" ON order_items USING (
+CREATE POLICY "Allow admin full access" ON order_items FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -380,14 +380,14 @@ CREATE POLICY "Allow users to insert items to their own wishlist" ON wishlist_it
 CREATE POLICY "Allow users to delete items from their own wishlist" ON wishlist_items FOR DELETE USING (
   auth.uid() = user_id
 );
-CREATE POLICY "Allow admin full access" ON wishlist_items USING (
+CREATE POLICY "Allow admin full access" ON wishlist_items FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- Gift Box Templates
 ALTER TABLE gift_box_templates ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON gift_box_templates FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access" ON gift_box_templates USING (
+CREATE POLICY "Allow admin full access" ON gift_box_templates FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -402,7 +402,7 @@ CREATE POLICY "Allow users to update their own gift boxes" ON gift_boxes FOR UPD
 CREATE POLICY "Allow users to insert their own gift boxes" ON gift_boxes FOR INSERT WITH CHECK (
   auth.uid() = user_id OR (session_id IS NOT NULL AND user_id IS NULL)
 );
-CREATE POLICY "Allow admin full access" ON gift_boxes USING (
+CREATE POLICY "Allow admin full access" ON gift_boxes FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -423,14 +423,14 @@ CREATE POLICY "Allow users to insert their own gift box items" ON gift_box_items
     SELECT user_id FROM gift_boxes WHERE id = gift_box_id
   ) = auth.uid()
 );
-CREATE POLICY "Allow admin full access" ON gift_box_items USING (
+CREATE POLICY "Allow admin full access" ON gift_box_items FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- Subscription Plans
 ALTER TABLE subscription_plans ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON subscription_plans FOR SELECT USING (true);
-CREATE POLICY "Allow admin full access" ON subscription_plans USING (
+CREATE POLICY "Allow admin full access" ON subscription_plans FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -445,7 +445,7 @@ CREATE POLICY "Allow users to update their own subscriptions" ON subscriptions F
 CREATE POLICY "Allow users to insert their own subscriptions" ON subscriptions FOR INSERT WITH CHECK (
   auth.uid() = user_id
 );
-CREATE POLICY "Allow admin full access" ON subscriptions USING (
+CREATE POLICY "Allow admin full access" ON subscriptions FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
@@ -466,7 +466,7 @@ CREATE POLICY "Allow users to insert their own subscription items" ON subscripti
     SELECT user_id FROM subscriptions WHERE id = subscription_id
   ) = auth.uid()
 );
-CREATE POLICY "Allow admin full access" ON subscription_items USING (
+CREATE POLICY "Allow admin full access" ON subscription_items FOR ALL USING (
   (SELECT role FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
