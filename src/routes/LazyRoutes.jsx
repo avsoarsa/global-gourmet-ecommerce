@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { ProductGridSkeleton } from '../components/common/SkeletonLoader';
+import FallbackLoginPage from '../components/auth/FallbackLoginPage';
 
 // Enhanced lazy loading with prefetch and error handling
 const lazyWithPreload = (factory) => {
@@ -28,7 +30,31 @@ const BulkOrdersPage = lazyWithPreload(() => import(/* webpackChunkName: "bulk-o
 
 // User account pages
 const AccountPage = lazyWithPreload(() => import(/* webpackChunkName: "account" */ '../pages/AccountPage'));
-const LoginPage = lazyWithPreload(() => import(/* webpackChunkName: "login" */ '../pages/LoginPage'));
+// Use a more explicit import for LoginPage to avoid issues
+const LoginPage = lazyWithPreload(() =>
+  import(/* webpackChunkName: "login-page" */ '../pages/LoginPage')
+    .then(module => ({ default: module.default }))
+    .catch(error => {
+      console.error('Error loading LoginPage:', error);
+      // Return a fallback component if the import fails
+      return {
+        default: () => (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
+              <h2 className="text-2xl font-bold text-red-600 mb-4">Login Page Error</h2>
+              <p className="text-gray-700 mb-4">We're sorry, but there was an error loading the login page.</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        )
+      };
+    })
+);
 
 // Info pages
 const AboutPage = lazyWithPreload(() => import(/* webpackChunkName: "about" */ '../pages/AboutPage'));
@@ -99,8 +125,29 @@ const SimplePageLoader = () => (
 );
 
 // Error boundary component for lazy-loaded routes
+
 const RouteErrorBoundary = ({ children }) => {
-  return children;
+  const fallbackRender = ({ error }) => {
+    console.error('Route error:', error);
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
+        <p className="text-gray-700 mb-4">We're sorry, but there was an error loading this page.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <ErrorBoundary fallbackRender={fallbackRender}>
+      {children}
+    </ErrorBoundary>
+  );
 };
 
 // Wrapped components with Suspense and appropriate loaders
@@ -192,13 +239,23 @@ export const LazyAccountPage = () => (
   </RouteErrorBoundary>
 );
 
-export const LazyLoginPage = () => (
-  <RouteErrorBoundary>
-    <Suspense fallback={<SimplePageLoader />}>
-      <LoginPage />
-    </Suspense>
-  </RouteErrorBoundary>
-);
+export const LazyLoginPage = () => {
+  // Add additional error handling for the login page
+  const loginErrorFallback = ({ error, resetErrorBoundary }) => {
+    console.error('Login page error:', error);
+    return <FallbackLoginPage onRetry={resetErrorBoundary} />;
+  };
+
+  return (
+    <ErrorBoundary fallbackRender={loginErrorFallback}>
+      <Suspense
+        fallback={<SimplePageLoader />}
+      >
+        <LoginPage />
+      </Suspense>
+    </ErrorBoundary>
+  );
+};
 
 export const LazySearchResultsPage = () => (
   <RouteErrorBoundary>
