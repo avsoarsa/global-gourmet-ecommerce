@@ -18,7 +18,7 @@ import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
 import { useSubscription } from '../context/SubscriptionContext';
-import { products } from '../data/products';
+import { supabase } from '../utils/supabaseClient';
 import { getProductReviews, getProductAverageRating, addReview, markReviewAsHelpful } from '../data/reviews';
 import ProductCard from '../components/common/ProductCard';
 import ReviewList from '../components/reviews/ReviewList';
@@ -57,50 +57,131 @@ const ProductDetailPage = () => {
   const [subscriptionData, setSubscriptionData] = useState(null);
 
   useEffect(() => {
-    // Find the product by ID
-    const foundProduct = products.find(p => p.id === parseInt(productId));
-    if (foundProduct) {
-      setProduct(foundProduct);
+    const fetchProduct = async () => {
+      try {
+        // Fetch product from Supabase
+        const { data: productData, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            product_images (*),
+            product_variants (*),
+            product_categories (*)
+          `)
+          .eq('id', productId)
+          .single();
 
-      // Add to recently viewed products
-      addToRecentlyViewed(foundProduct);
-
-      // Track product view for personalization
-      trackPageView(
-        `/product/${productId}`,
-        'product',
-        {
-          productId: foundProduct.id,
-          category: foundProduct.category,
-          name: foundProduct.name
+        if (error) {
+          console.error('Error fetching product:', error);
+          return;
         }
-      );
 
-      // Find related products (same category, excluding current product)
-      const related = products
-        .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
-        .slice(0, 4);
-      setRelatedProducts(related);
-
-      // Get product reviews
-      const productReviews = getProductReviews(parseInt(productId));
-      setReviews(productReviews);
-
-      // Get average rating
-      const avgRating = getProductAverageRating(parseInt(productId));
-      setAverageRating(avgRating);
-
-      // Set default weight if weight options are available
-      if (foundProduct.weightOptions && foundProduct.weightOptions.length > 0) {
-        const defaultWeight = foundProduct.defaultWeight || foundProduct.weightOptions[0].weight;
-        setSelectedWeight(defaultWeight);
-
-        // Find the selected weight option
-        const weightOption = foundProduct.weightOptions.find(opt => opt.weight === defaultWeight);
-        if (weightOption) {
-          setSelectedWeightOption(weightOption);
+        if (!productData) {
+          console.error('Product not found');
+          return;
         }
+
+        // Transform product data to match the expected format
+        const transformedProduct = {
+          id: productData.id,
+          name: productData.name,
+          slug: productData.slug,
+          description: productData.description || productData.short_description,
+          price: productData.price,
+          originalPrice: productData.compare_at_price,
+          discount: productData.discount_percentage,
+          image: productData.product_images?.find(img => img.is_primary)?.image_url || '/images/placeholder.jpg',
+          category: productData.product_categories?.name || '',
+          rating: productData.rating || 4.5,
+          reviews: productData.review_count || 0,
+          stock: productData.stock_quantity || 10,
+          isBestseller: productData.is_bestseller,
+          isOrganic: productData.is_organic,
+          origin: productData.origin || 'Premium Farms',
+          nutritionalInfo: productData.nutritional_info || 'Rich in essential nutrients and minerals.',
+          weightOptions: productData.product_variants?.map(variant => ({
+            weight: variant.weight || variant.name,
+            price: variant.price,
+            originalPrice: variant.compare_at_price,
+            stock: variant.stock_quantity
+          })) || []
+        };
+
+        setProduct(transformedProduct);
+
+        // Add to recently viewed products
+        addToRecentlyViewed(transformedProduct);
+
+        // Track product view for personalization
+        trackPageView(
+          `/product/${productId}`,
+          'product',
+          {
+            productId: transformedProduct.id,
+            category: transformedProduct.category,
+            name: transformedProduct.name
+          }
+        );
+
+        // Fetch related products (same category, excluding current product)
+        const { data: relatedData, error: relatedError } = await supabase
+          .from('products')
+          .select(`
+            *,
+            product_images (*),
+            product_categories (*)
+          `)
+          .eq('product_categories.id', productData.product_categories?.id)
+          .neq('id', productId)
+          .limit(4);
+
+        if (relatedError) {
+          console.error('Error fetching related products:', relatedError);
+        } else {
+          // Transform related products
+          const transformedRelated = relatedData.map(product => ({
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            price: product.price,
+            compareAtPrice: product.compare_at_price,
+            image: product.product_images?.find(img => img.is_primary)?.image_url || '/images/placeholder.jpg',
+            category: product.product_categories?.name || '',
+            rating: product.rating || 4.5,
+            isBestseller: product.is_bestseller,
+            isOrganic: product.is_organic,
+            description: product.short_description
+          }));
+
+          setRelatedProducts(transformedRelated);
+        }
+
+        // Get product reviews (still using mock data for now)
+        const productReviews = getProductReviews(parseInt(productId));
+        setReviews(productReviews);
+
+        // Get average rating
+        const avgRating = getProductAverageRating(parseInt(productId));
+        setAverageRating(avgRating);
+
+        // Set default weight if weight options are available
+        if (transformedProduct.weightOptions && transformedProduct.weightOptions.length > 0) {
+          const defaultWeight = transformedProduct.defaultWeight || transformedProduct.weightOptions[0].weight;
+          setSelectedWeight(defaultWeight);
+
+          // Find the selected weight option
+          const weightOption = transformedProduct.weightOptions.find(opt => opt.weight === defaultWeight);
+          if (weightOption) {
+            setSelectedWeightOption(weightOption);
+          }
+        }
+      } catch (error) {
+        console.error('Error in fetchProduct:', error);
       }
+    };
+
+    if (productId) {
+      fetchProduct();
     }
 
     // Reset quantity and review form state when product changes
@@ -109,7 +190,7 @@ const ProductDetailPage = () => {
 
     // Scroll to top when product changes
     window.scrollTo(0, 0);
-  }, [productId]);
+  }, [productId, addToRecentlyViewed]);
 
   if (!product) {
     return (
