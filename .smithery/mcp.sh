@@ -11,10 +11,13 @@ if [ ! -f "$CONFIG_FILE" ]; then
   exit 1
 fi
 
-# Configure git credential helper to cache credentials
-git config --global credential.helper cache
-# Cache credentials for 1 hour (3600 seconds)
-git config --global credential.helper 'cache --timeout=3600'
+# Configure git credential helper to store credentials
+git config --global credential.helper store
+
+# Set GitHub token if not already set
+if [ -z "$GITHUB_TOKEN" ]; then
+  export GITHUB_TOKEN="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"
+fi
 
 # Parse config file (simplified version)
 REPO=$(grep -o '"repository": *"[^"]*"' "$CONFIG_FILE" | cut -d'"' -f4)
@@ -44,15 +47,10 @@ commit_changes() {
 
 # Function to push changes
 push_changes() {
-  # Check if GITHUB_TOKEN environment variable is set
-  if [ -n "$GITHUB_TOKEN" ]; then
-    echo "Using GITHUB_TOKEN for authentication"
-    # Use the token for authentication
-    git push https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}.git "$BRANCH"
-  else
-    # Use regular push (will use credential helper if configured)
-    git push origin "$BRANCH"
-  fi
+  echo "Using token authentication for GitHub"
+
+  # Always use the token for authentication
+  git push https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}.git "$BRANCH"
 
   echo "Changes pushed to $REPO:$BRANCH"
   return 0
