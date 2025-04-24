@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
 import { ProductGridSkeleton } from '../components/common/SkeletonLoader';
 import FallbackLoginPage from '../components/auth/FallbackLoginPage';
+import SimpleErrorBoundary from '../components/common/SimpleErrorBoundary';
 
 // Enhanced lazy loading with prefetch and error handling
 const lazyWithPreload = (factory) => {
@@ -127,7 +127,7 @@ const SimplePageLoader = () => (
 // Error boundary component for lazy-loaded routes
 
 const RouteErrorBoundary = ({ children }) => {
-  const fallbackRender = ({ error }) => {
+  const fallbackRender = ({ error, resetErrorBoundary }) => {
     console.error('Route error:', error);
     return (
       <div className="container mx-auto px-4 py-8 text-center">
@@ -144,9 +144,9 @@ const RouteErrorBoundary = ({ children }) => {
   };
 
   return (
-    <ErrorBoundary fallbackRender={fallbackRender}>
+    <SimpleErrorBoundary fallback={fallbackRender}>
       {children}
-    </ErrorBoundary>
+    </SimpleErrorBoundary>
   );
 };
 
@@ -247,13 +247,13 @@ export const LazyLoginPage = () => {
   };
 
   return (
-    <ErrorBoundary fallbackRender={loginErrorFallback}>
+    <SimpleErrorBoundary fallback={loginErrorFallback}>
       <Suspense
         fallback={<SimplePageLoader />}
       >
         <LoginPage />
       </Suspense>
-    </ErrorBoundary>
+    </SimpleErrorBoundary>
   );
 };
 
