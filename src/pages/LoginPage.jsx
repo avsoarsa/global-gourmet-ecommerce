@@ -12,6 +12,7 @@ const LoginPage = () => {
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -19,11 +20,13 @@ const LoginPage = () => {
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setError('');
+    setSuccess('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -46,10 +49,12 @@ const LoginPage = () => {
         const result = await register(email, password, firstName, lastName);
 
         if (result.success) {
-          setIsLogin(true);
-          setError('');
-          alert('Registration successful! Please log in with your credentials.');
+          // Don't automatically switch to login form
+          setSuccess(`Thank you for signing up! We've sent a confirmation email to ${email}. Please check your inbox and click the confirmation link to activate your account.`);
+
           // Clear registration fields
+          setEmail('');
+          setPassword('');
           setFirstName('');
           setLastName('');
           setConfirmPassword('');
@@ -86,6 +91,12 @@ const LoginPage = () => {
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
             <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">{success}</span>
           </div>
         )}
 
