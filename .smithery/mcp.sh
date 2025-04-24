@@ -48,8 +48,15 @@ commit_changes() {
 
 # Function to push changes
 push_changes() {
+  # Check if GitHub CLI is available
+  if command -v gh &> /dev/null; then
+    echo "Using GitHub CLI for authentication"
+    gh auth status &> /dev/null || gh auth login
+    gh repo set-default "$REPO"
+    gh repo sync
+    return 0
   # Check if GITHUB_TOKEN environment variable is set
-  if [ -n "$GITHUB_TOKEN" ]; then
+  elif [ -n "$GITHUB_TOKEN" ]; then
     echo "Using token authentication for GitHub"
     # Use the token for authentication
     git push https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}.git "$BRANCH"
