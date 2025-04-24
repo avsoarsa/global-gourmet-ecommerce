@@ -14,9 +14,10 @@ fi
 # Configure git credential helper to store credentials
 git config --global credential.helper store
 
-# Set GitHub token if not already set
+# Check if GitHub token is set
 if [ -z "$GITHUB_TOKEN" ]; then
-  export GITHUB_TOKEN="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"
+  echo "Note: GITHUB_TOKEN environment variable is not set."
+  echo "You may need to enter your credentials the first time you push."
 fi
 
 # Parse config file (simplified version)
@@ -47,10 +48,16 @@ commit_changes() {
 
 # Function to push changes
 push_changes() {
-  echo "Using token authentication for GitHub"
-
-  # Always use the token for authentication
-  git push https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}.git "$BRANCH"
+  # Check if GITHUB_TOKEN environment variable is set
+  if [ -n "$GITHUB_TOKEN" ]; then
+    echo "Using token authentication for GitHub"
+    # Use the token for authentication
+    git push https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}.git "$BRANCH"
+  else
+    echo "Using git credential helper for authentication"
+    # Use regular push (will use credential helper if configured)
+    git push origin "$BRANCH"
+  fi
 
   echo "Changes pushed to $REPO:$BRANCH"
   return 0

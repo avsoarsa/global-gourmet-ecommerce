@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# Script to automatically set up the provided GitHub Personal Access Token
+# Script to set up GitHub Personal Access Token for authentication
 
-# Your GitHub username and token
-USERNAME="avsoarsa"
-TOKEN="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"
+# Prompt for GitHub username and token
+echo "Please enter your GitHub credentials:"
+read -p "GitHub Username: " USERNAME
+read -sp "GitHub Personal Access Token: " TOKEN
+echo ""
 
 echo "Setting up GitHub Personal Access Token for authentication..."
 
