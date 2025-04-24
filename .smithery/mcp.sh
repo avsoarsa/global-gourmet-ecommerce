@@ -11,6 +11,11 @@ if [ ! -f "$CONFIG_FILE" ]; then
   exit 1
 fi
 
+# Configure git credential helper to cache credentials
+git config --global credential.helper cache
+# Cache credentials for 1 hour (3600 seconds)
+git config --global credential.helper 'cache --timeout=3600'
+
 # Parse config file (simplified version)
 REPO=$(grep -o '"repository": *"[^"]*"' "$CONFIG_FILE" | cut -d'"' -f4)
 BRANCH=$(grep -o '"branch": *"[^"]*"' "$CONFIG_FILE" | cut -d'"' -f4)
@@ -20,28 +25,35 @@ AUTO_PUSH=$(grep -o '"autoPush": *[^,}]*' "$CONFIG_FILE" | cut -d':' -f2 | tr -d
 # Function to commit changes
 commit_changes() {
   local message="$1"
-  
+
   # Check if there are changes to commit
   if [ -z "$(git status --porcelain)" ]; then
     echo "No changes to commit"
     return 0
   fi
-  
+
   # Add all changes
   git add .
-  
+
   # Commit with message
   git commit -m "[MCP] $message"
-  
+
   echo "Changes committed successfully"
   return 0
 }
 
 # Function to push changes
 push_changes() {
-  # Push to remote
-  git push origin "$BRANCH"
-  
+  # Check if GITHUB_TOKEN environment variable is set
+  if [ -n "$GITHUB_TOKEN" ]; then
+    echo "Using GITHUB_TOKEN for authentication"
+    # Use the token for authentication
+    git push https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}.git "$BRANCH"
+  else
+    # Use regular push (will use credential helper if configured)
+    git push origin "$BRANCH"
+  fi
+
   echo "Changes pushed to $REPO:$BRANCH"
   return 0
 }
@@ -50,7 +62,7 @@ push_changes() {
 main() {
   local command="$1"
   shift
-  
+
   case "$command" in
     "commit")
       commit_changes "$1"
