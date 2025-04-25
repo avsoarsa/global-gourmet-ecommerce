@@ -16,9 +16,11 @@ import {
   faMapMarkerAlt,
   faCreditCard
 } from '@fortawesome/free-solid-svg-icons';
+import { getAdminOrderDetails, updateOrderStatus } from '../../services/adminService';
+import { formatDate, formatCurrency } from '../../utils/formatters';
 
-// Sample orders data (in a real app, this would come from an API)
-const sampleOrders = [
+// Fallback sample orders data in case API fails
+const fallbackOrders = [
   {
     id: 1234,
     customer: {
@@ -117,25 +119,87 @@ const OrderDetailPage = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [statusUpdateOpen, setStatusUpdateOpen] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [statusNote, setStatusNote] = useState('');
-  
-  // Fetch order data (simulated)
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Fetch order data from backend
   useEffect(() => {
-    // In a real app, this would be an API call
-    setTimeout(() => {
-      const foundOrder = sampleOrders.find(o => o.id === parseInt(id));
-      
-      if (foundOrder) {
-        setOrder(foundOrder);
-        setNewStatus(foundOrder.status);
+    const fetchOrderDetails = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Get order details from API
+        const { success, data, error: apiError } = await getAdminOrderDetails(id);
+
+        if (!success) {
+          throw new Error(apiError || 'Failed to fetch order details');
+        }
+
+        // Format order for the UI
+        const formattedOrder = {
+          id: data.id,
+          orderNumber: data.orderNumber,
+          customer: {
+            id: data.userId,
+            name: `${data.user.firstName || ''} ${data.user.lastName || ''}`.trim() || 'Unknown User',
+            email: data.user.email || 'No email',
+            phone: data.user.phone || 'No phone'
+          },
+          date: data.createdAt,
+          total: data.totalAmount,
+          subtotal: data.subtotal,
+          tax: data.tax || 0,
+          shipping: data.shippingCost || 0,
+          status: data.status,
+          items: data.items.map(item => ({
+            id: item.id,
+            name: item.productName,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.subtotal
+          })),
+          paymentMethod: data.paymentMethod,
+          paymentDetails: {
+            cardType: data.paymentMethod === 'Credit Card' ? 'Card' : '',
+            lastFour: '',
+            billingAddress: data.billingAddress || {}
+          },
+          shippingMethod: data.shippingMethod,
+          shippingAddress: data.shippingAddress || {},
+          notes: data.notes || '',
+          timeline: data.tracking?.map(event => ({
+            date: event.timestamp,
+            status: event.status,
+            note: event.note
+          })) || [
+            { date: data.createdAt, status: 'pending', note: 'Order placed' }
+          ]
+        };
+
+        setOrder(formattedOrder);
+        setNewStatus(formattedOrder.status);
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+        setError(error.message || 'Failed to load order details');
+
+        // Try to use fallback data in case of error
+        const foundOrder = fallbackOrders.find(o => o.id === parseInt(id));
+        if (foundOrder) {
+          setOrder(foundOrder);
+          setNewStatus(foundOrder.status);
+        }
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-    }, 1000);
+    };
+
+    fetchOrderDetails();
   }, [id]);
-  
+
   // Get status icon
   const getStatusIcon = (status) => {
     switch (status) {
@@ -153,7 +217,7 @@ const OrderDetailPage = () => {
         return <FontAwesomeIcon icon={faBoxOpen} className="text-gray-500" />;
     }
   };
-  
+
   // Get status badge class
   const getStatusBadgeClass = (status) => {
     switch (status) {
@@ -171,52 +235,96 @@ const OrderDetailPage = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
-  
+
   // Format date
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'long', 
+    const options = {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-  
+
   // Handle status update
-  const handleStatusUpdate = () => {
+  const handleStatusUpdate = async () => {
     if (!newStatus) {
       return;
     }
-    
-    // In a real app, this would be an API call
-    const updatedOrder = {
-      ...order,
-      status: newStatus,
-      timeline: [
-        {
-          date: new Date().toISOString(),
-          status: newStatus,
-          note: statusNote || `Status updated to ${newStatus}`
-        },
-        ...order.timeline
-      ]
-    };
-    
-    setOrder(updatedOrder);
-    setStatusUpdateOpen(false);
-    setStatusNote('');
+
+    try {
+      setIsUpdating(true);
+
+      // Update order status via API
+      const { success, data, error: apiError } = await updateOrderStatus(order.id, {
+        status: newStatus,
+        note: statusNote || `Status updated to ${newStatus}`
+      });
+
+      if (!success) {
+        throw new Error(apiError || 'Failed to update order status');
+      }
+
+      // Update local state
+      const updatedOrder = {
+        ...order,
+        status: newStatus,
+        timeline: [
+          {
+            date: new Date().toISOString(),
+            status: newStatus,
+            note: statusNote || `Status updated to ${newStatus}`
+          },
+          ...order.timeline
+        ]
+      };
+
+      setOrder(updatedOrder);
+
+      // Show success message
+      alert('Order status updated successfully');
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert(`Error updating order status: ${error.message}`);
+    } finally {
+      setStatusUpdateOpen(false);
+      setStatusNote('');
+      setIsUpdating(false);
+    }
   };
-  
+
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="flex flex-col items-center">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin text-green-500 text-4xl mb-4" />
+          <p className="text-gray-500">Loading order details...</p>
+        </div>
       </div>
     );
   }
-  
+
+  // Show error state
+  if (error && !order) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md max-w-lg">
+          <h3 className="text-lg font-medium mb-2">Error Loading Order</h3>
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!order) {
     return (
       <div className="text-center py-12">
@@ -233,7 +341,7 @@ const OrderDetailPage = () => {
       </div>
     );
   }
-  
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -252,7 +360,7 @@ const OrderDetailPage = () => {
             <span className="ml-1 capitalize">{order.status}</span>
           </span>
         </div>
-        
+
         <div className="flex space-x-2">
           <button
             onClick={() => setStatusUpdateOpen(true)}
@@ -261,14 +369,14 @@ const OrderDetailPage = () => {
             <FontAwesomeIcon icon={faEdit} className="mr-2" />
             Update Status
           </button>
-          
+
           <button
             className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
             <FontAwesomeIcon icon={faFileInvoice} className="mr-2" />
             Generate Invoice
           </button>
-          
+
           <button
             className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
@@ -277,7 +385,7 @@ const OrderDetailPage = () => {
           </button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Order Details and Items */}
         <div className="lg:col-span-2 space-y-6">
@@ -286,7 +394,7 @@ const OrderDetailPage = () => {
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Order Items</h2>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -312,48 +420,48 @@ const OrderDetailPage = () => {
                         {item.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${item.price.toFixed(2)}
+                        {formatCurrency(item.price)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.quantity}
+                        {formatNumber(item.quantity)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                        ${item.total.toFixed(2)}
+                        {formatCurrency(item.total)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            
+
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
               <div className="flex justify-between text-sm">
                 <span className="font-medium text-gray-500">Subtotal</span>
-                <span className="font-medium text-gray-900">${order.subtotal.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{formatCurrency(order.subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm mt-2">
                 <span className="font-medium text-gray-500">Tax</span>
-                <span className="font-medium text-gray-900">${order.tax.toFixed(2)}</span>
+                <span className="font-medium text-gray-900">{formatCurrency(order.tax)}</span>
               </div>
               <div className="flex justify-between text-sm mt-2">
                 <span className="font-medium text-gray-500">Shipping</span>
                 <span className="font-medium text-gray-900">
-                  {order.shipping === 0 ? 'Free' : `$${order.shipping.toFixed(2)}`}
+                  {order.shipping === 0 ? 'Free' : formatCurrency(order.shipping)}
                 </span>
               </div>
               <div className="flex justify-between mt-4 pt-4 border-t border-gray-200">
                 <span className="text-base font-bold text-gray-900">Total</span>
-                <span className="text-base font-bold text-gray-900">${order.total.toFixed(2)}</span>
+                <span className="text-base font-bold text-gray-900">{formatCurrency(order.total)}</span>
               </div>
             </div>
           </div>
-          
+
           {/* Order Timeline */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Order Timeline</h2>
             </div>
-            
+
             <div className="p-6">
               <div className="flow-root">
                 <ul className="-mb-8">
@@ -389,7 +497,7 @@ const OrderDetailPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Customer and Shipping Info */}
         <div className="space-y-6">
           {/* Customer Information */}
@@ -397,7 +505,7 @@ const OrderDetailPage = () => {
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Customer</h2>
             </div>
-            
+
             <div className="p-6">
               <div className="flex items-center mb-4">
                 <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -408,7 +516,7 @@ const OrderDetailPage = () => {
                   <p className="text-sm text-gray-500">Customer ID: {order.customer.id}</p>
                 </div>
               </div>
-              
+
               <div className="mt-6 grid grid-cols-1 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Email</p>
@@ -420,10 +528,10 @@ const OrderDetailPage = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Order Date</p>
-                  <p className="mt-1 text-sm text-gray-900">{order.date}</p>
+                  <p className="mt-1 text-sm text-gray-900">{formatDate(order.date, { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })}</p>
                 </div>
               </div>
-              
+
               <div className="mt-6">
                 <Link
                   to={`/admin/customers/${order.customer.id}`}
@@ -434,13 +542,13 @@ const OrderDetailPage = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Shipping Information */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Shipping Information</h2>
             </div>
-            
+
             <div className="p-6">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
@@ -455,12 +563,12 @@ const OrderDetailPage = () => {
                   <p className="text-gray-700">{order.shippingAddress.country}</p>
                 </div>
               </div>
-              
+
               <div className="mt-6">
                 <p className="text-sm font-medium text-gray-900">Shipping Method</p>
                 <p className="mt-1 text-sm text-gray-700">{order.shippingMethod}</p>
               </div>
-              
+
               {order.notes && (
                 <div className="mt-6">
                   <p className="text-sm font-medium text-gray-900">Order Notes</p>
@@ -469,13 +577,13 @@ const OrderDetailPage = () => {
               )}
             </div>
           </div>
-          
+
           {/* Payment Information */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Payment Information</h2>
             </div>
-            
+
             <div className="p-6">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
@@ -484,13 +592,13 @@ const OrderDetailPage = () => {
                 <div className="ml-3 text-sm">
                   <p className="font-medium text-gray-900">Payment Method</p>
                   <p className="text-gray-700 mt-1">{order.paymentMethod}</p>
-                  
+
                   {order.paymentMethod === 'Credit Card' && (
                     <p className="text-gray-700 mt-1">
                       {order.paymentDetails.cardType} ending in {order.paymentDetails.lastFour}
                     </p>
                   )}
-                  
+
                   {order.paymentMethod === 'PayPal' && (
                     <p className="text-gray-700 mt-1">
                       PayPal Account: {order.paymentDetails.email}
@@ -498,7 +606,7 @@ const OrderDetailPage = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="mt-6">
                 <p className="text-sm font-medium text-gray-900">Billing Address</p>
                 <p className="mt-1 text-sm text-gray-700">{order.paymentDetails.billingAddress.street}</p>
@@ -511,7 +619,7 @@ const OrderDetailPage = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Status Update Modal */}
       {statusUpdateOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -519,9 +627,9 @@ const OrderDetailPage = () => {
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            
+
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
+
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
@@ -576,13 +684,22 @@ const OrderDetailPage = () => {
                 <button
                   type="button"
                   onClick={handleStatusUpdate}
+                  disabled={isUpdating}
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >
-                  Update
+                  {isUpdating ? (
+                    <>
+                      <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />
+                      Updating...
+                    </>
+                  ) : (
+                    'Update'
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={() => setStatusUpdateOpen(false)}
+                  disabled={isUpdating}
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   Cancel

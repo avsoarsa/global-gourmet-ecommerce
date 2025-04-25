@@ -11,40 +11,49 @@ import {
   faExclamationTriangle,
   faEye,
   faBell,
-  faChartLine
+  faChartLine,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import { useNotifications } from '../../context/NotificationContext';
 import { generateRandomNotification } from '../../utils/notificationGenerator';
 import AnalyticsDashboard from '../../components/admin/analytics/AnalyticsDashboard';
-
-// Sample data (in a real app, this would come from an API)
-const sampleData = {
-  stats: {
-    totalSales: 12580.75,
-    totalOrders: 156,
-    totalCustomers: 89,
-    totalProducts: 42
-  },
-  recentOrders: [
-    { id: 1234, customer: 'John Doe', date: '2023-11-20', total: 125.99, status: 'Delivered' },
-    { id: 1233, customer: 'Jane Smith', date: '2023-11-19', total: 89.50, status: 'Processing' },
-    { id: 1232, customer: 'Bob Johnson', date: '2023-11-19', total: 210.75, status: 'Shipped' },
-    { id: 1231, customer: 'Alice Brown', date: '2023-11-18', total: 45.25, status: 'Delivered' },
-    { id: 1230, customer: 'Charlie Wilson', date: '2023-11-18', total: 178.50, status: 'Pending' }
-  ],
-  lowStockProducts: [
-    { id: 101, name: 'Organic Almonds', stock: 5, threshold: 10 },
-    { id: 203, name: 'Premium Cashews', stock: 3, threshold: 10 },
-    { id: 305, name: 'Saffron Threads', stock: 2, threshold: 5 }
-  ],
-  salesChart: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    data: [1200, 1900, 2100, 1800, 2400, 2800, 2600, 3100, 3400, 3800, 4200, 4500]
-  }
-};
+import adminService from '../../services/adminService';
+import analyticsService from '../../services/analyticsService';
+import { formatDate, formatCurrency, formatNumber } from '../../utils/formatters';
 
 // Stat Card Component
 const StatCard = ({ title, value, icon, change, changeType }) => {
+  // Get icon and color based on change type
+  const getChangeIcon = (type) => {
+    switch (type) {
+      case 'increase':
+        return faArrowUp;
+      case 'decrease':
+        return faArrowDown;
+      case 'warning':
+        return faExclamationTriangle;
+      default:
+        return null;
+    }
+  };
+
+  const getChangeColor = (type) => {
+    switch (type) {
+      case 'increase':
+        return 'text-green-600';
+      case 'decrease':
+        return 'text-red-600';
+      case 'warning':
+        return 'text-orange-600';
+      case 'neutral':
+        return 'text-blue-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  const changeIcon = getChangeIcon(changeType);
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-start">
@@ -54,14 +63,18 @@ const StatCard = ({ title, value, icon, change, changeType }) => {
 
           {change && (
             <div className="mt-2 flex items-center">
-              <span className={`text-sm font-medium ${changeType === 'increase' ? 'text-green-600' : 'text-red-600'}`}>
-                <FontAwesomeIcon
-                  icon={changeType === 'increase' ? faArrowUp : faArrowDown}
-                  className="mr-1"
-                />
+              <span className={`text-sm font-medium ${getChangeColor(changeType)}`}>
+                {changeIcon && (
+                  <FontAwesomeIcon
+                    icon={changeIcon}
+                    className="mr-1"
+                  />
+                )}
                 {change}
               </span>
-              <span className="text-sm text-gray-500 ml-2">vs last month</span>
+              {changeType === 'increase' || changeType === 'decrease' ? (
+                <span className="text-sm text-gray-500 ml-2">vs last month</span>
+              ) : null}
             </div>
           )}
         </div>
@@ -112,38 +125,48 @@ const RecentOrdersTable = ({ orders }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  #{order.id}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {order.customer}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {order.date}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${order.total.toFixed(2)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                    order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                    order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {order.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link to={`/admin/orders/${order.id}`} className="text-green-600 hover:text-green-900">
-                    <FontAwesomeIcon icon={faEye} className="mr-1" />
-                    View
-                  </Link>
+            {orders.length > 0 ? (
+              orders.map((order) => (
+                <tr key={order.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    #{order.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {order.userName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDate(order.date)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatCurrency(order.amount)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                      order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                      order.status === 'pending' ? 'bg-orange-100 text-orange-800' :
+                      order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <Link to={`/admin/orders/${order.id}`} className="text-green-600 hover:text-green-900">
+                      <FontAwesomeIcon icon={faEye} className="mr-1" />
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                  No recent orders found
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -158,7 +181,7 @@ const RecentOrdersTable = ({ orders }) => {
 };
 
 // Low Stock Alert
-const LowStockAlert = ({ products }) => {
+const LowStockAlert = ({ products = [] }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-5 border-b border-gray-200">
@@ -169,8 +192,15 @@ const LowStockAlert = ({ products }) => {
         {products.map((product) => (
           <div key={product.id} className="px-6 py-4 flex items-center">
             <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                <FontAwesomeIcon icon={faExclamationTriangle} className="h-5 w-5 text-red-600" />
+              <div className={`h-10 w-10 rounded-full ${
+                product.stock === 0 ? 'bg-red-100' : 'bg-orange-100'
+              } flex items-center justify-center`}>
+                <FontAwesomeIcon
+                  icon={faExclamationTriangle}
+                  className={`h-5 w-5 ${
+                    product.stock === 0 ? 'text-red-600' : 'text-orange-600'
+                  }`}
+                />
               </div>
             </div>
             <div className="ml-4 flex-1">
@@ -178,7 +208,9 @@ const LowStockAlert = ({ products }) => {
                 <div>
                   <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
                   <p className="text-sm text-gray-500">
-                    Current stock: <span className="font-medium text-red-600">{product.stock}</span> (Threshold: {product.threshold})
+                    Current stock: <span className={`font-medium ${
+                      product.stock === 0 ? 'text-red-600' : 'text-orange-600'
+                    }`}>{product.stock}</span> (Threshold: {product.threshold})
                   </p>
                 </div>
                 <Link to={`/admin/products/${product.id}`} className="text-sm font-medium text-green-600 hover:text-green-500">
@@ -190,7 +222,7 @@ const LowStockAlert = ({ products }) => {
         ))}
       </div>
 
-      {products.length === 0 && (
+      {(!products || products.length === 0) && (
         <div className="px-6 py-4 text-center text-gray-500">
           No low stock products
         </div>
@@ -206,7 +238,10 @@ const LowStockAlert = ({ products }) => {
 };
 
 // Sales Chart (placeholder - in a real app, use a charting library)
-const SalesChart = ({ data }) => {
+const SalesChart = ({ data = { labels: [], data: [] } }) => {
+  // Check if we have data to display
+  const hasData = data.labels && data.labels.length > 0 && data.data && data.data.length > 0;
+
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="px-6 py-5 border-b border-gray-200">
@@ -214,11 +249,39 @@ const SalesChart = ({ data }) => {
       </div>
 
       <div className="p-6">
-        <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-          <p className="text-gray-500">
-            Chart would be displayed here (using a library like Chart.js or Recharts)
-          </p>
-        </div>
+        {hasData ? (
+          <div className="h-64 bg-gray-50 rounded-lg">
+            {/* Simple chart visualization (in a real app, use a proper chart library) */}
+            <div className="h-full flex items-end justify-around p-4">
+              {data.data.map((value, index) => {
+                // Calculate height percentage (max 90%)
+                const maxValue = Math.max(...data.data);
+                const heightPercent = maxValue > 0 ? (value / maxValue) * 90 : 0;
+
+                return (
+                  <div key={index} className="flex flex-col items-center">
+                    <div
+                      className="w-8 bg-green-500 rounded-t"
+                      style={{ height: `${heightPercent}%` }}
+                    ></div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      {data.labels[index]}
+                    </div>
+                    <div className="text-xs font-medium text-gray-700">
+                      {formatCurrency(value)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+            <p className="text-gray-500">
+              No sales data available for the selected period
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -227,6 +290,7 @@ const SalesChart = ({ data }) => {
 const AdminDashboardPage = () => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { addNewNotification } = useNotifications();
 
   // Generate a test notification
@@ -235,19 +299,125 @@ const AdminDashboardPage = () => {
     addNewNotification(notification);
   };
 
-  // Fetch data (simulated)
+  // Fetch dashboard data
   useEffect(() => {
-    // In a real app, this would be an API call
-    setTimeout(() => {
-      setData(sampleData);
-      setIsLoading(false);
-    }, 1000);
+    const fetchDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Get dashboard stats
+        const { success, data: dashboardData, error: dashboardError } = await adminService.getDashboardStats();
+
+        if (!success) {
+          throw new Error(dashboardError || 'Failed to fetch dashboard data');
+        }
+
+        // Get analytics data
+        const { success: analyticsSuccess, data: analyticsData, error: analyticsError } =
+          await analyticsService.getAnalyticsData('monthly');
+
+        if (!analyticsSuccess) {
+          console.warn('Failed to fetch analytics data:', analyticsError);
+          // Continue without analytics data
+        }
+
+        // Format the data
+        setData({
+          stats: {
+            totalSales: dashboardData.totalRevenue,
+            totalOrders: dashboardData.orderCount,
+            totalCustomers: dashboardData.userCount,
+            totalProducts: dashboardData.productCount,
+            completedOrders: dashboardData.completedOrders,
+            pendingOrders: dashboardData.pendingOrders
+          },
+          recentOrders: dashboardData.recentOrders || [],
+          topSellingProducts: dashboardData.topSellingProducts || [],
+          lowStockProducts: [], // We'll fetch this separately
+          salesChart: analyticsSuccess ? {
+            labels: analyticsData.salesByDay.map(day => day.date),
+            data: analyticsData.salesByDay.map(day => day.value)
+          } : {
+            labels: [],
+            data: []
+          }
+        });
+
+        // Get low stock products
+        fetchLowStockProducts();
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setError(error.message || 'Failed to load dashboard data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const fetchLowStockProducts = async () => {
+      try {
+        // Get products with low stock
+        const { success, data: productsData, error: productsError } =
+          await adminService.getAdminProducts({
+            page: 1,
+            pageSize: 10,
+            sortBy: 'stock_quantity',
+            sortDesc: false
+          });
+
+        if (!success) {
+          console.warn('Failed to fetch low stock products:', productsError);
+          return;
+        }
+
+        // Filter products with low stock
+        const lowStockProducts = productsData.products
+          .filter(product => product.stockQuantity < 10)
+          .map(product => ({
+            id: product.id,
+            name: product.name,
+            stock: product.stockQuantity,
+            threshold: 10 // This would ideally come from product settings
+          }))
+          .slice(0, 5); // Limit to 5 products
+
+        // Update data with low stock products
+        setData(prevData => ({
+          ...prevData,
+          lowStockProducts
+        }));
+      } catch (error) {
+        console.warn('Error fetching low stock products:', error);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="flex flex-col items-center">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin text-green-500 text-4xl mb-4" />
+          <p className="text-gray-500">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md max-w-lg">
+          <h3 className="text-lg font-medium mb-2">Error Loading Dashboard</h3>
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -284,29 +454,27 @@ const AdminDashboardPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <StatCard
           title="Total Sales"
-          value={`$${data.stats.totalSales.toLocaleString()}`}
+          value={formatCurrency(data.stats.totalSales)}
           icon={faMoneyBillWave}
-          change="12.5%"
-          changeType="increase"
         />
         <StatCard
           title="Total Orders"
-          value={data.stats.totalOrders}
+          value={formatNumber(data.stats.totalOrders)}
           icon={faShoppingCart}
-          change="8.2%"
-          changeType="increase"
+          change={`${data.stats.pendingOrders} pending`}
+          changeType="neutral"
         />
         <StatCard
           title="Total Customers"
-          value={data.stats.totalCustomers}
+          value={formatNumber(data.stats.totalCustomers)}
           icon={faUsers}
-          change="5.1%"
-          changeType="increase"
         />
         <StatCard
           title="Total Products"
-          value={data.stats.totalProducts}
+          value={formatNumber(data.stats.totalProducts)}
           icon={faBox}
+          change={data.lowStockProducts?.length > 0 ? `${data.lowStockProducts.length} low stock` : null}
+          changeType="warning"
         />
       </div>
 
@@ -320,9 +488,54 @@ const AdminDashboardPage = () => {
         </div>
       </div>
 
-      {/* Recent Orders */}
-      <div className="mt-6">
-        <RecentOrdersTable orders={data.recentOrders} />
+      {/* Recent Orders and Top Products */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div className="lg:col-span-2">
+          <RecentOrdersTable orders={data.recentOrders} />
+        </div>
+        <div>
+          {/* Top Selling Products */}
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Top Selling Products</h3>
+            </div>
+            <div className="divide-y divide-gray-200">
+              {data.topSellingProducts && data.topSellingProducts.length > 0 ? (
+                data.topSellingProducts.map((product, index) => (
+                  <div key={product.id} className="px-6 py-4">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 font-bold">
+                        {index + 1}
+                      </div>
+                      <div className="ml-4 flex-1">
+                        <div className="flex justify-between">
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
+                            <p className="text-sm text-gray-500">
+                              {formatNumber(product.totalQuantity)} sold | {formatCurrency(product.totalRevenue)}
+                            </p>
+                          </div>
+                          <Link to={`/admin/products/${product.id}`} className="text-sm font-medium text-green-600 hover:text-green-500">
+                            View
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="px-6 py-4 text-center text-gray-500">
+                  No sales data available
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200">
+              <Link to="/admin/analytics" className="text-sm font-medium text-green-600 hover:text-green-500">
+                View all analytics
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

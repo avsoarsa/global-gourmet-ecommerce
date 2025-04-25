@@ -9,12 +9,15 @@ import {
   faEnvelope,
   faShoppingBag,
   faUser,
-  faUserPlus
+  faUserPlus,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import ExportButton from '../../components/admin/ExportButton';
+import { getAdminUsers } from '../../services/adminService';
+import { formatDate, formatCurrency } from '../../utils/formatters';
 
-// Sample customers data (in a real app, this would come from an API)
-const sampleCustomers = [
+// Fallback customers data in case API fails
+const fallbackCustomers = [
   {
     id: 101,
     firstName: 'John',
@@ -129,21 +132,86 @@ const CustomersPage = () => {
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCustomers, setTotalCustomers] = useState(0);
 
-  // Fetch customers (simulated)
+  // Fetch customers from backend
   useEffect(() => {
-    // In a real app, this would be an API call
-    setTimeout(() => {
-      setCustomers(sampleCustomers);
-      setFilteredCustomers(sampleCustomers);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    const fetchCustomers = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Map frontend sort fields to backend fields
+        const backendSortBy =
+          sortBy === 'name' ? 'first_name' :
+          sortBy === 'email' ? 'email' :
+          sortBy === 'orders' ? 'total_orders' :
+          sortBy === 'spent' ? 'total_spent' :
+          sortBy === 'date' ? 'created_at' :
+          'first_name';
+
+        // Get users from API
+        const { success, data, error: apiError } = await getAdminUsers({
+          page,
+          pageSize,
+          sortBy: backendSortBy,
+          sortDesc: sortOrder === 'desc',
+          search: searchTerm
+        });
+
+        if (!success) {
+          throw new Error(apiError || 'Failed to fetch customers');
+        }
+
+        // Format customers for the UI
+        const formattedCustomers = data.users.map(user => ({
+          id: user.id,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          address: user.address || {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: ''
+          },
+          registeredDate: user.createdAt,
+          lastLoginDate: user.lastLoginAt,
+          totalOrders: user.totalOrders || 0,
+          totalSpent: user.totalSpent || 0,
+          lastOrderDate: user.lastOrderDate || '',
+          notes: user.notes || ''
+        }));
+
+        setCustomers(formattedCustomers);
+        setFilteredCustomers(formattedCustomers);
+        setTotalPages(data.totalPages);
+        setTotalCustomers(data.total);
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+        setError(error.message || 'Failed to load customers');
+
+        // Use fallback data in case of error
+        setCustomers(fallbackCustomers);
+        setFilteredCustomers(fallbackCustomers);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, [page, pageSize, sortBy, sortOrder, searchTerm]);
 
   // Filter and sort customers
   useEffect(() => {
@@ -200,10 +268,32 @@ const CustomersPage = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="flex flex-col items-center">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin text-green-500 text-4xl mb-4" />
+          <p className="text-gray-500">Loading customers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md max-w-lg">
+          <h3 className="text-lg font-medium mb-2">Error Loading Customers</h3>
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -337,14 +427,14 @@ const CustomersPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {customer.totalOrders} orders
                     <div className="text-xs text-gray-400">
-                      Last order: {customer.lastOrderDate}
+                      {customer.lastOrderDate ? `Last order: ${formatDate(customer.lastOrderDate)}` : 'No orders yet'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${customer.totalSpent.toFixed(2)}
+                    {formatCurrency(customer.totalSpent)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {customer.registeredDate}
+                    {formatDate(customer.registeredDate)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
@@ -373,6 +463,71 @@ const CustomersPage = () => {
             No customers found matching your criteria.
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            Showing <span className="font-medium">{filteredCustomers.length}</span> of <span className="font-medium">{totalCustomers}</span> customers
+          </div>
+          <div className="flex space-x-2">
+            <button
+              className={`px-3 py-1 border rounded-md text-sm font-medium ${
+                page > 1
+                  ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+              disabled={page <= 1}
+            >
+              Previous
+            </button>
+
+            {/* Page numbers */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              // Show pages around current page
+              let pageNum;
+              if (totalPages <= 5) {
+                // If 5 or fewer pages, show all
+                pageNum = i + 1;
+              } else if (page <= 3) {
+                // If near start, show first 5
+                pageNum = i + 1;
+              } else if (page >= totalPages - 2) {
+                // If near end, show last 5
+                pageNum = totalPages - 4 + i;
+              } else {
+                // Otherwise show current page and 2 on each side
+                pageNum = page - 2 + i;
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  className={`px-3 py-1 rounded-md text-sm font-medium ${
+                    pageNum === page
+                      ? 'bg-green-600 text-white hover:bg-green-700'
+                      : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setPage(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+
+            <button
+              className={`px-3 py-1 border rounded-md text-sm font-medium ${
+                page < totalPages
+                  ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={page >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Customer Details Modal */}
@@ -424,16 +579,22 @@ const CustomersPage = () => {
                           <span className="font-medium">Phone:</span> {selectedCustomer.phone}
                         </p>
                         <p className="text-sm text-gray-900">
-                          <span className="font-medium">Registered:</span> {selectedCustomer.registeredDate}
+                          <span className="font-medium">Registered:</span> {formatDate(selectedCustomer.registeredDate)}
                         </p>
                       </div>
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 mb-1">Address</h4>
-                        <p className="text-sm text-gray-900">{selectedCustomer.address.street}</p>
-                        <p className="text-sm text-gray-900">
-                          {selectedCustomer.address.city}, {selectedCustomer.address.state} {selectedCustomer.address.zipCode}
-                        </p>
-                        <p className="text-sm text-gray-900">{selectedCustomer.address.country}</p>
+                        {selectedCustomer.address && selectedCustomer.address.street ? (
+                          <>
+                            <p className="text-sm text-gray-900">{selectedCustomer.address.street}</p>
+                            <p className="text-sm text-gray-900">
+                              {selectedCustomer.address.city}, {selectedCustomer.address.state} {selectedCustomer.address.zipCode}
+                            </p>
+                            <p className="text-sm text-gray-900">{selectedCustomer.address.country}</p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic">No address on file</p>
+                        )}
                       </div>
                     </div>
 
@@ -446,11 +607,13 @@ const CustomersPage = () => {
                         </div>
                         <div className="bg-gray-50 p-4 rounded-md">
                           <div className="text-sm font-medium text-gray-500">Total Spent</div>
-                          <div className="mt-1 text-2xl font-semibold text-gray-900">${selectedCustomer.totalSpent.toFixed(2)}</div>
+                          <div className="mt-1 text-2xl font-semibold text-gray-900">{formatCurrency(selectedCustomer.totalSpent)}</div>
                         </div>
                         <div className="bg-gray-50 p-4 rounded-md">
                           <div className="text-sm font-medium text-gray-500">Last Order</div>
-                          <div className="mt-1 text-2xl font-semibold text-gray-900">{selectedCustomer.lastOrderDate}</div>
+                          <div className="mt-1 text-lg font-semibold text-gray-900">
+                            {selectedCustomer.lastOrderDate ? formatDate(selectedCustomer.lastOrderDate) : 'No orders yet'}
+                          </div>
                         </div>
                       </div>
                     </div>

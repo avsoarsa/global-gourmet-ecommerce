@@ -13,7 +13,7 @@ import { useCart } from '../../context/CartContext';
 import { useLoyalty } from '../../context/LoyaltyContext';
 import { useAuth } from '../../context/AuthContext';
 
-const ConfirmationStep = ({ orderId }) => {
+const ConfirmationStep = ({ orderId, orderNumber }) => {
   const { t } = useTranslation();
   const { cartTotal } = useCart();
   const { currentUser } = useAuth();
@@ -61,7 +61,7 @@ const ConfirmationStep = ({ orderId }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
             <div>
               <p className="text-sm text-gray-500">{t('checkout.orderNumber')}</p>
-              <p className="font-medium text-gray-900">#{orderId}</p>
+              <p className="font-medium text-gray-900">{orderNumber || `#${orderId}`}</p>
             </div>
 
             <div>

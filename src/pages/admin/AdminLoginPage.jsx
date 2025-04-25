@@ -121,9 +121,9 @@ const AdminLoginPage = () => {
 
           <div className="text-sm text-center mt-4">
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
-              <p className="text-blue-800 font-medium mb-1">Test Admin Credentials:</p>
-              <p className="text-blue-700">Email: <span className="font-mono bg-blue-100 px-2 py-1 rounded">admin@example.com</span></p>
-              <p className="text-blue-700">Password: <span className="font-mono bg-blue-100 px-2 py-1 rounded">admin123</span></p>
+              <p className="text-blue-800 font-medium mb-1">Admin Access Information:</p>
+              <p className="text-blue-700 mb-2">Only users with admin privileges can access the admin dashboard.</p>
+              <p className="text-blue-700 text-xs">If you need admin access, please contact the site administrator.</p>
             </div>
             <Link to="/" className="text-sm text-green-600 hover:text-green-500">
               Return to store

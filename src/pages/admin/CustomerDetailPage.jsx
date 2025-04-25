@@ -13,11 +13,14 @@ import {
   faEdit,
   faTrash,
   faPlus,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons';
+import { getUserDetails, updateUserProfile } from '../../services/adminService';
+import { formatDate, formatCurrency } from '../../utils/formatters';
 
-// Sample customers data (in a real app, this would come from an API)
-const sampleCustomers = [
+// Fallback customers data in case API fails
+const fallbackCustomers = [
   {
     id: 101,
     firstName: 'John',
@@ -102,7 +105,9 @@ const CustomerDetailPage = () => {
   const { id } = useParams();
   const [customer, setCustomer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [editData, setEditData] = useState({
     firstName: '',
     lastName: '',
@@ -110,44 +115,110 @@ const CustomerDetailPage = () => {
     phone: '',
     notes: ''
   });
-  
-  // Fetch customer data (simulated)
+
+  // Fetch customer data from backend
   useEffect(() => {
-    // In a real app, this would be an API call
-    setTimeout(() => {
-      const foundCustomer = sampleCustomers.find(c => c.id === parseInt(id));
-      
-      if (foundCustomer) {
-        setCustomer(foundCustomer);
+    const fetchCustomerDetails = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Get user details from API
+        const { success, data, error: apiError } = await getUserDetails(id);
+
+        if (!success) {
+          throw new Error(apiError || 'Failed to fetch customer details');
+        }
+
+        // Format customer for the UI
+        const formattedCustomer = {
+          id: data.id,
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          addresses: data.addresses || [],
+          registeredDate: data.createdAt,
+          lastLoginDate: data.lastLoginAt,
+          totalOrders: data.totalOrders || 0,
+          totalSpent: data.totalSpent || 0,
+          recentOrders: data.recentOrders || [],
+          notes: data.notes || ''
+        };
+
+        setCustomer(formattedCustomer);
         setEditData({
-          firstName: foundCustomer.firstName,
-          lastName: foundCustomer.lastName,
-          email: foundCustomer.email,
-          phone: foundCustomer.phone,
-          notes: foundCustomer.notes
+          firstName: formattedCustomer.firstName,
+          lastName: formattedCustomer.lastName,
+          email: formattedCustomer.email,
+          phone: formattedCustomer.phone,
+          notes: formattedCustomer.notes
         });
+      } catch (error) {
+        console.error('Error fetching customer details:', error);
+        setError(error.message || 'Failed to load customer details');
+
+        // Try to use fallback data in case of error
+        const foundCustomer = fallbackCustomers.find(c => c.id === parseInt(id));
+        if (foundCustomer) {
+          setCustomer(foundCustomer);
+          setEditData({
+            firstName: foundCustomer.firstName,
+            lastName: foundCustomer.lastName,
+            email: foundCustomer.email,
+            phone: foundCustomer.phone,
+            notes: foundCustomer.notes
+          });
+        }
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-    }, 1000);
-  }, [id]);
-  
-  // Handle edit customer
-  const handleEditCustomer = () => {
-    // In a real app, this would be an API call
-    const updatedCustomer = {
-      ...customer,
-      firstName: editData.firstName,
-      lastName: editData.lastName,
-      email: editData.email,
-      phone: editData.phone,
-      notes: editData.notes
     };
-    
-    setCustomer(updatedCustomer);
-    setShowEditModal(false);
+
+    fetchCustomerDetails();
+  }, [id]);
+
+  // Handle edit customer
+  const handleEditCustomer = async () => {
+    try {
+      setIsUpdating(true);
+
+      // Update user profile via API
+      const { success, data, error: apiError } = await updateUserProfile(customer.id, {
+        firstName: editData.firstName,
+        lastName: editData.lastName,
+        email: editData.email,
+        phone: editData.phone,
+        notes: editData.notes
+      });
+
+      if (!success) {
+        throw new Error(apiError || 'Failed to update customer profile');
+      }
+
+      // Update local state
+      const updatedCustomer = {
+        ...customer,
+        firstName: editData.firstName,
+        lastName: editData.lastName,
+        email: editData.email,
+        phone: editData.phone,
+        notes: editData.notes
+      };
+
+      setCustomer(updatedCustomer);
+
+      // Show success message
+      alert('Customer profile updated successfully');
+    } catch (error) {
+      console.error('Error updating customer profile:', error);
+      alert(`Error updating customer profile: ${error.message}`);
+    } finally {
+      setShowEditModal(false);
+      setIsUpdating(false);
+    }
   };
-  
+
   // Get status badge class
   const getStatusBadgeClass = (status) => {
     switch (status) {
@@ -165,15 +236,37 @@ const CustomerDetailPage = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
-  
+
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="flex flex-col items-center">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin text-green-500 text-4xl mb-4" />
+          <p className="text-gray-500">Loading customer details...</p>
+        </div>
       </div>
     );
   }
-  
+
+  // Show error state
+  if (error && !customer) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md max-w-lg">
+          <h3 className="text-lg font-medium mb-2">Error Loading Customer</h3>
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!customer) {
     return (
       <div className="text-center py-12">
@@ -190,7 +283,7 @@ const CustomerDetailPage = () => {
       </div>
     );
   }
-  
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -205,7 +298,7 @@ const CustomerDetailPage = () => {
             {customer.firstName} {customer.lastName}
           </h1>
         </div>
-        
+
         <div className="flex space-x-2">
           <button
             onClick={() => setShowEditModal(true)}
@@ -214,7 +307,7 @@ const CustomerDetailPage = () => {
             <FontAwesomeIcon icon={faEdit} className="mr-2" />
             Edit Customer
           </button>
-          
+
           <button
             className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
@@ -223,7 +316,7 @@ const CustomerDetailPage = () => {
           </button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Customer Information */}
         <div className="lg:col-span-1 space-y-6">
@@ -232,7 +325,7 @@ const CustomerDetailPage = () => {
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Customer Information</h2>
             </div>
-            
+
             <div className="p-6">
               <div className="flex items-center mb-6">
                 <div className="flex-shrink-0 h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center">
@@ -245,7 +338,7 @@ const CustomerDetailPage = () => {
                   <p className="text-sm text-gray-500">Customer ID: {customer.id}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
@@ -256,7 +349,7 @@ const CustomerDetailPage = () => {
                     <p className="text-gray-700">{customer.email}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     <FontAwesomeIcon icon={faPhone} className="text-gray-400 h-5 w-5" />
@@ -266,36 +359,36 @@ const CustomerDetailPage = () => {
                     <p className="text-gray-700">{customer.phone}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     <FontAwesomeIcon icon={faCalendarAlt} className="text-gray-400 h-5 w-5" />
                   </div>
                   <div className="ml-3 text-sm">
                     <p className="font-medium text-gray-900">Registered</p>
-                    <p className="text-gray-700">{customer.registeredDate}</p>
+                    <p className="text-gray-700">{formatDate(customer.registeredDate)}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     <FontAwesomeIcon icon={faCalendarAlt} className="text-gray-400 h-5 w-5" />
                   </div>
                   <div className="ml-3 text-sm">
                     <p className="font-medium text-gray-900">Last Login</p>
-                    <p className="text-gray-700">{customer.lastLoginDate}</p>
+                    <p className="text-gray-700">{customer.lastLoginDate ? formatDate(customer.lastLoginDate) : 'Never'}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          
+
           {/* Customer Stats */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Customer Stats</h2>
             </div>
-            
+
             <div className="p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-md">
@@ -305,24 +398,24 @@ const CustomerDetailPage = () => {
                   </div>
                   <p className="mt-2 text-2xl font-semibold text-gray-900">{customer.totalOrders}</p>
                 </div>
-                
+
                 <div className="bg-gray-50 p-4 rounded-md">
                   <div className="flex items-center">
                     <FontAwesomeIcon icon={faMoneyBillWave} className="text-gray-400 h-5 w-5" />
                     <p className="ml-2 text-sm font-medium text-gray-500">Total Spent</p>
                   </div>
-                  <p className="mt-2 text-2xl font-semibold text-gray-900">${customer.totalSpent.toFixed(2)}</p>
+                  <p className="mt-2 text-2xl font-semibold text-gray-900">{formatCurrency(customer.totalSpent)}</p>
                 </div>
               </div>
             </div>
           </div>
-          
+
           {/* Customer Notes */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Notes</h2>
             </div>
-            
+
             <div className="p-6">
               {customer.notes ? (
                 <p className="text-sm text-gray-700">{customer.notes}</p>
@@ -332,7 +425,7 @@ const CustomerDetailPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Addresses and Orders */}
         <div className="lg:col-span-2 space-y-6">
           {/* Addresses */}
@@ -344,7 +437,7 @@ const CustomerDetailPage = () => {
                 Add Address
               </button>
             </div>
-            
+
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {customer.addresses.map((address) => (
@@ -369,7 +462,7 @@ const CustomerDetailPage = () => {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start mt-3">
                       <FontAwesomeIcon icon={faMapMarkerAlt} className="text-gray-400 h-5 w-5 mt-0.5" />
                       <div className="ml-3 text-sm">
@@ -385,7 +478,7 @@ const CustomerDetailPage = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Recent Orders */}
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -397,7 +490,7 @@ const CustomerDetailPage = () => {
                 View All Orders
               </Link>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -426,10 +519,10 @@ const CustomerDetailPage = () => {
                         #{order.id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {order.date}
+                        {formatDate(order.date)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${order.total.toFixed(2)}
+                        {formatCurrency(order.total)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(order.status)}`}>
@@ -452,7 +545,7 @@ const CustomerDetailPage = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Edit Customer Modal */}
       {showEditModal && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
@@ -460,9 +553,9 @@ const CustomerDetailPage = () => {
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            
+
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
+
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
@@ -502,7 +595,7 @@ const CustomerDetailPage = () => {
                           />
                         </div>
                       </div>
-                      
+
                       <div className="mb-4">
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                           Email
@@ -516,7 +609,7 @@ const CustomerDetailPage = () => {
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                         />
                       </div>
-                      
+
                       <div className="mb-4">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                           Phone
@@ -530,7 +623,7 @@ const CustomerDetailPage = () => {
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                         />
                       </div>
-                      
+
                       <div>
                         <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
                           Notes
@@ -552,13 +645,22 @@ const CustomerDetailPage = () => {
                 <button
                   type="button"
                   onClick={handleEditCustomer}
+                  disabled={isUpdating}
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >
-                  Save Changes
+                  {isUpdating ? (
+                    <>
+                      <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
+                  disabled={isUpdating}
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   Cancel

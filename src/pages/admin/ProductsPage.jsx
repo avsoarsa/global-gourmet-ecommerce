@@ -14,14 +14,16 @@ import {
   faTag,
   faBoxOpen,
   faFileImport,
-  faFileExport
+  faFileExport,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationDialog from '../../components/common/ConfirmationDialog';
-import { products as productsData } from '../../data/products';
 import ExportButton from '../../components/admin/ExportButton';
 import BulkActionBar from '../../components/admin/BulkActionBar';
 import BulkEditModal from '../../components/admin/BulkEditModal';
 import BatchImportExport from '../../components/admin/BatchImportExport';
+import adminService from '../../services/adminService';
+import { formatCurrency, formatNumber } from '../../utils/formatters';
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -39,18 +41,70 @@ const ProductsPage = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [showBulkEditModal, setShowBulkEditModal] = useState(false);
 
-  // Get unique categories
-  const categories = ['all', ...new Set(productsData.map(product => product.category))];
+  // State for categories and error handling
+  const [categories, setCategories] = useState(['all']);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
 
-  // Fetch products (simulated)
+  // Fetch products from backend
   useEffect(() => {
-    // In a real app, this would be an API call
-    setTimeout(() => {
-      setProducts(productsData);
-      setFilteredProducts(productsData);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Get products from API
+        const { success, data, error: productsError } = await adminService.getAdminProducts({
+          page,
+          pageSize,
+          sortBy: sortBy === 'name' ? 'name' :
+                 sortBy === 'price' ? 'price' :
+                 sortBy === 'stock' ? 'stock_quantity' : 'created_at',
+          sortDesc: sortOrder === 'desc',
+          search: searchTerm,
+          category: selectedCategory === 'all' ? '' : selectedCategory
+        });
+
+        if (!success) {
+          throw new Error(productsError || 'Failed to fetch products');
+        }
+
+        // Format products
+        const formattedProducts = data.products.map(product => ({
+          id: product.id,
+          name: product.name,
+          description: product.description || '',
+          price: product.price,
+          salePrice: product.salePrice,
+          stock: product.stockQuantity,
+          category: product.categories && product.categories.length > 0 ?
+                   product.categories[0].name : 'Uncategorized',
+          image: product.primaryImage || '/images/placeholder.png',
+          featured: product.isFeatured,
+          active: product.isActive
+        }));
+
+        setProducts(formattedProducts);
+        setFilteredProducts(formattedProducts);
+        setTotalPages(data.totalPages);
+        setTotalProducts(data.total);
+
+        // Extract unique categories
+        const productCategories = new Set(formattedProducts.map(product => product.category));
+        setCategories(['all', ...productCategories]);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setError(error.message || 'Failed to load products');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [page, pageSize, sortBy, sortOrder, searchTerm, selectedCategory]);
 
   // Filter and sort products
   useEffect(() => {
@@ -99,12 +153,33 @@ const ProductsPage = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    // In a real app, this would be an API call
-    const updatedProducts = products.filter(p => p.id !== productToDelete.id);
-    setProducts(updatedProducts);
-    setShowDeleteModal(false);
-    setProductToDelete(null);
+  const confirmDelete = async () => {
+    try {
+      setIsLoading(true);
+
+      // Delete product via API
+      const { success, error: deleteError } = await adminService.deleteProduct(productToDelete.id);
+
+      if (!success) {
+        throw new Error(deleteError || 'Failed to delete product');
+      }
+
+      // Update local state
+      const updatedProducts = products.filter(p => p.id !== productToDelete.id);
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+
+      // Show success message
+      // In a real app, you would use a notification system
+      alert(`Product "${productToDelete.name}" deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert(`Error deleting product: ${error.message}`);
+    } finally {
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+      setIsLoading(false);
+    }
   };
 
   // Toggle sort order
@@ -146,11 +221,36 @@ const ProductsPage = () => {
   };
 
   // Handle bulk delete
-  const handleBulkDelete = (selectedIds) => {
-    // In a real app, this would be an API call
-    const updatedProducts = products.filter(product => !selectedIds.includes(product.id));
-    setProducts(updatedProducts);
-    clearSelection();
+  const handleBulkDelete = async (selectedIds) => {
+    try {
+      setIsLoading(true);
+
+      // Delete products one by one
+      const deletePromises = selectedIds.map(id => adminService.deleteProduct(id));
+      const results = await Promise.allSettled(deletePromises);
+
+      // Check for failures
+      const failures = results.filter(result => result.status === 'rejected' || !result.value.success);
+
+      if (failures.length > 0) {
+        console.error('Some products could not be deleted:', failures);
+        alert(`${failures.length} products could not be deleted. See console for details.`);
+      }
+
+      // Update local state
+      const updatedProducts = products.filter(product => !selectedIds.includes(product.id));
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+
+      // Show success message
+      alert(`${selectedIds.length - failures.length} products deleted successfully`);
+    } catch (error) {
+      console.error('Error in bulk delete:', error);
+      alert(`Error deleting products: ${error.message}`);
+    } finally {
+      clearSelection();
+      setIsLoading(false);
+    }
   };
 
   // Handle bulk edit
@@ -159,18 +259,98 @@ const ProductsPage = () => {
   };
 
   // Save bulk edit changes
-  const saveBulkEdit = (selectedIds, updateData) => {
-    // In a real app, this would be an API call
-    const updatedProducts = products.map(product => {
-      if (selectedIds.includes(product.id)) {
-        return { ...product, ...updateData };
-      }
-      return product;
-    });
+  const saveBulkEdit = async (selectedIds, updateData) => {
+    try {
+      setIsLoading(true);
 
-    setProducts(updatedProducts);
-    setShowBulkEditModal(false);
-    clearSelection();
+      // Update products one by one
+      const updatePromises = selectedIds.map(async (id) => {
+        // First get the current product data
+        const { success: getSuccess, data: productData, error: getError } =
+          await adminService.getAdminProduct(id);
+
+        if (!getSuccess) {
+          throw new Error(getError || `Failed to get product ${id}`);
+        }
+
+        // Prepare update data
+        const productUpdateData = { ...productData };
+
+        // Apply updates
+        if (updateData.category) {
+          // Find category ID for the category name
+          // This is a simplification - in a real app, you would have a proper category mapping
+          productUpdateData.categories = [updateData.category];
+        }
+
+        if (updateData.price !== undefined) {
+          productUpdateData.price = updateData.price;
+        }
+
+        if (updateData.stock !== undefined) {
+          productUpdateData.stockQuantity = updateData.stock;
+        }
+
+        if (updateData.featured !== undefined) {
+          productUpdateData.isFeatured = updateData.featured;
+        }
+
+        // Update the product
+        return adminService.updateProduct(id, productUpdateData);
+      });
+
+      const results = await Promise.allSettled(updatePromises);
+
+      // Check for failures
+      const failures = results.filter(result => result.status === 'rejected' || !result.value.success);
+
+      if (failures.length > 0) {
+        console.error('Some products could not be updated:', failures);
+        alert(`${failures.length} products could not be updated. See console for details.`);
+      }
+
+      // Refresh product list
+      const { success, data } = await adminService.getAdminProducts({
+        page,
+        pageSize,
+        sortBy: sortBy === 'name' ? 'name' :
+               sortBy === 'price' ? 'price' :
+               sortBy === 'stock' ? 'stock_quantity' : 'created_at',
+        sortDesc: sortOrder === 'desc',
+        search: searchTerm,
+        category: selectedCategory === 'all' ? '' : selectedCategory
+      });
+
+      if (success) {
+        // Format products
+        const formattedProducts = data.products.map(product => ({
+          id: product.id,
+          name: product.name,
+          description: product.description || '',
+          price: product.price,
+          salePrice: product.salePrice,
+          stock: product.stockQuantity,
+          category: product.categories && product.categories.length > 0 ?
+                   product.categories[0].name : 'Uncategorized',
+          image: product.primaryImage || '/images/placeholder.png',
+          featured: product.isFeatured,
+          active: product.isActive
+        }));
+
+        setProducts(formattedProducts);
+        setFilteredProducts(formattedProducts);
+      }
+
+      // Show success message
+      alert(`${selectedIds.length - failures.length} products updated successfully`);
+    } catch (error) {
+      console.error('Error in bulk edit:', error);
+      alert(`Error updating products: ${error.message}`);
+    } finally {
+      setShowBulkEditModal(false);
+      clearSelection();
+      setIsLoading(false);
+    }
   };
 
   // Handle batch import
@@ -188,10 +368,32 @@ const ProductsPage = () => {
     setProducts([...products, ...newProducts]);
   };
 
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="flex flex-col items-center">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin text-green-500 text-4xl mb-4" />
+          <p className="text-gray-500">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md max-w-lg">
+          <h3 className="text-lg font-medium mb-2">Error Loading Products</h3>
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -399,10 +601,10 @@ const ProductsPage = () => {
                     {product.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${product.price.toFixed(2)}
+                    {formatCurrency(product.price)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.stock || 0}
+                    {formatNumber(product.stock || 0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -443,6 +645,71 @@ const ProductsPage = () => {
             No products found matching your criteria.
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            Showing <span className="font-medium">{filteredProducts.length}</span> of <span className="font-medium">{totalProducts}</span> products
+          </div>
+          <div className="flex space-x-2">
+            <button
+              className={`px-3 py-1 border rounded-md text-sm font-medium ${
+                page > 1
+                  ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+              disabled={page <= 1}
+            >
+              Previous
+            </button>
+
+            {/* Page numbers */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              // Show pages around current page
+              let pageNum;
+              if (totalPages <= 5) {
+                // If 5 or fewer pages, show all
+                pageNum = i + 1;
+              } else if (page <= 3) {
+                // If near start, show first 5
+                pageNum = i + 1;
+              } else if (page >= totalPages - 2) {
+                // If near end, show last 5
+                pageNum = totalPages - 4 + i;
+              } else {
+                // Otherwise show current page and 2 on each side
+                pageNum = page - 2 + i;
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  className={`px-3 py-1 rounded-md text-sm font-medium ${
+                    pageNum === page
+                      ? 'bg-green-600 text-white hover:bg-green-700'
+                      : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setPage(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+
+            <button
+              className={`px-3 py-1 border rounded-md text-sm font-medium ${
+                page < totalPages
+                  ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={page >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

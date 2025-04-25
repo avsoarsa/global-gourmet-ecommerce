@@ -15,9 +15,11 @@ import {
   faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 import ExportButton from '../../components/admin/ExportButton';
+import { getAdminOrders } from '../../services/adminService';
+import { formatDate, formatCurrency } from '../../utils/formatters';
 
-// Sample orders data (in a real app, this would come from an API)
-const sampleOrders = [
+// Fallback sample orders data in case API fails
+const fallbackOrders = [
   {
     id: 1234,
     customer: {
@@ -126,12 +128,17 @@ const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('date');
+  const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
 
   // Status options
   const statusOptions = [
@@ -143,15 +150,69 @@ const OrdersPage = () => {
     { value: 'cancelled', label: 'Cancelled' }
   ];
 
-  // Fetch orders (simulated)
+  // Fetch orders from backend
   useEffect(() => {
-    // In a real app, this would be an API call
-    setTimeout(() => {
-      setOrders(sampleOrders);
-      setFilteredOrders(sampleOrders);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    const fetchOrders = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Map frontend sort fields to backend fields
+        const backendSortBy =
+          sortBy === 'date' ? 'created_at' :
+          sortBy === 'id' ? 'order_number' :
+          sortBy === 'customer' ? 'user_profiles.first_name' :
+          sortBy === 'total' ? 'total_amount' :
+          'created_at';
+
+        // Get orders from API
+        const { success, data, error: apiError } = await getAdminOrders({
+          page,
+          pageSize,
+          sortBy: backendSortBy,
+          sortDesc: sortOrder === 'desc',
+          status: statusFilter === 'all' ? '' : statusFilter,
+          search: searchTerm
+        });
+
+        if (!success) {
+          throw new Error(apiError || 'Failed to fetch orders');
+        }
+
+        // Format orders for the UI
+        const formattedOrders = data.orders.map(order => ({
+          id: order.id,
+          orderNumber: order.orderNumber,
+          customer: {
+            id: order.userId,
+            name: order.userName || 'Unknown User',
+            email: order.userEmail || 'No email'
+          },
+          date: order.createdAt,
+          total: order.totalAmount,
+          status: order.status,
+          paymentMethod: order.paymentMethod,
+          shippingMethod: order.shippingMethod
+        }));
+
+        setOrders(formattedOrders);
+        setFilteredOrders(formattedOrders);
+        setTotalPages(data.totalPages);
+        setTotalOrders(data.total);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        setError(error.message || 'Failed to load orders');
+
+        // Use fallback data in case of error
+        setOrders(fallbackOrders);
+        setFilteredOrders(fallbackOrders);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [page, pageSize, sortBy, sortOrder, statusFilter, searchTerm]);
 
   // Filter and sort orders
   useEffect(() => {
@@ -245,10 +306,32 @@ const OrdersPage = () => {
     }
   };
 
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="flex flex-col items-center">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin text-green-500 text-4xl mb-4" />
+          <p className="text-gray-500">Loading orders...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md max-w-lg">
+          <h3 className="text-lg font-medium mb-2">Error Loading Orders</h3>
+          <p>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -379,10 +462,10 @@ const OrdersPage = () => {
                     <div className="text-sm text-gray-500">{order.customer.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {order.date}
+                    {formatDate(order.date)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${order.total.toFixed(2)}
+                    {formatCurrency(order.total)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(order.status)}`}>
@@ -416,6 +499,71 @@ const OrdersPage = () => {
             No orders found matching your criteria.
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            Showing <span className="font-medium">{filteredOrders.length}</span> of <span className="font-medium">{totalOrders}</span> orders
+          </div>
+          <div className="flex space-x-2">
+            <button
+              className={`px-3 py-1 border rounded-md text-sm font-medium ${
+                page > 1
+                  ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+              disabled={page <= 1}
+            >
+              Previous
+            </button>
+
+            {/* Page numbers */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              // Show pages around current page
+              let pageNum;
+              if (totalPages <= 5) {
+                // If 5 or fewer pages, show all
+                pageNum = i + 1;
+              } else if (page <= 3) {
+                // If near start, show first 5
+                pageNum = i + 1;
+              } else if (page >= totalPages - 2) {
+                // If near end, show last 5
+                pageNum = totalPages - 4 + i;
+              } else {
+                // Otherwise show current page and 2 on each side
+                pageNum = page - 2 + i;
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  className={`px-3 py-1 rounded-md text-sm font-medium ${
+                    pageNum === page
+                      ? 'bg-green-600 text-white hover:bg-green-700'
+                      : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setPage(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+
+            <button
+              className={`px-3 py-1 border rounded-md text-sm font-medium ${
+                page < totalPages
+                  ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={page >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Order Details Modal */}

@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShippingFast, faCreditCard, faClipboardCheck, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faShippingFast, faCreditCard, faClipboardCheck, faCheckCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
 import { useLoyalty } from '../context/LoyaltyContext';
+import { createOrder } from '../services/checkoutService';
+import { processPayment } from '../services/paymentService';
+import { getShippingMethods } from '../services/checkoutService';
 import CheckoutStepper from '../components/checkout/CheckoutStepper';
 import AddressForm from '../components/checkout/AddressForm';
 import ShippingStep from '../components/checkout/ShippingStep';
@@ -35,10 +38,15 @@ const CheckoutPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState(null);
+  const [orderNumber, setOrderNumber] = useState(null);
   const [shippingAddress, setShippingAddress] = useState({});
   const [shippingAddressValid, setShippingAddressValid] = useState(false);
+  const [shippingMethod, setShippingMethod] = useState(null);
+  const [availableShippingMethods, setAvailableShippingMethods] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState(null);
+  const [paymentDetails, setPaymentDetails] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
+  const [apiError, setApiError] = useState(null);
 
   // Redirect to cart if cart is empty
   useEffect(() => {
@@ -53,6 +61,36 @@ const CheckoutPage = () => {
       navigate('/login', { state: { from: '/checkout' } });
     }
   }, [currentUser, navigate, orderComplete]);
+
+  // Fetch shipping methods when address is valid
+  useEffect(() => {
+    const fetchShippingMethods = async () => {
+      if (shippingAddressValid) {
+        try {
+          const { success, data, error } = await getShippingMethods({
+            address: shippingAddress,
+            cartTotal: cartTotal
+          });
+
+          if (success && data) {
+            setAvailableShippingMethods(data);
+            // Set default shipping method if none selected
+            if (!shippingMethod && data.length > 0) {
+              setShippingMethod(data[0].id);
+            }
+          } else if (error) {
+            console.error('Error fetching shipping methods:', error);
+            setApiError(`Failed to load shipping options: ${error}`);
+          }
+        } catch (error) {
+          console.error('Error fetching shipping methods:', error);
+          setApiError('Failed to load shipping options. Please try again.');
+        }
+      }
+    };
+
+    fetchShippingMethods();
+  }, [shippingAddressValid, shippingAddress, cartTotal, shippingMethod]);
 
   // Handle address change
   const handleAddressChange = (address) => {
@@ -120,34 +158,56 @@ const CheckoutPage = () => {
   // Handle order placement
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
+    setApiError(null);
+    setValidationErrors({});
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Validate required fields
+      if (!shippingMethod) {
+        setValidationErrors({
+          shipping: 'Please select a shipping method'
+        });
+        return;
+      }
 
-      // Generate random order ID
-      const newOrderId = Math.floor(100000 + Math.random() * 900000);
-      setOrderId(newOrderId);
+      if (!paymentMethod) {
+        setValidationErrors({
+          payment: 'Please select a payment method'
+        });
+        return;
+      }
 
-      // Save order data to localStorage for persistence
-      const orderData = {
-        id: newOrderId,
-        date: new Date().toISOString(),
-        items: cartItems,
-        total: cartTotal,
+      // Create order in the backend
+      const { success: orderSuccess, data: orderData, error: orderError } = await createOrder({
         shippingAddress,
         paymentMethod,
-        status: 'Processing'
-      };
+        shippingMethod,
+        paymentDetails,
+        notes: ''
+      });
 
-      // Get existing orders or initialize empty array
-      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-      existingOrders.push(orderData);
-      localStorage.setItem('orders', JSON.stringify(existingOrders));
+      if (!orderSuccess) {
+        throw new Error(orderError || 'Failed to create order');
+      }
+
+      // Process payment
+      const { success: paymentSuccess, data: paymentData, error: paymentError } = await processPayment({
+        orderId: orderData.id,
+        paymentMethod,
+        paymentDetails
+      });
+
+      if (!paymentSuccess) {
+        throw new Error(paymentError || 'Failed to process payment');
+      }
+
+      // Set order details for confirmation
+      setOrderId(orderData.id);
+      setOrderNumber(orderData.order_number);
 
       // Add loyalty points for the purchase
       if (currentUser) {
-        await addPointsForPurchase(cartTotal, newOrderId);
+        await addPointsForPurchase(cartTotal, orderData.id);
       }
 
       // Clear cart and show confirmation
@@ -156,6 +216,7 @@ const CheckoutPage = () => {
       setOrderComplete(true);
     } catch (error) {
       console.error('Error placing order:', error);
+      setApiError(error.message || 'There was an error processing your order. Please try again.');
       setValidationErrors({
         order: 'There was an error processing your order. Please try again.'
       });
@@ -180,12 +241,13 @@ const CheckoutPage = () => {
       {/* Checkout Steps */}
       <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-4 border border-gray-100">
         {/* Validation Errors */}
-        {Object.keys(validationErrors).length > 0 && (
+        {(Object.keys(validationErrors).length > 0 || apiError) && (
           <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
             <ul className="list-disc pl-5">
               {Object.values(validationErrors).map((error, index) => (
-                <li key={index}>{error}</li>
+                <li key={`validation-${index}`}>{error}</li>
               ))}
+              {apiError && <li key="api-error">{apiError}</li>}
             </ul>
           </div>
         )}
@@ -201,6 +263,52 @@ const CheckoutPage = () => {
               showValidation={!!validationErrors.shipping}
             />
 
+            {/* Shipping Methods */}
+            {shippingAddressValid && availableShippingMethods.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Shipping Method
+                </h3>
+
+                <div className="space-y-4">
+                  {availableShippingMethods.map(method => (
+                    <label
+                      key={method.id}
+                      className={`block border rounded-lg p-4 cursor-pointer transition-colors ${
+                        shippingMethod === method.id
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-start">
+                        <input
+                          type="radio"
+                          name="shippingMethod"
+                          value={method.id}
+                          checked={shippingMethod === method.id}
+                          onChange={() => setShippingMethod(method.id)}
+                          className="form-radio mt-1"
+                        />
+                        <div className="ml-3">
+                          <div className="font-medium text-gray-900">
+                            {method.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {method.description}
+                          </div>
+                          <div className="mt-1 text-sm font-medium text-gray-900">
+                            {method.price === 0
+                              ? 'Free'
+                              : formatPrice(method.price)}
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="mt-8 flex justify-between items-center">
               <Link
                 to="/cart"
@@ -213,8 +321,12 @@ const CheckoutPage = () => {
               </Link>
               <button
                 onClick={goToNextStep}
-                disabled={!shippingAddressValid}
-                className={`px-6 py-3 rounded-md text-white font-medium transition-colors duration-300 flex items-center ${shippingAddressValid ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                disabled={!shippingAddressValid || !shippingMethod}
+                className={`px-6 py-3 rounded-md text-white font-medium transition-colors duration-300 flex items-center ${
+                  shippingAddressValid && shippingMethod
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-gray-400 cursor-not-allowed'
+                }`}
               >
                 Continue to Payment
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
@@ -232,6 +344,8 @@ const CheckoutPage = () => {
             onBack={goToPreviousStep}
             paymentMethod={paymentMethod}
             setPaymentMethod={setPaymentMethod}
+            paymentDetails={paymentDetails}
+            setPaymentDetails={setPaymentDetails}
             showValidation={!!validationErrors.payment}
           />
         )}
@@ -242,15 +356,19 @@ const CheckoutPage = () => {
             onNext={goToNextStep}
             onBack={goToPreviousStep}
             shippingAddress={shippingAddress}
+            shippingMethod={shippingMethod}
+            availableShippingMethods={availableShippingMethods}
             paymentMethod={paymentMethod}
+            paymentDetails={paymentDetails}
             isProcessing={isProcessing}
             showValidation={!!validationErrors.order}
+            apiError={apiError}
           />
         )}
 
         {/* Step 4: Confirmation */}
         {currentStep === 4 && (
-          <ConfirmationStep orderId={orderId} />
+          <ConfirmationStep orderId={orderId} orderNumber={orderNumber} />
         )}
       </div>
     </div>

@@ -13,7 +13,8 @@ import {
   faMoneyBillWave,
   faBoxOpen,
   faFilter,
-  faSync
+  faSync,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import {
   Chart as ChartJS,
@@ -29,6 +30,8 @@ import {
   Filler
 } from 'chart.js';
 import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
+import { getAnalyticsData } from '../../../services/analyticsService';
+import { formatCurrency, formatNumber } from '../../../utils/formatters';
 
 // Register ChartJS components
 ChartJS.register(
@@ -44,8 +47,8 @@ ChartJS.register(
   Filler
 );
 
-// Sample data (in a real app, this would come from an API)
-const sampleData = {
+// Fallback data in case API fails
+const fallbackData = {
   salesOverview: {
     daily: 1250.75,
     weekly: 8750.50,
@@ -141,11 +144,17 @@ const StatCard = ({ title, value, icon, change, changeType, period }) => {
 
           {change && (
             <div className="mt-2 flex items-center">
-              <span className={`text-sm font-medium ${changeType === 'increase' ? 'text-green-600' : 'text-red-600'}`}>
-                <FontAwesomeIcon
-                  icon={changeType === 'increase' ? faArrowUp : faArrowDown}
-                  className="mr-1"
-                />
+              <span className={`text-sm font-medium ${
+                changeType === 'increase' ? 'text-green-600' :
+                changeType === 'decrease' ? 'text-red-600' :
+                'text-blue-600'
+              }`}>
+                {changeType !== 'neutral' && (
+                  <FontAwesomeIcon
+                    icon={changeType === 'increase' ? faArrowUp : faArrowDown}
+                    className="mr-1"
+                  />
+                )}
                 {change}
               </span>
               <span className="text-sm text-gray-500 ml-2">vs last {period}</span>
@@ -450,38 +459,147 @@ const CustomerStats = ({ stats }) => {
 const AnalyticsDashboard = () => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState('monthly');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch analytics data (simulated)
+  // Fetch analytics data from backend
   useEffect(() => {
-    // In a real app, this would be an API call
-    const fetchData = () => {
-      setIsLoading(true);
-      setTimeout(() => {
-        setData(sampleData);
+    const fetchAnalyticsData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Get analytics data from API
+        const { success, data: analyticsData, error: apiError } = await getAnalyticsData(timeRange);
+
+        if (!success) {
+          throw new Error(apiError || 'Failed to fetch analytics data');
+        }
+
+        // Format data for charts
+        const formattedData = {
+          salesOverview: {
+            daily: analyticsData.averageOrderValue || 0,
+            weekly: analyticsData.totalRevenue / 4 || 0, // Approximate weekly revenue
+            monthly: analyticsData.totalRevenue || 0,
+            yearly: analyticsData.totalRevenue * 12 || 0 // Approximate yearly revenue
+          },
+          orderStats: {
+            total: analyticsData.orderCount || 0,
+            completed: analyticsData.completedOrders || 0,
+            pending: analyticsData.orderCount - analyticsData.completedOrders || 0,
+            cancelled: 0 // Not available in the API response
+          },
+          customerStats: {
+            total: analyticsData.newUserCount || 0,
+            new: analyticsData.newUserCount || 0,
+            returning: 0 // Not available in the API response
+          },
+          productStats: {
+            views: analyticsData.productViewCount || 0,
+            conversions: analyticsData.conversionRate || 0
+          },
+          salesByDay: analyticsData.salesByDay || [],
+          usersByDay: analyticsData.usersByDay || [],
+          topProducts: [], // Not available in the API response
+          topCategories: [] // Not available in the API response
+        };
+
+        setData(formattedData);
+      } catch (error) {
+        console.error('Error fetching analytics data:', error);
+        setError(error.message || 'Failed to load analytics data');
+
+        // Use fallback data in case of error
+        setData(fallbackData);
+      } finally {
         setIsLoading(false);
         setIsRefreshing(false);
-      }, 800);
+      }
     };
 
-    fetchData();
+    fetchAnalyticsData();
   }, [timeRange]);
 
   // Handle refresh data
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    // In a real app, this would be an API call
-    setTimeout(() => {
-      setData(sampleData);
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      setError(null);
+
+      // Get analytics data from API
+      const { success, data: analyticsData, error: apiError } = await getAnalyticsData(timeRange);
+
+      if (!success) {
+        throw new Error(apiError || 'Failed to refresh analytics data');
+      }
+
+      // Format data for charts (same as in useEffect)
+      const formattedData = {
+        salesOverview: {
+          daily: analyticsData.averageOrderValue || 0,
+          weekly: analyticsData.totalRevenue / 4 || 0,
+          monthly: analyticsData.totalRevenue || 0,
+          yearly: analyticsData.totalRevenue * 12 || 0
+        },
+        orderStats: {
+          total: analyticsData.orderCount || 0,
+          completed: analyticsData.completedOrders || 0,
+          pending: analyticsData.orderCount - analyticsData.completedOrders || 0,
+          cancelled: 0
+        },
+        customerStats: {
+          total: analyticsData.newUserCount || 0,
+          new: analyticsData.newUserCount || 0,
+          returning: 0
+        },
+        productStats: {
+          views: analyticsData.productViewCount || 0,
+          conversions: analyticsData.conversionRate || 0
+        },
+        salesByDay: analyticsData.salesByDay || [],
+        usersByDay: analyticsData.usersByDay || [],
+        topProducts: [],
+        topCategories: []
+      };
+
+      setData(formattedData);
+    } catch (error) {
+      console.error('Error refreshing analytics data:', error);
+      setError(error.message || 'Failed to refresh analytics data');
+    } finally {
       setIsRefreshing(false);
-    }, 800);
+    }
   };
 
+  // Show loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="flex flex-col items-center">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin text-green-500 text-4xl mb-4" />
+          <p className="text-gray-500">Loading analytics data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error && !data) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md max-w-lg">
+          <h3 className="text-lg font-medium mb-2">Error Loading Analytics</h3>
+          <p>{error}</p>
+          <button
+            onClick={handleRefresh}
+            className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded flex items-center"
+          >
+            <FontAwesomeIcon icon={faSync} className="mr-2" />
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -530,34 +648,34 @@ const AnalyticsDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <StatCard
           title="Total Sales"
-          value={`$${data.salesOverview[timeRange].toLocaleString()}`}
+          value={formatCurrency(data.salesOverview[timeRange])}
           icon={faMoneyBillWave}
-          change={`${data.salesOverview[`${timeRange}Change`]}%`}
-          changeType="increase"
+          change={data.salesOverview[timeRange] > 0 ? "Active" : "No sales"}
+          changeType={data.salesOverview[timeRange] > 0 ? "increase" : "neutral"}
           period={timeRange.slice(0, -2) + (timeRange === 'daily' ? 'day' : '')}
         />
         <StatCard
           title="Orders"
-          value="156"
+          value={formatNumber(data.orderStats.total)}
           icon={faShoppingCart}
-          change="8.2%"
-          changeType="increase"
+          change={`${formatNumber(data.orderStats.pending)} pending`}
+          changeType="neutral"
           period={timeRange.slice(0, -2) + (timeRange === 'daily' ? 'day' : '')}
         />
         <StatCard
           title="Customers"
-          value={data.customerStats.total}
+          value={formatNumber(data.customerStats.total)}
           icon={faUsers}
-          change="5.1%"
+          change={data.customerStats.new > 0 ? `${formatNumber(data.customerStats.new)} new` : null}
           changeType="increase"
           period={timeRange.slice(0, -2) + (timeRange === 'daily' ? 'day' : '')}
         />
         <StatCard
-          title="Products Sold"
-          value="1,245"
+          title="Product Views"
+          value={formatNumber(data.productStats.views)}
           icon={faBoxOpen}
-          change="3.2%"
-          changeType="decrease"
+          change={`${data.productStats.conversions}% conversion`}
+          changeType={data.productStats.conversions > 2 ? "increase" : "decrease"}
           period={timeRange.slice(0, -2) + (timeRange === 'daily' ? 'day' : '')}
         />
       </div>
