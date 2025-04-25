@@ -318,6 +318,26 @@ export const trackCheckoutStep = (step, checkoutData = {}) => {
 };
 
 /**
+ * Track checkout
+ * @param {Object} cart - Cart data
+ * @param {Object} checkoutData - Additional checkout data
+ */
+export const trackCheckout = (cart, checkoutData = {}) => {
+  return trackEvent(ANALYTICS_EVENTS.BEGIN_CHECKOUT, {
+    items: cart.items.map(item => ({
+      productId: item.product.id,
+      productName: item.product.name,
+      productCategory: item.product.category,
+      productPrice: item.price,
+      quantity: item.quantity
+    })),
+    value: cart.total,
+    currency: checkoutData.currency || 'USD',
+    ...checkoutData
+  });
+};
+
+/**
  * Track purchase
  * @param {Object} order - Order data
  */
@@ -1000,12 +1020,13 @@ export default {
   trackProductView,
   trackAddToCart,
   trackCheckout,
+  trackCheckoutStep,
   trackPurchase,
+  trackSearch,
+  trackException,
+  retryFailedEvents,
   getAnalyticsData,
   getUserBehaviorData,
   getSalesAnalyticsData,
-  exportAnalyticsData,
-  getSalesAnalytics,
-  getProductAnalytics,
-  getUserAnalytics
+  exportAnalyticsData
 };
