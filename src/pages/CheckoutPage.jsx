@@ -10,6 +10,7 @@ import { useLoyalty } from '../context/LoyaltyContext';
 import { createOrder } from '../services/checkoutService';
 import { processPayment } from '../services/paymentService';
 import { getShippingMethods } from '../services/checkoutService';
+import { formatCurrency } from '../utils/formatters';
 import CheckoutStepper from '../components/checkout/CheckoutStepper';
 import AddressForm from '../components/checkout/AddressForm';
 import ShippingStep from '../components/checkout/ShippingStep';
@@ -299,7 +300,7 @@ const CheckoutPage = () => {
                           <div className="mt-1 text-sm font-medium text-gray-900">
                             {method.price === 0
                               ? 'Free'
-                              : formatPrice(method.price)}
+                              : formatCurrency(method.price)}
                           </div>
                         </div>
                       </div>
