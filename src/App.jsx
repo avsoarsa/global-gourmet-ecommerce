@@ -56,6 +56,9 @@ import {
   LazySearchResultsPage
 } from './routes/LazyRoutes';
 
+// Import auth pages directly
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+
 // Import i18n configuration
 import './i18n';
 
@@ -136,6 +139,7 @@ function App() {
                                           {/* Login Layout - Minimal */}
                                           <Route path="/" element={<LoginLayout />}>
                                             <Route path="login" element={<LazyLoginPage />} />
+                                            <Route path="forgot-password" element={<ForgotPasswordPage />} />
                                           </Route>
                                           <Route path="debug" element={<DebugPage />} />
 

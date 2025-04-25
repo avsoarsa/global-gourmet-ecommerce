@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faLock, faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
@@ -9,6 +9,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -22,7 +23,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (isLogin) {
       // Login logic
       setLoading(true);
@@ -43,10 +44,16 @@ const LoginPage = () => {
       setLoading(true);
       try {
         if (password !== confirmPassword) {
+          setLoading(false);
           return setError('Passwords do not match');
         }
-        
-        // In a real app, this would call an API to register the user
+
+        if (!phoneNumber || phoneNumber.length < 10) {
+          setLoading(false);
+          return setError('Please enter a valid phone number');
+        }
+
+        // In a real app, this would call an API to register the user with phone number
         // For this demo, we'll just simulate success
         setTimeout(() => {
           setIsLogin(true);
@@ -85,13 +92,13 @@ const LoginPage = () => {
             </button>
           </p>
         </div>
-        
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
             <span className="block sm:inline">{error}</span>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="mb-4">
@@ -113,7 +120,7 @@ const LoginPage = () => {
                 />
               </div>
             </div>
-            
+
             <div className="mb-4">
               <label htmlFor="password" className="sr-only">Password</label>
               <div className="relative">
@@ -133,26 +140,48 @@ const LoginPage = () => {
                 />
               </div>
             </div>
-            
+
             {!isLogin && (
-              <div>
-                <label htmlFor="confirm-password" className="sr-only">Confirm Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FontAwesomeIcon icon={faLock} className="text-gray-400" />
+              <>
+                <div className="mb-4">
+                  <label htmlFor="confirm-password" className="sr-only">Confirm Password</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faLock} className="text-gray-400" />
+                    </div>
+                    <input
+                      id="confirm-password"
+                      name="confirm-password"
+                      type="password"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                      placeholder="Confirm Password"
+                    />
                   </div>
-                  <input
-                    id="confirm-password"
-                    name="confirm-password"
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                    placeholder="Confirm Password"
-                  />
                 </div>
-              </div>
+
+                <div className="mb-4">
+                  <label htmlFor="phone-number" className="sr-only">Phone Number</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faPhone} className="text-gray-400" />
+                    </div>
+                    <input
+                      id="phone-number"
+                      name="phone-number"
+                      type="tel"
+                      autoComplete="tel"
+                      required
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                      placeholder="Phone Number"
+                    />
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
@@ -192,7 +221,7 @@ const LoginPage = () => {
               {isLogin ? 'Sign in' : 'Sign up'}
             </button>
           </div>
-          
+
           {isLogin && (
             <div className="text-center text-sm">
               <button
