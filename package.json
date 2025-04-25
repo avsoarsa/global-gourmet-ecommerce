@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-env-config.js",
+    "prebuild": "node generate-env.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
