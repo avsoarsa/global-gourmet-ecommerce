@@ -1,0 +1,13 @@
+# Ignore files not needed for deployment
+README.md
+.git
+.github
+.gitignore
+# scripts directory is needed for the build process
+node_modules
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.log
