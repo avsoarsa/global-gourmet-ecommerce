@@ -3,7 +3,7 @@ README.md
 .git
 .github
 .gitignore
-scripts
+# scripts directory is needed for the build process
 node_modules
 .env
 .env.local
