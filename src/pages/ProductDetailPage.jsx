@@ -18,7 +18,7 @@ import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
 import { useSubscription } from '../context/SubscriptionContext';
-import { fetcher, Product } from '@/lib/api';
+import { fetcher, Product } from '../lib/api';
 
 const slugify = (value = '') =>
   value
