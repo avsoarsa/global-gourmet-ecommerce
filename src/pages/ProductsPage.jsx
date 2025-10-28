@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { trackPageView } from '../utils/personalizationUtils';
 import ProductCard from '../components/common/ProductCard';
 import MobileFilterSort from '../components/mobile/MobileFilterSort';
-import { fetcher } from '../lib/api';
+import { fetcher } from '../../lib/api';
 import { Product } from '@prisma/client'; // Import the Product type from the generated Prisma client
 
 const deriveStockQuantity = (id) => ((id * 13) % 80) + 20;
