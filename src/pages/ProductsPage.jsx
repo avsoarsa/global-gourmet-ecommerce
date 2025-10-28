@@ -2,7 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { trackPageView } from '../utils/personalizationUtils';
 import ProductCard from '../components/common/ProductCard';
-import MobileFilterSort from '../components/mobile/MobileFilterSort';import { fetcher } from '@/lib/api';port { Product } from '@prisma/client';
+import MobileFilterSort from '../components/mobile/MobileFilterSort';
+import { fetcher } from '@/lib/api';
+import { Product } from '@prisma/client';
 
 const deriveStockQuantity = (id) => ((id * 13) % 80) + 20;
 const slugifyCategory = (value = '') =>
