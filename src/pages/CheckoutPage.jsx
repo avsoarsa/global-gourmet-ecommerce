@@ -7,9 +7,6 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
 import { useLoyalty } from '../context/LoyaltyContext';
-import { createOrder } from '../services/checkoutService';
-import { processPayment } from '../services/paymentService';
-import { getShippingMethods } from '../services/checkoutService';
 import { formatCurrency } from '../utils/formatters';
 import CheckoutStepper from '../components/checkout/CheckoutStepper';
 import AddressForm from '../components/checkout/AddressForm';
@@ -17,6 +14,37 @@ import ShippingStep from '../components/checkout/ShippingStep';
 import PaymentStep from '../components/checkout/PaymentStep';
 import ReviewStep from '../components/checkout/ReviewStep';
 import ConfirmationStep from '../components/checkout/ConfirmationStep';
+
+const generateOrderNumber = () => {
+  const prefix = 'GG';
+  const timestamp = Date.now().toString().slice(-8);
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `${prefix}${timestamp}${random}`;
+};
+
+const getMockShippingMethods = (cartTotal) => {
+  const qualifiesForFreeStandard = cartTotal >= 75;
+  return [
+    {
+      id: 'standard',
+      name: 'Standard Shipping',
+      description: 'Delivered in 3-5 business days',
+      price: qualifiesForFreeStandard ? 0 : 5.99
+    },
+    {
+      id: 'express',
+      name: 'Express Shipping',
+      description: 'Delivered in 1-2 business days',
+      price: 14.99
+    },
+    {
+      id: 'pickup',
+      name: 'Local Pickup',
+      description: 'Pickup from our warehouse during business hours',
+      price: 0
+    }
+  ];
+};
 
 const CheckoutPage = () => {
   const { t } = useTranslation();
@@ -65,33 +93,16 @@ const CheckoutPage = () => {
 
   // Fetch shipping methods when address is valid
   useEffect(() => {
-    const fetchShippingMethods = async () => {
-      if (shippingAddressValid) {
-        try {
-          const { success, data, error } = await getShippingMethods({
-            address: shippingAddress,
-            cartTotal: cartTotal
-          });
+    if (!shippingAddressValid) {
+      return;
+    }
 
-          if (success && data) {
-            setAvailableShippingMethods(data);
-            // Set default shipping method if none selected
-            if (!shippingMethod && data.length > 0) {
-              setShippingMethod(data[0].id);
-            }
-          } else if (error) {
-            console.error('Error fetching shipping methods:', error);
-            setApiError(`Failed to load shipping options: ${error}`);
-          }
-        } catch (error) {
-          console.error('Error fetching shipping methods:', error);
-          setApiError('Failed to load shipping options. Please try again.');
-        }
-      }
-    };
-
-    fetchShippingMethods();
-  }, [shippingAddressValid, shippingAddress, cartTotal, shippingMethod]);
+    const methods = getMockShippingMethods(cartTotal);
+    setAvailableShippingMethods(methods);
+    if (!shippingMethod && methods.length > 0) {
+      setShippingMethod(methods[0].id);
+    }
+  }, [shippingAddressValid, cartTotal, shippingMethod]);
 
   // Handle address change
   const handleAddressChange = (address) => {
@@ -163,7 +174,6 @@ const CheckoutPage = () => {
     setValidationErrors({});
 
     try {
-      // Validate required fields
       if (!shippingMethod) {
         setValidationErrors({
           shipping: 'Please select a shipping method'
@@ -178,42 +188,20 @@ const CheckoutPage = () => {
         return;
       }
 
-      // Create order in the backend
-      const { success: orderSuccess, data: orderData, error: orderError } = await createOrder({
-        shippingAddress,
-        paymentMethod,
-        shippingMethod,
-        paymentDetails,
-        notes: ''
-      });
+      const generatedOrderId = Date.now();
+      const generatedOrderNumber = generateOrderNumber();
 
-      if (!orderSuccess) {
-        throw new Error(orderError || 'Failed to create order');
-      }
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // Process payment
-      const { success: paymentSuccess, data: paymentData, error: paymentError } = await processPayment({
-        orderId: orderData.id,
-        paymentMethod,
-        paymentDetails
-      });
+      setOrderId(generatedOrderId);
+      setOrderNumber(generatedOrderNumber);
 
-      if (!paymentSuccess) {
-        throw new Error(paymentError || 'Failed to process payment');
-      }
-
-      // Set order details for confirmation
-      setOrderId(orderData.id);
-      setOrderNumber(orderData.order_number);
-
-      // Add loyalty points for the purchase
       if (currentUser) {
-        await addPointsForPurchase(cartTotal, orderData.id);
+        await addPointsForPurchase(cartTotal, generatedOrderId);
       }
 
-      // Clear cart and show confirmation
       clearCart();
-      setCurrentStep(4); // Confirmation step
+      setCurrentStep(4);
       setOrderComplete(true);
     } catch (error) {
       console.error('Error placing order:', error);

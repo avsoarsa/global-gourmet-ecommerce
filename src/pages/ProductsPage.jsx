@@ -1,8 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { trackPageView } from '../utils/personalizationUtils';
 import ProductCard from '../components/common/ProductCard';
 import MobileFilterSort from '../components/mobile/MobileFilterSort';
+import { fetcher } from '../lib/api';
+import { Product } from '@prisma/client';
+
+const deriveStockQuantity = (id) => ((id * 13) % 80) + 20;
+const slugifyCategory = (value = '') =>
+  value
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '') || 'category';
 
 const ProductsPage = () => {
   const { categorySlug } = useParams();
@@ -15,35 +25,83 @@ const ProductsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const productsPerPage = 12; // Show 12 products per page for mobile-friendly grid
 
-  // Fetch categories
+    const [allProducts, setAllProducts] = useState([]);
+
   useEffect(() => {
-    const fetchCategories = async () => {
+    const loadProducts = async () => {
       try {
-        const response = await fetch('/api/categories');
-        const data = await response.json();
-
-        if (data.success) {
-          // Add "All Products" category
-          const allCategories = [
-            { id: 'all', name: 'All Products', slug: 'all-products' },
-            ...data.data.map(category => ({
-              id: category.id,
-              name: category.name,
-              slug: category.slug
-            }))
-          ];
-
-          setCategories(allCategories);
-        } else {
-          console.error('Error fetching categories:', data.error);
-        }
+        const data = await fetcher('/products');
+        const augmentedData = data.map(product => ({
+          ...product,
+          stock: deriveStockQuantity(product.id),
+          featured: (product.price > 50) || false, 
+          rating: 4.5,
+          reviews: 10,
+          originalPrice: product.price * 1.2 || null,
+        }));
+        setAllProducts(augmentedData);
+        setLoading(false);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('Error fetching products:', error);
+        setLoading(false);
       }
     };
-
-    fetchCategories();
+    loadProducts();
   }, []);
+
+  const formattedProducts = useMemo(() => {
+    return allProducts;
+  }, [allProducts]);
+
+  useEffect(() => {
+    const uniqueCategories = Array.from(new Set(formattedProducts.map(product => product.category))).filter(Boolean);
+    setCategories([
+      { id: 'all', name: 'All Products', slug: 'all-products' },
+      ...uniqueCategories.map(name => ({
+        id: slugifyCategory(name),
+        name,
+        slug: slugifyCategory(name)
+      }))
+    ]);
+  }, [formattedProducts]);
+
+  useEffect(() => {
+    setLoading(true);
+    let result = [...formattedProducts];
+
+    if (selectedCategory !== 'All Products') {
+      result = result.filter(product => product.category === selectedCategory);
+    }
+
+    // Sorting
+    switch (sortBy) {
+      case 'price-low':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        result.sort((a, b) => b.id - a.id);
+        break;
+      case 'rating':
+        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      default:
+        result.sort((a, b) => (b.featured === a.featured ? 0 : b.featured ? 1 : -1));
+        break;
+    }
+
+    setTotalCount(result.length);
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const paginated = result.slice(startIndex, startIndex + productsPerPage);
+    setFilteredProducts(paginated);
+    setLoading(false);
+  }, [formattedProducts, selectedCategory, sortBy, currentPage, productsPerPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, sortBy]);
 
   // Initialize selected category based on URL
   useEffect(() => {
@@ -74,73 +132,6 @@ const ProductsPage = () => {
       );
     }
   }, [categorySlug, categories]);
-
-  // Fetch products based on category and sort
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-
-      try {
-        // Build query parameters
-        const params = new URLSearchParams();
-        params.append('page', currentPage);
-        params.append('limit', productsPerPage);
-
-        // Add category filter if not "All Products"
-        if (selectedCategory !== 'All Products' && categories.length > 0) {
-          const category = categories.find(cat => cat.name === selectedCategory);
-          if (category && category.slug !== 'all-products') {
-            params.append('category', category.slug);
-          }
-        }
-
-        // Add sort parameter
-        switch (sortBy) {
-          case 'price-low':
-            params.append('sort', 'price');
-            params.append('order', 'asc');
-            break;
-          case 'price-high':
-            params.append('sort', 'price');
-            params.append('order', 'desc');
-            break;
-          case 'newest':
-            params.append('sort', 'created_at');
-            params.append('order', 'desc');
-            break;
-          case 'rating':
-            params.append('sort', 'rating');
-            params.append('order', 'desc');
-            break;
-          default: // featured
-            params.append('featured', 'true');
-            break;
-        }
-
-        const response = await fetch(`/api/products?${params.toString()}`);
-        const data = await response.json();
-
-        if (data.success) {
-          setFilteredProducts(data.data);
-          setTotalCount(data.meta.pagination.total);
-        } else {
-          console.error('Error fetching products:', data.error);
-          setFilteredProducts([]);
-          setTotalCount(0);
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        setFilteredProducts([]);
-        setTotalCount(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (categories.length > 0) {
-      fetchProducts();
-    }
-  }, [selectedCategory, sortBy, currentPage, categories, productsPerPage]);
 
   // Calculate pagination
   const totalPages = Math.ceil(totalCount / productsPerPage);
@@ -251,18 +242,18 @@ const ProductsPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 product-grid">
           {filteredProducts.map(product => {
             // Transform API product format to match the expected format for ProductCard
-            const transformedProduct = {
+                        const transformedProduct = {
               id: product.id,
               name: product.name,
-              slug: product.slug,
+              slug: product.name.toLowerCase().replace(/\s+/g, '-'),
               price: product.price,
-              compareAtPrice: product.compare_at_price,
-              image: product.product_images?.find(img => img.is_primary)?.image_url || '/images/placeholder.jpg',
-              category: product.product_categories?.name || '',
+              compareAtPrice: product.originalPrice,
+              image: product.imageUrl || '/images/placeholder.jpg',
+              category: product.category || '',
               rating: product.rating || 4.5,
-              isBestseller: product.is_bestseller,
-              isOrganic: product.is_organic,
-              description: product.short_description
+              isBestseller: product.featured,
+              isOrganic: false,
+              description: product.description
             };
 
             return <ProductCard key={product.id} product={transformedProduct} />;

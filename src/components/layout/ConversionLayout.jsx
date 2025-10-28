@@ -1,4 +1,6 @@
-import { Outlet, useLocation } from 'react-router-dom';
+'use client';
+
+import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import SimpleHeader from './SimpleHeader';
 import BackToTop from '../common/BackToTop';
@@ -10,7 +12,7 @@ import PersistentCartBar from '../cart/PersistentCartBar';
  * ConversionLayout - A distraction-free layout for high-conversion pages
  * Removes footer and other distracting elements to focus user attention on conversion
  */
-const ConversionLayout = () => {
+const ConversionLayout = ({ children }) => {
   const location = useLocation();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -51,7 +53,7 @@ const ConversionLayout = () => {
       <SimpleHeader />
       <PullToRefresh onRefresh={handleRefresh}>
         <main className="flex-grow pt-16">
-          <Outlet />
+          {children}
         </main>
       </PullToRefresh>
       <BackToTop />

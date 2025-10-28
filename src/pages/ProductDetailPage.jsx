@@ -18,7 +18,13 @@ import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
 import { useSubscription } from '../context/SubscriptionContext';
-import { supabase } from '../utils/supabaseClient';
+import { fetcher, Product } from '../lib/api';
+
+const slugify = (value = '') =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '') || 'product';
 import { getProductReviews, getProductAverageRating, addReview, markReviewAsHelpful } from '../data/reviews';
 import ProductCard from '../components/common/ProductCard';
 import ReviewList from '../components/reviews/ReviewList';
@@ -57,138 +63,82 @@ const ProductDetailPage = () => {
   const [subscriptionData, setSubscriptionData] = useState(null);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        // Fetch product from Supabase
-        const { data: productData, error } = await supabase
-          .from('products')
-          .select(`
-            *,
-            product_images (*),
-            product_variants (*),
-            product_categories (*)
-          `)
-          .eq('id', productId)
-          .single();
+    const loadProduct = async () => {
+      // const numericId = Number(productId); // ID is now a string from the DB
+      const productData = await fetcher<Product>(`/products/${productId}`);
 
-        if (error) {
-          console.error('Error fetching product:', error);
-          return;
+            if (!productData) {
+        console.error('Product not found');
+        setProduct(null);
+        return;
+      }
+
+      // Augment product data with mock/derived fields for frontend compatibility
+      const augmentedProduct = {
+        ...productData,
+        slug: productData.name ? slugify(productData.name) : 'product',
+        weightOptions: [{ weight: '500g', price: productData.price }], // Mock weight option
+        category: productData.category || 'Uncategorized',
+        image: productData.imageUrl,
+        rating: 4.5, // Mock rating
+        reviews: 10, // Mock reviews
+        originalPrice: productData.price * 1.2, // Mock original price
+        isBestseller: (productData.price > 50) || false,
+        isOrganic: false,
+      };
+
+      setProduct(augmentedProduct);
+      addToRecentlyViewed(augmentedProduct);
+
+      trackPageView(
+        `/product/${productId}`,
+        'product',
+        {
+          productId: augmentedProduct.id,
+          category: augmentedProduct.category,
+          name: augmentedProduct.name
         }
+      );
 
-        if (!productData) {
-          console.error('Product not found');
-          return;
-        }
+      // Fetch related products (currently mocked by fetching all and filtering)
+      const allProducts = await fetcher<Product[]>('/products');
+      const related = allProducts
+        .filter((item) => item.category === augmentedProduct.category && item.id !== augmentedProduct.id)
+        .slice(0, 4)
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          slug: item.name ? slugify(item.name) : 'product',
+          price: item.price,
+          compareAtPrice: item.price * 1.2,
+          image: item.imageUrl,
+          category: item.category,
+          rating: 4.5,
+          isBestseller: (item.price > 50) || false,
+          isOrganic: false,
+          description: item.description
+        }));
 
-        // Transform product data to match the expected format
-        const transformedProduct = {
-          id: productData.id,
-          name: productData.name,
-          slug: productData.slug,
-          description: productData.description || productData.short_description,
-          price: productData.price,
-          originalPrice: productData.compare_at_price,
-          discount: productData.discount_percentage,
-          image: productData.product_images?.find(img => img.is_primary)?.image_url || '/images/placeholder.jpg',
-          category: productData.product_categories?.name || '',
-          rating: productData.rating || 4.5,
-          reviews: productData.review_count || 0,
-          stock: productData.stock_quantity || 10,
-          isBestseller: productData.is_bestseller,
-          isOrganic: productData.is_organic,
-          origin: productData.origin || 'Premium Farms',
-          nutritionalInfo: productData.nutritional_info || 'Rich in essential nutrients and minerals.',
-          weightOptions: productData.product_variants?.map(variant => ({
-            weight: variant.weight || variant.name,
-            price: variant.price,
-            originalPrice: variant.compare_at_price,
-            stock: variant.stock_quantity
-          })) || []
-        };
+      setRelatedProducts(related);
 
-        setProduct(transformedProduct);
+      // Mock review data for now
+const productReviews = getProductReviews(productId);   setReviews(productReviews);
+      setAverageRating(getProductAverageRating(productId));
 
-        // Add to recently viewed products
-        addToRecentlyViewed(transformedProduct);
-
-        // Track product view for personalization
-        trackPageView(
-          `/product/${productId}`,
-          'product',
-          {
-            productId: transformedProduct.id,
-            category: transformedProduct.category,
-            name: transformedProduct.name
-          }
-        );
-
-        // Fetch related products (same category, excluding current product)
-        const { data: relatedData, error: relatedError } = await supabase
-          .from('products')
-          .select(`
-            *,
-            product_images (*),
-            product_categories (*)
-          `)
-          .eq('product_categories.id', productData.product_categories?.id)
-          .neq('id', productId)
-          .limit(4);
-
-        if (relatedError) {
-          console.error('Error fetching related products:', relatedError);
-        } else {
-          // Transform related products
-          const transformedRelated = relatedData.map(product => ({
-            id: product.id,
-            name: product.name,
-            slug: product.slug,
-            price: product.price,
-            compareAtPrice: product.compare_at_price,
-            image: product.product_images?.find(img => img.is_primary)?.image_url || '/images/placeholder.jpg',
-            category: product.product_categories?.name || '',
-            rating: product.rating || 4.5,
-            isBestseller: product.is_bestseller,
-            isOrganic: product.is_organic,
-            description: product.short_description
-          }));
-
-          setRelatedProducts(transformedRelated);
-        }
-
-        // Get product reviews (still using mock data for now)
-        const productReviews = getProductReviews(parseInt(productId));
-        setReviews(productReviews);
-
-        // Get average rating
-        const avgRating = getProductAverageRating(parseInt(productId));
-        setAverageRating(avgRating);
-
-        // Set default weight if weight options are available
-        if (transformedProduct.weightOptions && transformedProduct.weightOptions.length > 0) {
-          const defaultWeight = transformedProduct.defaultWeight || transformedProduct.weightOptions[0].weight;
-          setSelectedWeight(defaultWeight);
-
-          // Find the selected weight option
-          const weightOption = transformedProduct.weightOptions.find(opt => opt.weight === defaultWeight);
-          if (weightOption) {
-            setSelectedWeightOption(weightOption);
-          }
-        }
-      } catch (error) {
-        console.error('Error in fetchProduct:', error);
+      if (augmentedProduct.weightOptions.length > 0) {
+        const defaultWeight = augmentedProduct.weightOptions[0].weight;
+        setSelectedWeight(defaultWeight);
+        const weightOption = augmentedProduct.weightOptions.find((opt) => opt.weight === defaultWeight);
+        setSelectedWeightOption(weightOption || augmentedProduct.weightOptions[0]);
       }
     };
 
     if (productId) {
-      fetchProduct();
+      loadProduct();
     }
 
-    // Reset quantity and review form state when product changes
     setQuantity(1);
     setIsWritingReview(false);
-
-    // Scroll to top when product changes
     window.scrollTo(0, 0);
   }, [productId, addToRecentlyViewed]);
 
@@ -317,7 +267,7 @@ const ProductDetailPage = () => {
     setIsWritingReview(false);
 
     // Update average rating
-    const newAvgRating = getProductAverageRating(parseInt(productId));
+    const newAvgRating = getProductAverageRating(productId);
     setAverageRating(newAvgRating);
 
     // Show reviews tab

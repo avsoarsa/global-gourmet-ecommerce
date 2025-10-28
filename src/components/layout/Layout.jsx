@@ -1,4 +1,6 @@
-import { Outlet, useLocation } from 'react-router-dom';
+'use client';
+
+import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
@@ -9,7 +11,7 @@ import PullToRefresh from '../mobile/PullToRefresh';
 import SkipToContent from '../common/SkipToContent';
 import PersistentCartBar from '../cart/PersistentCartBar';
 
-const Layout = () => {
+const Layout = ({ children }) => {
   const location = useLocation();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -55,7 +57,7 @@ const Layout = () => {
       <PullToRefresh onRefresh={handleRefresh}>
         <main id="main-content" className="flex-grow pt-16">
           {!isProductDetailPage && <Breadcrumb />}
-          <Outlet />
+          {children}
         </main>
       </PullToRefresh>
       <Footer />
