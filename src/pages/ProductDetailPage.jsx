@@ -18,7 +18,7 @@ import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 import { useAuth } from '../context/AuthContext';
 import { useRegion } from '../context/RegionContext';
 import { useSubscription } from '../context/SubscriptionContext';
-import { products } from '../data/products';
+import { fetcher, Product } from '../lib/api';
 
 const slugify = (value = '') =>
   value
@@ -63,65 +63,73 @@ const ProductDetailPage = () => {
   const [subscriptionData, setSubscriptionData] = useState(null);
 
   useEffect(() => {
-    const loadProduct = () => {
-      const numericId = Number(productId);
-      const productData = products.find((item) => item.id === numericId);
+    const loadProduct = async () => {
+      // const numericId = Number(productId); // ID is now a string from the DB
+      const productData = await fetcher<Product>(`/products/${productId}`);
 
-      if (!productData) {
+            if (!productData) {
         console.error('Product not found');
         setProduct(null);
         return;
       }
 
-      const transformedProduct = {
+      // Augment product data with mock/derived fields for frontend compatibility
+      const augmentedProduct = {
         ...productData,
-        slug: productData.slug || `${slugify(productData.name)}-${productData.id}`,
-        weightOptions: productData.weightOptions || [],
+        slug: productData.name ? slugify(productData.name) : 'product',
+        weightOptions: [{ weight: '500g', price: productData.price }], // Mock weight option
         category: productData.category || 'Uncategorized',
-        image: productData.image
+        image: productData.imageUrl,
+        rating: 4.5, // Mock rating
+        reviews: 10, // Mock reviews
+        originalPrice: productData.price * 1.2, // Mock original price
+        isBestseller: (productData.price > 50) || false,
+        isOrganic: false,
       };
 
-      setProduct(transformedProduct);
-      addToRecentlyViewed(transformedProduct);
+      setProduct(augmentedProduct);
+      addToRecentlyViewed(augmentedProduct);
 
       trackPageView(
         `/product/${productId}`,
         'product',
         {
-          productId: transformedProduct.id,
-          category: transformedProduct.category,
-          name: transformedProduct.name
+          productId: augmentedProduct.id,
+          category: augmentedProduct.category,
+          name: augmentedProduct.name
         }
       );
 
-      const related = products
-        .filter((item) => item.category === transformedProduct.category && item.id !== transformedProduct.id)
+      // Fetch related products (currently mocked by fetching all and filtering)
+      const allProducts = await fetcher<Product[]>('/products');
+      const related = allProducts
+        .filter((item) => item.category === augmentedProduct.category && item.id !== augmentedProduct.id)
         .slice(0, 4)
         .map((item) => ({
           id: item.id,
           name: item.name,
-          slug: item.slug || `${slugify(item.name)}-${item.id}`,
+          slug: item.name ? slugify(item.name) : 'product',
           price: item.price,
-          compareAtPrice: item.originalPrice,
-          image: item.image,
+          compareAtPrice: item.price * 1.2,
+          image: item.imageUrl,
           category: item.category,
-          rating: item.rating || 4.5,
-          isBestseller: item.featured || false,
-          isOrganic: item.isOrganic || false,
+          rating: 4.5,
+          isBestseller: (item.price > 50) || false,
+          isOrganic: false,
           description: item.description
         }));
 
       setRelatedProducts(related);
 
-      const productReviews = getProductReviews(numericId);
-      setReviews(productReviews);
-      setAverageRating(getProductAverageRating(numericId));
+      // Mock review data for now
+const productReviews = getProductReviews(productId);   setReviews(productReviews);
+      setAverageRating(getProductAverageRating(productId));
 
-      if (transformedProduct.weightOptions.length > 0) {
-        const defaultWeight = transformedProduct.defaultWeight || transformedProduct.weightOptions[0].weight;
+      if (augmentedProduct.weightOptions.length > 0) {
+        const defaultWeight = augmentedProduct.weightOptions[0].weight;
         setSelectedWeight(defaultWeight);
-        const weightOption = transformedProduct.weightOptions.find((opt) => opt.weight === defaultWeight);
-        setSelectedWeightOption(weightOption || transformedProduct.weightOptions[0]);
+        const weightOption = augmentedProduct.weightOptions.find((opt) => opt.weight === defaultWeight);
+        setSelectedWeightOption(weightOption || augmentedProduct.weightOptions[0]);
       }
     };
 
@@ -259,7 +267,7 @@ const ProductDetailPage = () => {
     setIsWritingReview(false);
 
     // Update average rating
-    const newAvgRating = getProductAverageRating(parseInt(productId));
+    const newAvgRating = getProductAverageRating(productId);
     setAverageRating(newAvgRating);
 
     // Show reviews tab

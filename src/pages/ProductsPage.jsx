@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { trackPageView } from '../utils/personalizationUtils';
 import ProductCard from '../components/common/ProductCard';
 import MobileFilterSort from '../components/mobile/MobileFilterSort';
-import { products as productData } from '../data/products';
+import { fetcher } from '../lib/api';
+import { Product } from '@prisma/client'; // Import the Product type from the generated Prisma client
 
 const deriveStockQuantity = (id) => ((id * 13) % 80) + 20;
 const slugifyCategory = (value = '') =>
@@ -24,23 +25,33 @@ const ProductsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const productsPerPage = 12; // Show 12 products per page for mobile-friendly grid
 
-  const formattedProducts = useMemo(() => {
-    return productData.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: product.description || '',
-      price: product.price,
-      salePrice: product.originalPrice || null,
-      stock: deriveStockQuantity(product.id),
-      category: product.category || 'Uncategorized',
-      image: product.image,
-      featured: product.featured || product.rating >= 4.7,
-      active: true,
-      rating: product.rating || 4.5,
-      reviews: product.reviews || 0,
-      originalPrice: product.originalPrice || null
-    }));
+    const [allProducts, setAllProducts] = useState([]);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetcher('/products');
+        const augmentedData = data.map(product => ({
+          ...product,
+          stock: deriveStockQuantity(product.id),
+          featured: (product.price > 50) || false, 
+          rating: 4.5,
+          reviews: 10,
+          originalPrice: product.price * 1.2 || null,
+        }));
+        setAllProducts(augmentedData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+    loadProducts();
   }, []);
+
+  const formattedProducts = useMemo(() => {
+    return allProducts;
+  }, [allProducts]);
 
   useEffect(() => {
     const uniqueCategories = Array.from(new Set(formattedProducts.map(product => product.category))).filter(Boolean);
@@ -231,18 +242,18 @@ const ProductsPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 product-grid">
           {filteredProducts.map(product => {
             // Transform API product format to match the expected format for ProductCard
-            const transformedProduct = {
+                        const transformedProduct = {
               id: product.id,
               name: product.name,
-              slug: product.slug,
+              slug: product.name.toLowerCase().replace(/\s+/g, '-'),
               price: product.price,
-              compareAtPrice: product.compare_at_price,
-              image: product.product_images?.find(img => img.is_primary)?.image_url || '/images/placeholder.jpg',
-              category: product.product_categories?.name || '',
+              compareAtPrice: product.originalPrice,
+              image: product.imageUrl || '/images/placeholder.jpg',
+              category: product.category || '',
               rating: product.rating || 4.5,
-              isBestseller: product.is_bestseller,
-              isOrganic: product.is_organic,
-              description: product.short_description
+              isBestseller: product.featured,
+              isOrganic: false,
+              description: product.description
             };
 
             return <ProductCard key={product.id} product={transformedProduct} />;
