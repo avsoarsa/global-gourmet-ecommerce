@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet';
+import Head from 'next/head';
 
 /**
  * SEO component for managing all document head changes
@@ -34,7 +34,7 @@ const SEO = ({
   const metaUrl = canonicalUrl || siteUrl;
   
   return (
-    <Helmet>
+    <Head>
       {/* Basic meta tags */}
       <title>{metaTitle}</title>
       <meta name="description" content={metaDescription} />
@@ -61,11 +61,12 @@ const SEO = ({
       
       {/* Structured data for rich snippets */}
       {structuredData && (
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       )}
-    </Helmet>
+    </Head>
   );
 };
 

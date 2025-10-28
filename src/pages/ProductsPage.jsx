@@ -1,8 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { trackPageView } from '../utils/personalizationUtils';
 import ProductCard from '../components/common/ProductCard';
 import MobileFilterSort from '../components/mobile/MobileFilterSort';
+import { products as productData } from '../data/products';
+
+const deriveStockQuantity = (id) => ((id * 13) % 80) + 20;
+const slugifyCategory = (value = '') =>
+  value
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '') || 'category';
 
 const ProductsPage = () => {
   const { categorySlug } = useParams();
@@ -15,35 +24,73 @@ const ProductsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const productsPerPage = 12; // Show 12 products per page for mobile-friendly grid
 
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch('/api/categories');
-        const data = await response.json();
-
-        if (data.success) {
-          // Add "All Products" category
-          const allCategories = [
-            { id: 'all', name: 'All Products', slug: 'all-products' },
-            ...data.data.map(category => ({
-              id: category.id,
-              name: category.name,
-              slug: category.slug
-            }))
-          ];
-
-          setCategories(allCategories);
-        } else {
-          console.error('Error fetching categories:', data.error);
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-
-    fetchCategories();
+  const formattedProducts = useMemo(() => {
+    return productData.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description || '',
+      price: product.price,
+      salePrice: product.originalPrice || null,
+      stock: deriveStockQuantity(product.id),
+      category: product.category || 'Uncategorized',
+      image: product.image,
+      featured: product.featured || product.rating >= 4.7,
+      active: true,
+      rating: product.rating || 4.5,
+      reviews: product.reviews || 0,
+      originalPrice: product.originalPrice || null
+    }));
   }, []);
+
+  useEffect(() => {
+    const uniqueCategories = Array.from(new Set(formattedProducts.map(product => product.category))).filter(Boolean);
+    setCategories([
+      { id: 'all', name: 'All Products', slug: 'all-products' },
+      ...uniqueCategories.map(name => ({
+        id: slugifyCategory(name),
+        name,
+        slug: slugifyCategory(name)
+      }))
+    ]);
+  }, [formattedProducts]);
+
+  useEffect(() => {
+    setLoading(true);
+    let result = [...formattedProducts];
+
+    if (selectedCategory !== 'All Products') {
+      result = result.filter(product => product.category === selectedCategory);
+    }
+
+    // Sorting
+    switch (sortBy) {
+      case 'price-low':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        result.sort((a, b) => b.id - a.id);
+        break;
+      case 'rating':
+        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      default:
+        result.sort((a, b) => (b.featured === a.featured ? 0 : b.featured ? 1 : -1));
+        break;
+    }
+
+    setTotalCount(result.length);
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const paginated = result.slice(startIndex, startIndex + productsPerPage);
+    setFilteredProducts(paginated);
+    setLoading(false);
+  }, [formattedProducts, selectedCategory, sortBy, currentPage, productsPerPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, sortBy]);
 
   // Initialize selected category based on URL
   useEffect(() => {
@@ -74,73 +121,6 @@ const ProductsPage = () => {
       );
     }
   }, [categorySlug, categories]);
-
-  // Fetch products based on category and sort
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-
-      try {
-        // Build query parameters
-        const params = new URLSearchParams();
-        params.append('page', currentPage);
-        params.append('limit', productsPerPage);
-
-        // Add category filter if not "All Products"
-        if (selectedCategory !== 'All Products' && categories.length > 0) {
-          const category = categories.find(cat => cat.name === selectedCategory);
-          if (category && category.slug !== 'all-products') {
-            params.append('category', category.slug);
-          }
-        }
-
-        // Add sort parameter
-        switch (sortBy) {
-          case 'price-low':
-            params.append('sort', 'price');
-            params.append('order', 'asc');
-            break;
-          case 'price-high':
-            params.append('sort', 'price');
-            params.append('order', 'desc');
-            break;
-          case 'newest':
-            params.append('sort', 'created_at');
-            params.append('order', 'desc');
-            break;
-          case 'rating':
-            params.append('sort', 'rating');
-            params.append('order', 'desc');
-            break;
-          default: // featured
-            params.append('featured', 'true');
-            break;
-        }
-
-        const response = await fetch(`/api/products?${params.toString()}`);
-        const data = await response.json();
-
-        if (data.success) {
-          setFilteredProducts(data.data);
-          setTotalCount(data.meta.pagination.total);
-        } else {
-          console.error('Error fetching products:', data.error);
-          setFilteredProducts([]);
-          setTotalCount(0);
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        setFilteredProducts([]);
-        setTotalCount(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (categories.length > 0) {
-      fetchProducts();
-    }
-  }, [selectedCategory, sortBy, currentPage, categories, productsPerPage]);
 
   // Calculate pagination
   const totalPages = Math.ceil(totalCount / productsPerPage);

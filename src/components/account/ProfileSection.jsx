@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faEdit } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../utils/supabaseClient';
 
 const ProfileSection = ({ user }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -61,59 +60,17 @@ const ProfileSection = ({ user }) => {
     try {
       console.log('Updating profile:', formData);
 
-      // Update user metadata in Supabase Auth
-      const { success, error } = await updateUserProfile({
-        first_name: formData.firstName,
-        last_name: formData.lastName,
+      const result = await updateUserProfile({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
         phone: formData.phone,
         birthdate: formData.birthdate,
         preferences: formData.preferences
       });
 
-      if (!success) {
-        throw new Error(error || 'Failed to update profile');
-      }
-
-      // Also update the profile in the profiles table if it exists
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (user) {
-        // Check if user profile exists
-        const { data: existingProfile } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (existingProfile) {
-          // Update existing profile
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .update({
-              phone: formData.phone,
-              birthdate: formData.birthdate,
-              preferences: formData.preferences
-            })
-            .eq('user_id', user.id);
-
-          if (profileError) {
-            console.error('Error updating profile in database:', profileError);
-          }
-        } else {
-          // Create new profile
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert({
-              user_id: user.id,
-              phone: formData.phone,
-              birthdate: formData.birthdate,
-              preferences: formData.preferences
-            });
-
-          if (profileError) {
-            console.error('Error creating profile in database:', profileError);
-          }
-        }
+      if (!result?.success) {
+        throw new Error(result?.error || 'Failed to update profile');
       }
 
       setIsEditing(false);

@@ -1,143 +1,92 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+'use client';
+
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
-import wishlistService from '../services/wishlistService';
+
+const STORAGE_KEY = 'global_gourmet_wishlist';
 
 const WishlistContext = createContext();
 
 export const useWishlist = () => useContext(WishlistContext);
 
 export const WishlistProvider = ({ children }) => {
+  const { currentUser, updateUserProfile } = useAuth();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
 
   useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        // Use wishlistService instead of localStorage
-        if (currentUser) {
-          const result = await wishlistService.getWishlist();
-          if (result.success) {
-            // Extract product IDs from the wishlist items
-            const productIds = result.data.items.map(item => item.productId);
-            setWishlistItems(productIds);
-          } else {
-            console.error('Error fetching wishlist:', result.error);
-            setWishlistItems([]);
-          }
-        } else {
-          // If not logged in, try to get from localStorage
-          const storedWishlist = localStorage.getItem('wishlist');
-          if (storedWishlist) {
-            setWishlistItems(JSON.parse(storedWishlist));
-          } else {
-            setWishlistItems([]);
-          }
+    try {
+      if (currentUser?.wishlist) {
+        setWishlistItems(currentUser.wishlist);
+      } else {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          setWishlistItems(JSON.parse(stored));
         }
-      } catch (error) {
-        console.error('Error fetching wishlist:', error);
-        setWishlistItems([]);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchWishlist();
+    } catch (error) {
+      console.error('Failed to load wishlist from storage:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [currentUser]);
 
-  // Save wishlist to localStorage whenever it changes
   useEffect(() => {
-    if (!loading) {
-      localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
-    }
-  }, [wishlistItems, loading]);
-
-  const addToWishlist = async (productId) => {
+    if (loading || currentUser) return;
     try {
-      if (currentUser) {
-        // Use wishlistService if user is logged in
-        const result = await wishlistService.addToWishlist(productId);
-        if (result.success) {
-          // Update local state
-          setWishlistItems(prevItems => {
-            if (prevItems.includes(productId)) {
-              return prevItems;
-            } else {
-              return [...prevItems, productId];
-            }
-          });
-        } else {
-          console.error('Error adding to wishlist:', result.error);
-        }
-      } else {
-        // Use localStorage if not logged in
-        setWishlistItems(prevItems => {
-          if (prevItems.includes(productId)) {
-            return prevItems;
-          } else {
-            return [...prevItems, productId];
-          }
-        });
-      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlistItems));
     } catch (error) {
-      console.error('Error adding to wishlist:', error);
+      console.error('Failed to persist wishlist:', error);
     }
-  };
+  }, [wishlistItems, loading, currentUser]);
 
-  const removeFromWishlist = async (productId) => {
-    try {
-      if (currentUser) {
-        // Use wishlistService if user is logged in
-        const result = await wishlistService.removeFromWishlist(productId);
-        if (result.success) {
-          // Update local state
-          setWishlistItems(prevItems => prevItems.filter(id => id !== productId));
-        } else {
-          console.error('Error removing from wishlist:', result.error);
-        }
-      } else {
-        // Use localStorage if not logged in
-        setWishlistItems(prevItems => prevItems.filter(id => id !== productId));
+  const persistForUser = (items) => {
+    if (!currentUser) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      } catch (error) {
+        console.error('Failed to persist wishlist for guest:', error);
       }
-    } catch (error) {
-      console.error('Error removing from wishlist:', error);
+      return;
     }
+
+    updateUserProfile({ wishlist: items });
   };
 
-  const isInWishlist = (productId) => {
-    return wishlistItems.includes(productId);
-  };
-
-  const clearWishlist = async () => {
-    try {
-      if (currentUser) {
-        // Use wishlistService if user is logged in
-        const result = await wishlistService.clearWishlist();
-        if (result.success) {
-          // Update local state
-          setWishlistItems([]);
-        } else {
-          console.error('Error clearing wishlist:', result.error);
-        }
-      } else {
-        // Use localStorage if not logged in
-        setWishlistItems([]);
+  const addToWishlist = (productId) => {
+    setWishlistItems((prev) => {
+      if (prev.includes(productId)) {
+        return prev;
       }
-    } catch (error) {
-      console.error('Error clearing wishlist:', error);
-    }
+      const updated = [...prev, productId];
+      persistForUser(updated);
+      return updated;
+    });
   };
 
-  const getWishlistCount = () => {
-    return wishlistItems.length;
+  const removeFromWishlist = (productId) => {
+    setWishlistItems((prev) => {
+      const updated = prev.filter((id) => id !== productId);
+      persistForUser(updated);
+      return updated;
+    });
   };
+
+  const clearWishlist = () => {
+    setWishlistItems([]);
+    persistForUser([]);
+  };
+
+  const isInWishlist = (productId) => wishlistItems.includes(productId);
+
+  const getWishlistCount = () => wishlistItems.length;
 
   const value = {
     wishlistItems,
     addToWishlist,
     removeFromWishlist,
-    isInWishlist,
     clearWishlist,
+    isInWishlist,
     getWishlistCount,
     loading
   };

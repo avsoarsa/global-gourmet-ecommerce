@@ -1,133 +1,146 @@
+'use client';
+
 import { createContext, useState, useContext, useEffect } from 'react';
-import { useRegion } from './RegionContext';
 import { useCartNotification } from './CartNotificationContext';
-import { useAuth } from './AuthContext';
-import cartService from '../services/cartService';
+import { useRegion } from './RegionContext';
+
+const STORAGE_KEY = 'global_gourmet_cart';
 
 const CartContext = createContext();
+
+const ensureNumeric = (value) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : 0;
+};
+
+const deriveItemId = (product) => {
+  const baseId = product.productId || product.id || product.sku || Math.random().toString(36).slice(2);
+  const weight = product.selectedWeight || product.weightOption?.weight || 'default';
+  const subscriptionKey = product.isSubscription ? `sub-${product.subscriptionFrequency || 'recurring'}` : 'std';
+  return `${baseId}-${weight}-${subscriptionKey}`;
+};
 
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const [cartId, setCartId] = useState(null);
-  const [sessionId, setSessionId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { convertPrice } = useRegion();
   const { showNotification } = useCartNotification();
-  const { currentUser } = useAuth();
+  const { convertPriceSync } = useRegion();
 
-  // Load cart from API
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        // Use cartService instead of direct API calls
-        const result = await cartService.getCart();
-
-        if (result.success) {
-          setCartItems(result.data.items || []);
-          setCartId(result.data.id);
-        } else {
-          console.error('Error fetching cart:', result.error);
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setCartItems(parsed);
         }
-      } catch (error) {
-        console.error('Error fetching cart:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCart();
-  }, [currentUser]);
-
-  const addToCart = async (product, quantity = 1, variantId = null) => {
-    try {
-      // Use cartService instead of direct API calls
-      const result = await cartService.addToCart({
-        product_id: product.id,
-        variant_id: variantId,
-        quantity
-      });
-
-      if (result.success) {
-        // Update cart items from the result
-        setCartItems(result.data.items || []);
-        setCartId(result.data.id);
-
-        // Show notification with the product and quantity
-        showNotification(product, quantity);
-      } else {
-        console.error('Error adding to cart:', result.error);
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.error('Failed to load cart from storage:', error);
+      localStorage.removeItem(STORAGE_KEY);
+    } finally {
+      setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    if (loading) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
+    } catch (error) {
+      console.error('Failed to persist cart to storage:', error);
+    }
+  }, [cartItems, loading]);
+
+  const computeUnitPrice = (item) => {
+    if (item.isSubscription) {
+      return ensureNumeric(item.subscriptionPrice || item.price);
+    }
+
+    if (item.weightOption?.price) {
+      return ensureNumeric(item.weightOption.price);
+    }
+
+    return ensureNumeric(item.price);
   };
 
-  const removeFromCart = async (itemId) => {
-    try {
-      // Use cartService instead of direct API calls
-      const result = await cartService.removeCartItem(itemId);
+  const addToCart = (product, quantity = 1) => {
+    if (!product) return;
 
-      if (result.success) {
-        // Update cart items from the result
-        setCartItems(result.data.items || []);
-        setCartId(result.data.id);
-      } else {
-        console.error('Error removing from cart:', result.error);
+    const normalizedQuantity = Math.max(1, Number(quantity) || 1);
+    const itemId = deriveItemId(product);
+    const unitPrice = computeUnitPrice(product);
+
+    setCartItems((prevItems) => {
+      const existingIndex = prevItems.findIndex((item) => item.id === itemId);
+
+      if (existingIndex !== -1) {
+        const updatedItems = [...prevItems];
+        updatedItems[existingIndex] = {
+          ...updatedItems[existingIndex],
+          quantity: updatedItems[existingIndex].quantity + normalizedQuantity
+        };
+        return updatedItems;
       }
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-    }
+
+      const newItem = {
+        id: itemId,
+        productId: product.id ?? product.productId ?? itemId,
+        name: product.name,
+        image: product.image,
+        category: product.category,
+        price: product.price ?? unitPrice,
+        originalPrice: product.originalPrice,
+        quantity: normalizedQuantity,
+        weightOption: product.weightOption ?? null,
+        selectedWeight: product.selectedWeight ?? product.weightOption?.weight ?? null,
+        isSubscription: product.isSubscription ?? false,
+        subscriptionFrequency: product.subscriptionFrequency ?? null,
+        subscriptionPrice: product.subscriptionPrice ?? null,
+        subscriptionDiscount: product.subscriptionDiscount ?? null,
+        metadata: {
+          weightOptions: product.weightOptions ?? [],
+          tags: product.tags ?? [],
+          origin: product.origin ?? null
+        }
+      };
+
+      return [...prevItems, newItem];
+    });
+
+    showNotification(product, normalizedQuantity);
   };
 
-  const updateQuantity = async (itemId, quantity) => {
-    if (quantity <= 0) {
-      removeFromCart(itemId);
-      return;
-    }
-
-    try {
-      // Use cartService instead of direct API calls
-      const result = await cartService.updateCartItem(itemId, quantity);
-
-      if (result.success) {
-        // Update cart items from the result
-        setCartItems(result.data.items || []);
-        setCartId(result.data.id);
-      } else {
-        console.error('Error updating cart:', result.error);
-      }
-    } catch (error) {
-      console.error('Error updating cart:', error);
-    }
+  const removeFromCart = (itemId) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== itemId));
   };
 
-  const clearCart = async () => {
-    try {
-      // Use cartService instead of direct API calls
-      const result = await cartService.clearCart();
+  const updateQuantity = (itemId, quantity) => {
+    const normalizedQuantity = Math.max(1, Number(quantity) || 1);
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, quantity: normalizedQuantity } : item
+      )
+    );
+  };
 
-      if (result.success) {
-        // Update cart items to empty array
-        setCartItems([]);
-      } else {
-        console.error('Error clearing cart:', result.error);
-      }
-    } catch (error) {
-      console.error('Error clearing cart:', error);
-    }
+  const clearCart = () => {
+    setCartItems([]);
   };
 
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      // If the item has a product_variant, use that price
-      const itemPrice = item.product_variant_id ?
-        (item.product_variants?.price || item.price_at_addition) :
-        (item.products?.price || item.price_at_addition);
-
-      return total + (itemPrice * item.quantity);
+      const unitPrice = computeUnitPrice(item);
+      return total + unitPrice * item.quantity;
     }, 0);
+  };
+
+  const getCartTotalConverted = () => {
+    const total = getCartTotal();
+    const converted = convertPriceSync(total);
+    return ensureNumeric(converted);
   };
 
   const getCartCount = () => {
@@ -136,13 +149,12 @@ export const CartProvider = ({ children }) => {
 
   const value = {
     cartItems,
-    cartId,
-    sessionId,
     addToCart,
     removeFromCart,
     updateQuantity,
     clearCart,
     getCartTotal,
+    getCartTotalConverted,
     getCartCount,
     loading
   };

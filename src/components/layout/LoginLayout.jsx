@@ -1,4 +1,5 @@
-import { Outlet } from 'react-router-dom';
+'use client';
+
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -6,7 +7,7 @@ import { useTranslation } from 'react-i18next';
  * LoginLayout - A minimal layout for login/signup pages
  * Removes all distractions to focus on authentication
  */
-const LoginLayout = () => {
+const LoginLayout = ({ children }) => {
   const { t } = useTranslation();
 
   return (
@@ -16,9 +17,7 @@ const LoginLayout = () => {
           {t('common.appName')}
         </Link>
       </header>
-      <main className="flex-grow">
-        <Outlet />
-      </main>
+      <main className="flex-grow">{children}</main>
       <footer className="py-4 px-6 text-center text-sm text-gray-500">
         <p>© {new Date().getFullYear()} Global Gourmet. All rights reserved.</p>
       </footer>

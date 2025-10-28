@@ -1,4 +1,6 @@
-import { Outlet, useLocation } from 'react-router-dom';
+'use client';
+
+import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Header from './Header';
 import BackToTop from '../common/BackToTop';
@@ -17,7 +19,7 @@ import PersistentCartBar from '../cart/PersistentCartBar';
  * - Bulk orders page
  * - Account page
  */
-const ProductLayout = () => {
+const ProductLayout = ({ children }) => {
   const location = useLocation();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -62,7 +64,7 @@ const ProductLayout = () => {
       <PullToRefresh onRefresh={handleRefresh}>
         <main className="flex-grow pt-16">
           {!isProductDetailPage && <Breadcrumb />}
-          <Outlet />
+          {children}
         </main>
       </PullToRefresh>
       <BackToTop />

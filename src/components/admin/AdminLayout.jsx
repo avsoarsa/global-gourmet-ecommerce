@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { Outlet, Navigate, useLocation, Link } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTachometerAlt,
@@ -22,7 +24,7 @@ import { useAdmin } from '../../context/AdminContext';
 import NotificationDropdown from './NotificationDropdown';
 import SkipToContent from '../common/SkipToContent';
 
-const AdminLayout = () => {
+const AdminLayout = ({ children }) => {
   const { adminUser, logout, error } = useAdmin();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -218,7 +220,7 @@ const AdminLayout = () => {
             </div>
           )}
 
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // In-memory users array (in a real app, this would be in a database)
-let users = [
+export const seedUsers = [
   {
     id: 0,
     email: "admin@example.com",
@@ -199,6 +199,8 @@ let users = [
     wishlist: [7, 11, 16]
   }
 ];
+
+let users = seedUsers.map(user => ({ ...user }));
 
 // Function to simulate authentication
 export const authenticate = (email, password) => {
